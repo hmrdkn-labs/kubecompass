@@ -93,8 +93,16 @@ jobs:
           test -f "$app_path/Contents/Resources/kubectl-LICENSE"
           app_archs="$(lipo -archs "$app_path/Contents/MacOS/KubeCompass")"
           helper_archs="$(lipo -archs "$app_path/Contents/Helpers/kubectl")"
-          test "$app_archs" = "arm64 x86_64"
-          test "$helper_archs" = "arm64 x86_64"
+          for arch in arm64 x86_64; do
+            case " $app_archs " in
+              *" $arch "*) ;;
+              *) echo "missing app slice: $arch ($app_archs)" >&2; exit 1 ;;
+            esac
+            case " $helper_archs " in
+              *" $arch "*) ;;
+              *) echo "missing kubectl slice: $arch ($helper_archs)" >&2; exit 1 ;;
+            esac
+          done
           echo "app: $app_archs; kubectl: $helper_archs"
 
       - name: Validate interface contracts
