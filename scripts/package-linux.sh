@@ -8,7 +8,7 @@ case "$arch" in
   amd64|x86_64) arch=amd64 ;;
   *) echo "unsupported package architecture: $arch" >&2; exit 2 ;;
 esac
-version=${KUBECOMPASS_VERSION:-0.1.0}
+version=${KUBECOMPASS_VERSION:-0.2.0}
 binary=${KUBECOMPASS_BINARY:-$repo_root/dist/linux/$arch/kubecompass-linux}
 command -v dpkg-deb >/dev/null || { echo "dpkg-deb is required (run inside Ubuntu/Debian)" >&2; exit 2; }
 [ -x "$binary" ] || { echo "missing executable: $binary (run scripts/build-linux.sh first)" >&2; exit 2; }

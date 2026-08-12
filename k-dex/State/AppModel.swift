@@ -72,6 +72,68 @@ final class AppModel {
     private(set) var lastTopologyAt: Date?
     var selectedTopologyNodeID: String?
     var selectedTopologyEdgeID: String?
+    var selectedTopologyPortPathID: String?
+
+    /// Shared semantic navigation state for the native topology front end.
+    /// These values intentionally live in the model so a later Linux/TUI
+    /// adapter can retain the same scope and selection semantics.
+    var topologyExplorerLevel: ExplorerLevel = .cluster
+    var topologyExplorerMode: ExplorerMode = .focus
+    var topologyExplorerPresentation: ExplorerPresentation = .map
+    var topologyFocusPath: [ExplorerLevel] = [.cluster]
+    var topologySearchText = ""
+    var topologyKindFilter: String?
+    var topologyEvidenceFilter: TopologyEvidenceLevel?
+    var topologyProtocolFilter = ""
+    var topologyPortFilter = ""
+    var topologyReadinessFilter: TopologyReadinessFilter = .all
+    var topologyShowUnresolvedOnly = false
+
+    enum TopologyReadinessFilter: String, CaseIterable, Identifiable, Sendable {
+        case all
+        case ready
+        case notReady
+        case unknown
+
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .all: return "Any readiness"
+            case .ready: return "Ready"
+            case .notReady: return "Not ready"
+            case .unknown: return "Unknown"
+            }
+        }
+    }
+
+    func setTopologyLevel(_ level: ExplorerLevel) {
+        topologyExplorerLevel = level
+        if let index = topologyFocusPath.firstIndex(of: level) {
+            topologyFocusPath = Array(topologyFocusPath.prefix(through: index))
+        } else {
+            topologyFocusPath.append(level)
+        }
+        if level != .network && level != .evidence {
+            selectedTopologyPortPathID = nil
+        }
+    }
+
+    func resetTopologyExplorerState() {
+        topologyExplorerLevel = .cluster
+        topologyExplorerMode = .focus
+        topologyExplorerPresentation = .map
+        topologyFocusPath = [.cluster]
+        topologySearchText = ""
+        topologyKindFilter = nil
+        topologyEvidenceFilter = nil
+        topologyProtocolFilter = ""
+        topologyPortFilter = ""
+        topologyReadinessFilter = .all
+        topologyShowUnresolvedOnly = false
+        selectedTopologyNodeID = nil
+        selectedTopologyEdgeID = nil
+        selectedTopologyPortPathID = nil
+    }
 
     // MARK: UI state
 
@@ -108,6 +170,10 @@ final class AppModel {
     @ObservationIgnored private var lastListAt: Date = .distantPast
     @ObservationIgnored private var lastOverviewAt: Date = .distantPast
     @ObservationIgnored private var lastTopologyLoadAt: Date = .distantPast
+    /// The refresh that currently owns the topology progress indicator.
+    /// Superseded tasks may finish later, but must not strand the spinner or
+    /// clear a newer task's progress state.
+    @ObservationIgnored private var topologyRefreshToken: UUID?
     @ObservationIgnored private var generation = 0
     /// Set when navigating to a kind with the intent of selecting one object once loaded.
     @ObservationIgnored private var pendingSelection: (kind: ResourceKind, namespace: String, name: String)?
@@ -205,6 +271,7 @@ final class AppModel {
         namespaces = []
         kindCatalog = ResourceKind.builtins
         sidebarSelection = .overview
+        resetTopologyExplorerState()
         clearData()
         bootState = .ready
         // Outside the Task: installed inside it, a disconnect during
@@ -231,6 +298,7 @@ final class AppModel {
         kindCatalog = ResourceKind.builtins
         podFilter = nil
         sidebarSelection = .overview
+        resetTopologyExplorerState()
         bootState = .pickCluster
         // Re-read the kubeconfig so newly added clusters show up.
         Task { await self.reloadContexts() }
@@ -267,6 +335,7 @@ final class AppModel {
         selectedNamespace = nil
         namespaces = []
         kindCatalog = ResourceKind.builtins
+        resetTopologyExplorerState()
         clearData()
         Task {
             await self.loadNamespaces()
@@ -367,11 +436,13 @@ final class AppModel {
         helmReleases = []
         overview = nil
         topologyGraph = nil
+        topologyRefreshToken = nil
         topologyIsBuilding = false
         topologyError = nil
         lastTopologyAt = nil
         selectedTopologyNodeID = nil
         selectedTopologyEdgeID = nil
+        selectedTopologyPortPathID = nil
         workloadUsage = [:]
         // Metrics are keyed by "namespace/name", which collides across
         // clusters — keeping them through a context switch would attribute
@@ -440,8 +511,16 @@ final class AppModel {
         // fallback cannot enqueue a second refresh before this Task starts.
         // That duplicate could leave a cancelled subprocess drain alive and
         // the progress indicator stuck over an already usable graph.
-        if sidebarSelection == .topology { topologyIsBuilding = true }
-        refreshTask = Task { await self.refresh() }
+        let topologyToken: UUID?
+        if sidebarSelection == .topology {
+            let token = UUID()
+            topologyRefreshToken = token
+            topologyIsBuilding = true
+            topologyToken = token
+        } else {
+            topologyToken = nil
+        }
+        refreshTask = Task { await self.refresh(topologyToken: topologyToken) }
     }
 
     private func startAutoRefresh() {
@@ -460,8 +539,14 @@ final class AppModel {
         }
     }
 
-    private func refresh(quiet: Bool = false) async {
-        guard bootState == .ready, let selection = sidebarSelection else { return }
+    private func refresh(quiet: Bool = false, topologyToken requestedTopologyToken: UUID? = nil) async {
+        guard bootState == .ready, let selection = sidebarSelection else {
+            if let requestedTopologyToken, topologyRefreshToken == requestedTopologyToken {
+                topologyRefreshToken = nil
+                topologyIsBuilding = false
+            }
+            return
+        }
         // With a live watch feeding the current list, quiet ticks only need
         // metrics; a full reconciliation re-list still happens once a minute.
         if quiet, case .resource(let kind) = selection,
@@ -478,6 +563,13 @@ final class AppModel {
             reloadNamespacesIfNeeded(force: false)
             return
         }
+        // A topology snapshot fans out across many resource kinds. Do not let
+        // the periodic timer advance `generation` while the user-requested
+        // snapshot is still assembling, or an aggressive refresh interval can
+        // continuously invalidate the result and leave the explorer spinning.
+        if quiet, selection == .topology, topologyIsBuilding {
+            return
+        }
         if quiet, selection == .topology,
            Date().timeIntervalSince(lastTopologyLoadAt) < 30 {
             reloadNamespacesIfNeeded(force: false)
@@ -487,6 +579,23 @@ final class AppModel {
         let gen = generation
         if !quiet { isLoading = true }
         reloadNamespacesIfNeeded(force: !quiet)
+
+        let topologyToken: UUID?
+        if selection == .topology {
+            let token = requestedTopologyToken ?? UUID()
+            topologyRefreshToken = token
+            topologyIsBuilding = true
+            topologyToken = token
+        } else {
+            topologyToken = nil
+        }
+        defer {
+            if let topologyToken, topologyRefreshToken == topologyToken {
+                topologyRefreshToken = nil
+                topologyIsBuilding = false
+                if !quiet { isLoading = false }
+            }
+        }
 
         do {
             switch selection {
@@ -500,7 +609,6 @@ final class AppModel {
                 lastOverviewAt = Date()
             case .topology:
                 lastTopologyLoadAt = Date()
-                topologyIsBuilding = true
                 let result = try await TopologyService.load(context: selectedContext, namespace: selectedNamespace, generation: gen)
                 guard gen == generation else { return }
                 // A transient outage must not erase useful evidence. Keep the
@@ -509,7 +617,6 @@ final class AppModel {
                 if result.fetchedResourceCount == 0,
                    topologyGraph?.nodes.contains(where: { !$0.isVirtual }) == true {
                     topologyError = result.fatalMessage ?? "Topology refresh failed; previous evidence remains visible."
-                    topologyIsBuilding = false
                     isLoading = false
                     return
                 }
@@ -519,7 +626,6 @@ final class AppModel {
                 topologyGraph = result.graph
                 topologyError = result.fatalMessage
                 lastTopologyAt = result.graph.freshness.capturedAt
-                topologyIsBuilding = false
                 if let previousUID, let match = result.graph.nodes.first(where: { $0.uid == previousUID }) {
                     selectedTopologyNodeID = match.id
                 } else if let selectedTopologyNodeID,
@@ -529,6 +635,10 @@ final class AppModel {
                 if let selectedTopologyEdgeID,
                    !result.graph.edges.contains(where: { $0.id == selectedTopologyEdgeID }) {
                     self.selectedTopologyEdgeID = nil
+                }
+                if let selectedTopologyPortPathID,
+                   !result.graph.portPaths.contains(where: { $0.id == selectedTopologyPortPathID }) {
+                    self.selectedTopologyPortPathID = nil
                 }
             case .resource(let kind):
                 let namespace = kind.isNamespaced ? selectedNamespace : nil
@@ -577,7 +687,6 @@ final class AppModel {
         }
         if gen == generation {
             isLoading = false
-            if selection == .topology { topologyIsBuilding = false }
         }
     }
 

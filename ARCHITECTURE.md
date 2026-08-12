@@ -43,42 +43,55 @@ watch deltas; nothing persists between views or launches.
 
 Topology Explorer is a separate, evidence-aware snapshot path in the macOS
 SwiftUI shell. `k-dex/Services/TopologyService.swift` runs a bounded fan-out of
-read-only `kubectl get -o json` calls for namespaces, nodes, workloads, Pods,
-Services, EndpointSlices, Ingresses, NetworkPolicies, PVCs, PVs, and
-StorageClasses. It deliberately does not list Secret or ConfigMap resources or
-read their payloads. Pod references to those kinds are retained only as
-sanitized name/kind references.
+read-only `kubectl get -o json` calls for 19 approved inputs: namespaces,
+nodes, workloads, Pods, Services, EndpointSlices, Ingresses, NetworkPolicies,
+PVCs, PVs, StorageClasses, and feature-detected Gateway API resources. It
+deliberately does not list Secret or ConfigMap resources or read their
+payloads. Pod references to those kinds are retained only as sanitized
+name/kind references.
 
 The adapter converts each raw response immediately into typed identities,
-owner references, selectors, placement/storage references, endpoint targets,
-policy summaries, and a small allowlist of safe facts. `Sources/KubeCompassCore`
-then builds a deterministic graph with generation and capture time. Every edge
-is labeled **Observed**, **Declared**, **Inferred**, or **Unavailable** and keeps
-its source field, join rule, and assumptions. Forbidden, unsupported, failed,
-or cancelled list inputs become explicit partial/unavailable input status; they
-are never treated as an empty successful list.
+owner references, selectors, placement/storage references, Service and
+container ports, Ingress and HTTPRoute paths, EndpointSlice addresses and
+conditions, policy rules, and a small allowlist of safe facts.
+`Sources/KubeCompassCore` then builds a deterministic graph with generation and
+capture time. Every relationship and Port Hop is labeled **Observed**,
+**Declared**, **Inferred**, or **Unavailable** and keeps its source field, join
+rule, and assumptions. Forbidden, unsupported, failed, or cancelled list
+inputs become explicit partial/unavailable input status; they are never treated
+as an empty successful list.
 
 The graph always includes a virtual **control-plane boundary** with
 `Unavailable` evidence when provider-managed control-plane internals are not
 represented by the Kubernetes API. This is a boundary marker, not a provider
 topology claim. Service selector matches and NetworkPolicy selection are
 deterministic joins over the fetched snapshot; neither proves packet delivery
-or CNI enforcement. Ingress edges describe declared backends only.
+or CNI enforcement. Ingress and Gateway API edges describe declared routing
+intent only. A resolved Port Path explains API-level joins from route to
+Service port, targetPort, EndpointSlice port/address/readiness, and declared
+container port; it does not assert that a packet can traverse the path.
 
 `k-dex/Views/TopologyExplorerView.swift` is the current macOS SwiftUI adapter.
-Its Map mode is a readable lane layout and its List mode is the semantic and
-keyboard-accessible fallback. The map tells the user when it is capped and
-directs large or filtered snapshots to search or List. Linux currently shares
-the graph/core contracts only; a native GTK route and full interaction,
-accessibility, and live-cluster parity remain pending.
+It presents six semantic Explorer Levels—Cluster, Infrastructure, Workloads,
+Network, Policy & Dependencies, and Evidence—inside a stable scope rail,
+exploration surface, and evidence inspector. Focus, Trace, and Inventory share
+one selection model across Map, List, and Port Table. The list and table are
+the canonical keyboard/semantic views; the map progressively discloses more
+nodes instead of silently dropping them. Refreshes are generation- and
+token-guarded so superseded work cannot clear or strand newer progress state.
 
-Current macOS, Linux amd64, and Linux arm64 `swift test` runs for this checkout
-each passed 23 tests (11 existing core tests, 3 Linux launch-option tests, and
-9 topology graph tests). Observed macOS debug runs completed the 10,000-node
-topology build in approximately 1.6–5.36s under its 10s gate. This measures
-graph construction under a fixture, not live-cluster latency or API-server
-load. The synthetic fixture Map/List and inspector were
-also rendered and interaction-reviewed; see
+The Linux GTK adapter consumes the same Explorer Level, mode, presentation,
+graph, and Port Path contracts, but remains a deterministic fixture route: it
+does not yet read kubeconfig or invoke kubectl. Full cross-platform live-route,
+accessibility, frame-time, startup, and RSS parity remain pending.
+
+The current Release synthetic benchmark constructs 10,001 nodes and 94,950
+edges from 10,000 objects in about 3.56s after indexed selector matching and
+evidence reuse. Explorer-level, search, one-hop, and Port Path queries remain
+below 100ms in that run. These are graph/query observations, not GUI frame
+rate, API-server load, or production-cluster latency. The collector semantics
+also match a disposable kind-cluster fixture conformance run; rendered tiered
+Port Path evidence is recorded in
 `docs/interface/TOPOLOGY-HIERARCHY-REVIEW.json`.
 
 ## Layer by layer

@@ -1,279 +1,89 @@
 {
   "$schema": "interface-hierarchy-review/review-contract.schema.json",
   "schema_version": "1.0",
-  "overall_status": "pass",
+  "overall_status": "unverified",
   "scope": {
     "platform": "desktop",
-    "surface": "macOS Topology Explorer",
+    "surface": "KubeCompass Topology Explorer",
     "actor": "Kubernetes operator, developer, or learner",
-    "task": "Understand how cluster resources relate without implying runtime network truth",
-    "primary_action": "Select a resource node or relationship and inspect its evidence",
+    "task": "Answer cluster fundamentals and status through evidence-backed semantic drill-down",
+    "primary_action": "Select an object, relationship, Route, or Port Hop and inspect its fundamentals",
     "consequence": "Read-only inspection; no cluster mutation or sensitive payload reveal",
     "token_authority": "docs/interface/kubecompass.interface.json",
     "scenarios": [
-      {
-        "id": "ready-map-control-plane",
-        "state": "Complete synthetic fixture snapshot with the virtual control-plane boundary selected",
-        "viewport": "macOS dark appearance, 1220x724 screenshot"
-      },
-      {
-        "id": "ready-list-relationship",
-        "state": "Complete synthetic fixture snapshot in List mode with a declared Ingress relationship selected by keyboard",
-        "viewport": "macOS dark appearance, 1220x724 screenshot"
-      },
-      {
-        "id": "partial-rbac",
-        "state": "Partial synthetic fixture snapshot with NetworkPolicy access denied and all readable relationships retained",
-        "viewport": "macOS dark appearance, 1220x724 screenshot"
-      }
+      {"id": "ready-wide-tiered", "state": "Ready synthetic snapshot with all approved Explorer Levels, three panes, and Map/List/Port Table parity", "viewport": "desktop wide 1440x900; light and dark appearances"},
+      {"id": "partial-wide-rbac-port", "state": "Partial synthetic snapshot with NetworkPolicy forbidden and one unresolved named targetPort", "viewport": "desktop wide 1440x900"},
+      {"id": "empty-narrow", "state": "Empty namespace with no matching topology resources", "viewport": "desktop narrow 900x700; single-pane fallback"},
+      {"id": "loading-wide", "state": "Loading snapshot with shell, context, scope, and progress visible before graph data", "viewport": "desktop wide 1440x900"},
+      {"id": "error-narrow", "state": "Refresh error in a narrow layout with last selection and safe retry", "viewport": "desktop narrow 900x700"},
+      {"id": "stale-wide", "state": "Last snapshot retained after failed refresh with explicit stale timestamp", "viewport": "desktop wide 1440x900"},
+      {"id": "offline-narrow", "state": "No live API connection with stale data clearly separated from current state", "viewport": "desktop narrow 900x700"},
+      {"id": "reconnecting-wide", "state": "Refresh or watch reconnecting while safe selection and breadcrumb remain stable", "viewport": "desktop wide 1440x900"}
     ]
   },
   "hierarchy_map": [
     {
-      "scenario_id": "ready-map-control-plane",
+      "scenario_id": "ready-wide-tiered",
       "units": [
-        {
-          "id": "workspace-title",
-          "role": "Identify the workspace and context",
-          "intended_priority": "primary",
-          "visual_order": 1,
-          "semantic_order": 1,
-          "action_order": null,
-          "focus_order": null,
-          "evidence_ids": ["map-screenshot", "map-a11y-tree"]
-        },
-        {
-          "id": "scope-controls",
-          "role": "Choose namespace, Map or List, search, policy visibility, or refresh",
-          "intended_priority": "secondary",
-          "visual_order": 2,
-          "semantic_order": 2,
-          "action_order": 1,
-          "focus_order": 1,
-          "evidence_ids": ["map-screenshot", "map-a11y-tree"]
-        },
-        {
-          "id": "snapshot-status",
-          "role": "State completeness, freshness, graph size, and evidence vocabulary",
-          "intended_priority": "secondary",
-          "visual_order": 3,
-          "semantic_order": 3,
-          "action_order": null,
-          "focus_order": null,
-          "evidence_ids": ["map-screenshot", "map-a11y-tree"]
-        },
-        {
-          "id": "resource-map",
-          "role": "Provide deterministic lanes and selectable resource nodes",
-          "intended_priority": "primary",
-          "visual_order": 4,
-          "semantic_order": 4,
-          "action_order": 2,
-          "focus_order": 2,
-          "evidence_ids": ["map-screenshot", "map-a11y-tree", "topology-source"]
-        },
-        {
-          "id": "evidence-inspector",
-          "role": "Explain the selected item, safe facts, provenance, assumptions, and adjacent relationships",
-          "intended_priority": "primary",
-          "visual_order": 5,
-          "semantic_order": 5,
-          "action_order": 3,
-          "focus_order": 3,
-          "evidence_ids": ["map-screenshot", "control-plane-trace"]
-        }
+        {"id": "tiered-scope-rail", "role": "Context, breadcrumb, Explorer Level, mode, view, Snapshot Status, and filters", "intended_priority": "primary", "visual_order": 1, "semantic_order": 1, "action_order": 1, "focus_order": 1, "evidence_ids": ["contract-doc"]},
+        {"id": "tiered-exploration-canvas", "role": "Map, List, or Port Table for the selected level and bounded focus", "intended_priority": "primary", "visual_order": 2, "semantic_order": 2, "action_order": 2, "focus_order": 2, "evidence_ids": ["contract-doc"]},
+        {"id": "tiered-evidence-inspector", "role": "Fundamentals, Exposure Status, Port Hops, provenance, and what the selection proves or does not prove", "intended_priority": "primary", "visual_order": 3, "semantic_order": 3, "action_order": 3, "focus_order": 3, "evidence_ids": ["contract-doc"]}
       ]
     },
     {
-      "scenario_id": "ready-list-relationship",
+      "scenario_id": "partial-wide-rbac-port",
       "units": [
-        {
-          "id": "list-scope-and-status",
-          "role": "Keep scope, freshness, counts, and evidence legend visible",
-          "intended_priority": "secondary",
-          "visual_order": 1,
-          "semantic_order": 1,
-          "action_order": 1,
-          "focus_order": 1,
-          "evidence_ids": ["list-screenshot", "list-a11y-tree"]
-        },
-        {
-          "id": "semantic-relationship-list",
-          "role": "Expose node and relationship names, types, and evidence without relying on geometry or color",
-          "intended_priority": "primary",
-          "visual_order": 2,
-          "semantic_order": 2,
-          "action_order": 2,
-          "focus_order": 2,
-          "evidence_ids": ["list-screenshot", "list-a11y-tree", "keyboard-focus-trace"]
-        },
-        {
-          "id": "relationship-inspector",
-          "role": "Explain source field, join rule, assumption, and safe attributes for the selected edge",
-          "intended_priority": "primary",
-          "visual_order": 3,
-          "semantic_order": 3,
-          "action_order": 3,
-          "focus_order": 3,
-          "evidence_ids": ["list-screenshot", "keyboard-focus-trace"]
-        }
+        {"id": "partial-snapshot-status", "role": "Name forbidden and unresolved inputs without rendering the snapshot complete or empty", "intended_priority": "primary", "visual_order": 1, "semantic_order": 1, "action_order": 1, "focus_order": 1, "evidence_ids": ["contract-doc", "legacy-partial-screenshot"]},
+        {"id": "partial-port-path", "role": "Show the resolved hops and the named unresolved targetPort with Evidence Levels", "intended_priority": "primary", "visual_order": 2, "semantic_order": 2, "action_order": 2, "focus_order": 2, "evidence_ids": ["contract-doc"]}
       ]
     },
     {
-      "scenario_id": "partial-rbac",
+      "scenario_id": "empty-narrow",
       "units": [
-        {
-          "id": "partial-status",
-          "role": "Keep readable evidence visible while naming incomplete input and snapshot age",
-          "intended_priority": "primary",
-          "visual_order": 1,
-          "semantic_order": 1,
-          "action_order": 1,
-          "focus_order": 1,
-          "evidence_ids": ["partial-screenshot", "topology-source", "adapter-tests"]
-        },
-        {
-          "id": "unavailable-inputs",
-          "role": "Distinguish forbidden, unsupported, and unavailable inputs from an empty cluster",
-          "intended_priority": "primary",
-          "visual_order": 2,
-          "semantic_order": 2,
-          "action_order": null,
-          "focus_order": null,
-          "evidence_ids": ["partial-screenshot", "topology-source", "adapter-tests"]
-        }
+        {"id": "empty-context", "role": "Keep context, scope, breadcrumb, and Snapshot Status visible", "intended_priority": "primary", "visual_order": 1, "semantic_order": 1, "action_order": 1, "focus_order": 1, "evidence_ids": ["contract-doc"]},
+        {"id": "empty-next-step", "role": "Explain that no resources match and offer scope or level changes", "intended_priority": "secondary", "visual_order": 2, "semantic_order": 2, "action_order": 2, "focus_order": 2, "evidence_ids": ["contract-doc"]}
       ]
     }
   ],
   "evidence": [
-    {
-      "id": "map-screenshot",
-      "kind": "screenshot",
-      "source": "Synthetic read-only kubectl fixture",
-      "location": "docs/interface/evidence/topology-map-control-plane.jpeg",
-      "status": "observed",
-      "note": "Shows deterministic lanes and a truthful unavailable control-plane boundary."
-    },
-    {
-      "id": "list-screenshot",
-      "kind": "screenshot",
-      "source": "Synthetic read-only kubectl fixture",
-      "location": "docs/interface/evidence/topology-relationship-list.jpeg",
-      "status": "observed",
-      "note": "Shows the semantic relationship list and evidence inspector."
-    },
-    {
-      "id": "partial-screenshot",
-      "kind": "screenshot",
-      "source": "Synthetic read-only kubectl fixture with NetworkPolicy list forbidden",
-      "location": "docs/interface/evidence/topology-partial-rbac.jpeg",
-      "status": "observed",
-      "note": "Shows a partial snapshot, exact denied input, retained readable nodes and relationships, and unavailable evidence in the inspector."
-    },
-    {
-      "id": "map-a11y-tree",
-      "kind": "a11y-tree",
-      "source": "Computer Use accessibility snapshot",
-      "status": "observed",
-      "note": "All 15 fixture nodes are exposed as labeled buttons; scope controls and completeness are textual."
-    },
-    {
-      "id": "list-a11y-tree",
-      "kind": "a11y-tree",
-      "source": "Computer Use accessibility snapshot",
-      "status": "observed",
-      "note": "Nodes and relationships are selectable rows with source, target, relationship, and evidence text."
-    },
-    {
-      "id": "keyboard-focus-trace",
-      "kind": "focus-trace",
-      "source": "Computer Use Down-arrow navigation in the relationship List",
-      "status": "observed",
-      "note": "Focus moved to the declared Ingress-to-Service edge and updated the inspector, including named port https."
-    },
-    {
-      "id": "control-plane-trace",
-      "kind": "manual",
-      "source": "Computer Use control-plane selection",
-      "status": "observed",
-      "note": "Inspector says provider-managed internals may not be exposed and does not invent API server, etcd, or cloud-network nodes."
-    },
-    {
-      "id": "topology-source",
-      "kind": "source",
-      "source": "k-dex/Views/TopologyExplorerView.swift and k-dex/State/AppModel.swift",
-      "status": "observed",
-      "note": "Defines state hierarchy, caps, stale-data preservation, semantic List selection, and read-only resource handoff."
-    },
-    {
-      "id": "core-tests",
-      "kind": "command",
-      "source": "swift test --disable-sandbox",
-      "status": "observed",
-      "note": "Portable graph, redaction, relationship semantics, storage resolution, and 10k fixture coverage pass."
-    },
-    {
-      "id": "adapter-tests",
-      "kind": "command",
-      "source": "serialized xcodebuild test",
-      "status": "observed",
-      "note": "Fixture adapter verifies partial inputs, exact read-only argv, and no Secret or ConfigMap payload listing."
-    }
+    {"id": "contract-doc", "kind": "source", "source": "docs/product/TOPOLOGY-EXPLORER.md; CONTEXT.md; docs/interface/kubecompass.interface.json", "status": "inferred", "note": "Approved product and interface contract; it is not runtime evidence."},
+    {"id": "implementation-source", "kind": "source", "source": "Sources/KubeCompassCore/TopologyGraph.swift; k-dex/Views/TopologyExplorerView.swift; k-dex/State/AppModel.swift; Sources/KubeCompassLinux/App/main.swift", "status": "observed", "note": "Integrated macOS and Linux fixture source implements the semantic levels, modes, presentations, typed Port Paths, and evidence inspector surfaces; this does not substitute for screenshots or accessibility/runtime probes."},
+    {"id": "legacy-map-screenshot", "kind": "screenshot", "source": "Synthetic read-only prototype fixture", "location": "docs/interface/evidence/topology-map-control-plane.jpeg", "status": "observed", "note": "Documents the pre-integration flat kind-lane prototype only; it does not validate the integrated tiered contract."},
+    {"id": "legacy-list-screenshot", "kind": "screenshot", "source": "Synthetic read-only prototype fixture", "location": "docs/interface/evidence/topology-relationship-list.jpeg", "status": "observed", "note": "Documents the pre-integration semantic List prototype only; Port Table and level parity are not shown."},
+    {"id": "legacy-partial-screenshot", "kind": "screenshot", "source": "Synthetic read-only prototype fixture with NetworkPolicy list forbidden", "location": "docs/interface/evidence/topology-partial-rbac.jpeg", "status": "observed", "note": "Documents partial-input preservation in the pre-integration prototype; it does not validate integrated typed Port Paths."},
+    {"id": "runtime-tiered-wide", "kind": "screenshot", "source": "Deterministic macOS desktop fixture review", "location": "docs/interface/evidence/topology-tiered-port-path.jpeg", "status": "observed", "note": "Shows the integrated wide three-pane shell, Network Explorer Level, Port Table, two complete paths plus one partial path, typed hops, readiness, Fundamentals, and proof/non-proof copy. Cluster and Network level transitions and automatic refresh completion were also inspected through the native accessibility tree."},
+    {"id": "runtime-tiered-narrow", "kind": "manual", "source": "Future desktop fixture review", "status": "unknown", "note": "Must capture narrow single-pane fallback, breadcrumb back path, focus traversal, and state copy after implementation."},
+    {"id": "runtime-port-fixtures", "kind": "command", "source": "Swift package topology fixtures plus scripts/topology-e2e.sh against disposable kind v0.29.0", "status": "observed", "note": "Unit fixtures cover named/numeric targetPort, protocol matching, no-ready and external endpoints, duplicate routes, policy rules, and graph resolution. The disposable cluster separately verifies the fixture API shapes, NodePort, headless/selectorless Services, external/not-ready EndpointSlices, storage, and RBAC denial using a private temporary kubeconfig."},
+    {"id": "runtime-performance", "kind": "command", "source": "scripts/topology-benchmark.sh Release synthetic profile", "status": "observed", "note": "10,000 objects produced 10,001 nodes and 94,950 edges in about 3.56s; level, search, one-hop, and port queries stayed below 73ms. GUI frame time, RSS, startup, and API latency remain unmeasured."},
+    {"id": "runtime-linux-parity", "kind": "manual", "source": "Future SwiftUI and GTK fixture review", "status": "unknown", "note": "Must compare semantic outcomes and accessibility, not pixel identity."}
   ],
-  "findings": [],
-  "remediations": [],
+  "findings": [
+    {"id": "ID-01", "dimension": "information_delivery", "scenario_id": "ready-wide-tiered", "statement": "A fresh wide fixture confirms the tier rail, Port Table, and evidence inspector hierarchy, but exhaustive Map/List selection parity, narrow behavior, and human screen-reader traversal remain unreviewed.", "impact": "Untested presentations or narrower windows may still hide context or disrupt the learner path.", "severity": "P1", "confidence": "observed", "evidence_ids": ["contract-doc", "implementation-source", "runtime-tiered-wide"], "remediation_ids": ["remediate-tiered-review"]},
+    {"id": "ID-02", "dimension": "semantic_visual_order", "scenario_id": "partial-wide-rbac-port", "statement": "The wide fixture visibly distinguishes two complete paths from one partial HTTPRoute and shows typed Service, targetPort, EndpointSlice, readiness, address, node, zone, and container-port hops. A dedicated partial-RBAC integrated screenshot is still missing.", "impact": "Unavailable-input hierarchy still needs a final rendered-state review even though partial Port Path status is visible.", "severity": "P1", "confidence": "observed", "evidence_ids": ["contract-doc", "implementation-source", "runtime-tiered-wide", "runtime-port-fixtures"], "remediation_ids": ["remediate-port-review"]},
+    {"id": "RS-01", "dimension": "responsive_state_parity", "scenario_id": "empty-narrow", "statement": "Narrow, loading, empty, error, stale, offline, and reconnecting behavior for the approved tiered shell has not been runtime-reviewed.", "impact": "The product cannot claim smooth cross-platform state or responsive parity yet.", "severity": "P1", "confidence": "inferred", "evidence_ids": ["contract-doc", "runtime-tiered-narrow"], "remediation_ids": ["remediate-state-matrix"]}
+  ],
+  "remediations": [
+    {"id": "remediate-tiered-review", "priority": "P1", "change": "Capture and review wide/narrow screenshots and accessibility trees for Explorer Levels, breadcrumb, modes, three-pane shell, and Map/List/Port Table parity.", "verification_ids": ["verify-ready-wide", "verify-narrow-fallback"]},
+    {"id": "remediate-port-review", "priority": "P1", "change": "Capture partial Port Table and inspector evidence for unresolved, no-endpoint, no-ready, and unavailable inputs; retain typed fixture tests as source evidence.", "verification_ids": ["verify-partial-port", "verify-port-fixtures"]},
+    {"id": "remediate-state-matrix", "priority": "P1", "change": "Exercise exact ready, partial, empty, loading, error, stale, offline, reconnecting, narrow, and wide fixtures on both adapters.", "verification_ids": ["verify-state-matrix", "verify-linux-parity"]}
+  ],
   "parity": [
-    {
-      "scenario_id": "ready-map-control-plane",
-      "status": "pass",
-      "evidence_ids": ["map-screenshot", "map-a11y-tree", "control-plane-trace"],
-      "note": "Visual hierarchy, semantic labels, and the unavailable boundary agree in the synthetic fixture."
-    },
-    {
-      "scenario_id": "ready-list-relationship",
-      "status": "pass",
-      "evidence_ids": ["list-screenshot", "list-a11y-tree", "keyboard-focus-trace"],
-      "note": "The List is a functional keyboard and accessibility surface, not a screenshot-only fallback."
-    },
-    {
-      "scenario_id": "partial-rbac",
-      "status": "pass",
-      "evidence_ids": ["partial-screenshot", "topology-source", "adapter-tests"],
-      "note": "The denied NetworkPolicy input is named without hiding the 14 readable nodes and 28 remaining relationships."
-    }
+    {"scenario_id": "ready-wide-tiered", "status": "unverified", "evidence_ids": ["runtime-tiered-wide", "runtime-port-fixtures"], "note": "Wide Port Table hierarchy and native selection are observed; complete Map/List parity and human accessibility traversal remain before pass."},
+    {"scenario_id": "partial-wide-rbac-port", "status": "unverified", "evidence_ids": ["runtime-tiered-wide", "runtime-port-fixtures"], "note": "Partial Port Path and collector RBAC semantics are observed; a dedicated integrated partial-RBAC screenshot remains before pass."},
+    {"scenario_id": "empty-narrow", "status": "unverified", "evidence_ids": ["runtime-tiered-narrow"], "note": "No narrow runtime evidence yet."},
+    {"scenario_id": "loading-wide", "status": "unverified", "evidence_ids": ["runtime-tiered-wide"], "note": "No loading runtime evidence for the approved shell yet."},
+    {"scenario_id": "error-narrow", "status": "unverified", "evidence_ids": ["runtime-tiered-narrow"], "note": "No error runtime evidence for the approved shell yet."},
+    {"scenario_id": "stale-wide", "status": "unverified", "evidence_ids": ["runtime-tiered-wide"], "note": "No stale runtime evidence for the approved shell yet."},
+    {"scenario_id": "offline-narrow", "status": "unverified", "evidence_ids": ["runtime-tiered-narrow"], "note": "No offline runtime evidence for the approved shell yet."},
+    {"scenario_id": "reconnecting-wide", "status": "unverified", "evidence_ids": ["runtime-tiered-wide"], "note": "No reconnecting runtime evidence for the approved shell yet."}
   ],
   "verification": [
-    {
-      "id": "verify-map-hierarchy",
-      "scenario_id": "ready-map-control-plane",
-      "method": "Inspect screenshot and accessibility tree at the minimum supported app size",
-      "expected": "Scope and completeness precede the map; selecting a node reveals safe facts without hiding context",
-      "result": "The map exposes 15 nodes, 31 relationships, evidence legend, snapshot status, and selected-item inspector without header wrapping.",
-      "status": "pass"
-    },
-    {
-      "id": "verify-control-plane-truth",
-      "scenario_id": "ready-map-control-plane",
-      "method": "Select the virtual control-plane boundary",
-      "expected": "The inspector marks internals unavailable and invents no physical or provider resources",
-      "result": "The inspector states that provider-managed internals may not be exposed and that visibility is not exposed by the cluster API.",
-      "status": "pass"
-    },
-    {
-      "id": "verify-list-keyboard",
-      "scenario_id": "ready-list-relationship",
-      "method": "Select a relationship row and press Down",
-      "expected": "Selection and inspector advance together using only the keyboard",
-      "result": "The selected row advanced to the declared Ingress-to-Service relationship and exposed source field, join rule, assumption, and portName https.",
-      "status": "pass"
-    },
-    {
-      "id": "verify-partial-render",
-      "scenario_id": "partial-rbac",
-      "method": "Render a fixture where NetworkPolicy listing returns Forbidden",
-      "expected": "The denied input is named while readable topology remains usable and is never labeled complete",
-      "result": "The banner names networkpolicies as access denied, marks the snapshot partial, and retains 14 nodes and 28 relationships without a stuck refresh indicator.",
-      "status": "pass"
-    }
+    {"id": "verify-ready-wide", "scenario_id": "ready-wide-tiered", "method": "Render a complete synthetic fixture at wide size; traverse levels, modes, and Map/List/Port Table while retaining one selection.", "expected": "The three panes, breadcrumb, Fundamentals, Evidence Levels, and equivalent views remain coherent.", "status": "unverified"},
+    {"id": "verify-narrow-fallback", "scenario_id": "empty-narrow", "method": "Render narrow empty, loading, error, stale, offline, and reconnecting fixtures; use keyboard and screen reader traversal.", "expected": "The single-pane back path preserves scope, status, selection, and the same learner copy as wide mode.", "status": "unverified"},
+    {"id": "verify-partial-port", "scenario_id": "partial-wide-rbac-port", "method": "Render forbidden NetworkPolicy input plus unresolved named targetPort and inspect the Port Path.", "expected": "Valid hops remain visible; each unavailable or unresolved hop is named; Exposure Status is not presented as reachability.", "status": "unverified"},
+    {"id": "verify-port-fixtures", "scenario_id": "partial-wide-rbac-port", "method": "Run conformance fixtures for numeric/named/ambiguous/missing targetPort, protocols, EndpointSlice readiness, and declared container ports.", "expected": "Port Hops preserve typed fields, source fields, Evidence Levels, and explicit ambiguity.", "status": "pass"},
+    {"id": "verify-state-matrix", "scenario_id": "loading-wide", "method": "Exercise the eight exact state scenarios in the matrix on macOS and Linux adapters.", "expected": "Each state has truthful copy, safe retry or next action, no silent empty/complete substitution, and stable selection where safe.", "status": "unverified"},
+    {"id": "verify-linux-parity", "scenario_id": "ready-wide-tiered", "method": "Compare SwiftUI and GTK fixture outcomes for levels, views, modes, focus, evidence, reduced motion, and narrow fallback.", "expected": "Semantic outcomes match; native widget geometry may differ; no Linux topology route is claimed before this passes.", "status": "unverified"},
+    {"id": "verify-performance", "scenario_id": "ready-wide-tiered", "method": "Measure selection/filter/tier p95, frame time, startup, RSS, cancellation, and scale at defined fixture sizes.", "expected": "Results are recorded against provisional budgets without treating graph/table benchmarks as GUI evidence.", "status": "unverified"}
   ]
 }

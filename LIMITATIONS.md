@@ -21,7 +21,7 @@ that remain — and why each one is deliberately not being fixed right now.
 | Topology is a snapshot, not traffic telemetry | Deliberate boundary | A separately permissioned telemetry source exists |
 | Topology inputs can be partial under RBAC/API gaps | Permission/upstream | Required list permissions and API support are available |
 | Secret/ConfigMap payloads are outside the topology graph | Security boundary | A separately authorized payload workflow is designed |
-| Linux topology UI is not implemented | Deferred adapter work | GTK route and parity gates are complete |
+| Linux topology UI is fixture-only and does not invoke kubectl | Deferred adapter work | Live GTK data, route, state, and parity gates are complete |
 
 ## No Mac App Store distribution (App Sandbox stays off)
 
@@ -130,11 +130,16 @@ marks those provider-managed internals when they are not exposed by the API.
 
 Forbidden, unsupported, timed-out, offline, or cancelled inputs are recorded as
 partial/unavailable status with safe copy. A successful empty result is not
-substituted for a denied list. Current tests exercise fixture graphs and RBAC
-classification; no live-cluster Topology Explorer validation has been run.
+substituted for a denied list. Fixture tests cover port/path joins and RBAC
+classification, and a disposable kind-cluster run validates the fixture API
+shapes and RBAC denial used by those cases. This is not a claim that every
+provider, controller, CNI,
+service mesh, or production-cluster behavior is modeled.
 
-Observed macOS debug runs of the 10,000-node graph test took about 1.6–5.36s,
-under the 10s gate. That is a graph-construction observation only, not a
-promised GUI frame rate, API latency, or capacity limit. Map mode is
-intentionally capped and List mode is the accessible semantic fallback; full
-Linux GTK UI parity and an accessibility/keyboard review remain open.
+The current Release synthetic 10,000-object benchmark took about 3.56s to
+construct 10,001 nodes and 94,950 edges; core level/search/focus/port queries
+were below 100ms in that run. That is graph/query evidence only, not promised
+GUI frame rate, API latency, memory use, or a hard capacity limit. The map uses
+progressive disclosure and List/Port Table remain the semantic fallbacks. Full
+Linux live-data parity, human VoiceOver review, GUI frame/RSS measurement, and
+the complete narrow/state matrix remain open.

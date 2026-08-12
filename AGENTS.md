@@ -37,11 +37,12 @@ interface contract must preserve its workflows before adding Linux support.
 
 Run `bash scripts/validate-interface.sh` after interface edits. It must invoke
 the canonical `engineer-interfaces` validator. Also parse both JSON documents
-with Python's standard library. The shared package passes 23/23 tests on macOS,
-Linux amd64, and Linux arm64; the deterministic trace has 15 steps and the
-observed local 10k-row p95 range was 37.98–100.67ms under the 150ms budget. Both Debian
-packages build and launch after fresh-container installation. Full Linux route
-parity, accessibility/keyboard review, startup, and RSS remain pending.
+with Python's standard library. Run the complete Swift package and Xcode test
+suites, the topology fixture and benchmark gates, and both Linux architecture
+build/package smokes before release. Record exact test counts and timings in
+the verification receipt rather than freezing them in this rule file. Full
+Linux live-route parity, human accessibility review, GUI frame time, startup,
+and RSS remain pending until measured.
 
 ## Scope and safety
 

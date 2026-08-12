@@ -7,16 +7,21 @@ GTK/libadwaita Linux adapter under active development.
 
 - **macOS:** the full inherited K-Dex workflow is branded as KubeCompass,
   regression-tested, and locally installable as `KubeCompass.app`.
-- **Shared Swift core:** deterministic state, command, safety, and 10,000-row
-  fixture contracts compile and test on macOS and Linux.
-- **Topology Explorer:** a read-only macOS SwiftUI route
-  builds an evidence-aware snapshot from allowlisted `kubectl get -o json`
-  inputs. Current macOS, Linux amd64, and Linux arm64 package runs each passed
-  23 tests; nine topology tests include a 10,000-node graph build observed at
-  about 1.6–5.36s on macOS, under its 10s debug gate.
-  A synthetic read-only fixture has also passed rendered Map/List, inspector,
-  and keyboard-selection review. This is not live-cluster validation.
-- **Linux:** the first native GTK vertical slice is deliberately fixture-only.
+- **Shared Swift core:** deterministic state, command, mutation-safety,
+  evidence, Explorer Level, and typed Port Path contracts compile and test on
+  macOS and Linux.
+- **Topology Explorer:** a read-only macOS SwiftUI route builds an
+  evidence-aware snapshot from allowlisted `kubectl get -o json` inputs. Six
+  semantic Explorer Levels, Focus/Trace/Inventory modes, and Map/List/Port
+  Table presentations expose fundamentals, health, declared routes, resolved
+  ports, incomplete evidence, and assumptions without claiming packet flow.
+  The current synthetic 10,000-object Release benchmark builds 94,950
+  relationships in about 3.56s; interactive core queries remain below 73ms in
+  that fixture. A disposable kind-cluster conformance run also passed the
+  supported relationship and port cases. These are core/collector measurements,
+  not GUI frame-rate or production-cluster latency claims.
+- **Linux:** the independently versioned 0.2.x native GTK vertical slice is
+  deliberately fixture-only.
   It demonstrates navigation, a virtualized resource table, details, states,
   confirmations, and packaging without reading kubeconfig or running kubectl.
 - **`kc`:** on macOS, the installed helper opens the desktop app. A complete
@@ -54,13 +59,16 @@ GTK/libadwaita Linux adapter under active development.
   to the limit with a tick marking the request; exact numbers on hover. When
   metrics are missing, the app says why (not installed, RBAC, unreachable
   kubelets) and shows the spec'd requests/limits dimmed instead.
-- **Topology Explorer (read-only)** — the macOS SwiftUI route
-  shows Kubernetes object relationships as Observed, Declared, Inferred, or
-  Unavailable evidence. It uses a map plus a keyboard-navigable List fallback;
-  partial RBAC and unsupported inputs stay visible as incomplete evidence. A
-  virtual control-plane boundary marks provider-managed internals that the API
-  does not expose. The route does not list Secret or ConfigMap payloads, and
-  it does not claim traffic flow, CNI enforcement, or provider-network truth.
+- **Topology Explorer (read-only)** — move from Cluster to Infrastructure,
+  Workloads, Network, Policy & Dependencies, and Evidence. Focus or trace a
+  resource across Map, List, and Port Table presentations. Typed Port Paths
+  retain Ingress/HTTPRoute host and path, Service port/protocol/targetPort,
+  EndpointSlice address/readiness, and Pod container-port evidence. Every hop
+  is Observed, Declared, Inferred, or Unavailable and explains what it proves,
+  what it does not prove, and which API field produced it. Partial RBAC and
+  unsupported inputs stay visible; provider-managed control-plane internals
+  remain an explicit unavailable boundary. Secret and ConfigMap payloads are
+  never listed for topology.
 - **Direct distribution** — updater integration is disabled until a dedicated
   KubeCompass release feed exists.
 
@@ -102,9 +110,9 @@ Topology Explorer's relationship vocabulary, unavailable-input behavior, and
 data-safety boundary are recorded in
 [docs/product/TOPOLOGY-EXPLORER.md](docs/product/TOPOLOGY-EXPLORER.md).
 
-Synthetic fixture preview:
+Tiered Port Path fixture preview:
 
-![Topology Explorer with the virtual control-plane boundary selected](docs/interface/evidence/topology-map-control-plane.jpeg)
+![Topology Explorer Port Table tracing Ingress through Service and EndpointSlice to Pod container ports](docs/interface/evidence/topology-tiered-port-path.jpeg)
 
 For the Linux fixture slice, use `scripts/build-linux.sh`; the verified package
 script writes an architecture-specific Debian artifact under `dist/`.

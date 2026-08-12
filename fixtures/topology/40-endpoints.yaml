@@ -1,0 +1,20 @@
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: kc-external-manual
+  namespace: kc-topology
+  labels:
+    kubernetes.io/service-name: kc-external
+    endpointslice.kubernetes.io/managed-by: kubecompass-fixture
+addressType: IPv4
+ports:
+  - name: external
+    port: 15443
+    protocol: TCP
+endpoints:
+  - addresses: [192.0.2.10]
+    conditions:
+      ready: true
+      serving: true
+      terminating: false
+    zone: fixture-zone-a

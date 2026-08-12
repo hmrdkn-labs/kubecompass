@@ -44,6 +44,12 @@ nonisolated enum TopologyService {
         InputSpec("services", .services),
         InputSpec("endpointslices", .endpointSlices),
         InputSpec("ingresses", .ingresses),
+        // Gateway API is optional. These static identities keep the adapter
+        // feature-detectable: a missing CRD is reported as unsupported rather
+        // than silently omitted from the snapshot.
+        InputSpec("gatewayclasses.gateway.networking.k8s.io", ResourceKind(group: "gateway.networking.k8s.io", version: "v1", plural: "gatewayclasses", kindName: "GatewayClass", isNamespaced: false)),
+        InputSpec("gateways.gateway.networking.k8s.io", ResourceKind(group: "gateway.networking.k8s.io", version: "v1", plural: "gateways", kindName: "Gateway", isNamespaced: true)),
+        InputSpec("httproutes.gateway.networking.k8s.io", ResourceKind(group: "gateway.networking.k8s.io", version: "v1", plural: "httproutes", kindName: "HTTPRoute", isNamespaced: true)),
         InputSpec("networkpolicies", .networkPolicies),
         InputSpec("persistentvolumeclaims", .persistentVolumeClaims),
         InputSpec("persistentvolumes", .persistentVolumes),
@@ -195,8 +201,14 @@ nonisolated enum TopologyService {
                 volumeReferences.append(TopologyObjectReference(apiVersion: "storage.k8s.io/v1", kind: "StorageClass", name: storage))
             }
         }
-        let ingress = ingressBackends(from: raw, namespace: namespace, facts: &facts)
+        let ingressData = ingressData(from: raw, namespace: namespace, facts: &facts)
         let endpointSlice = endpointSlice(from: raw, namespace: namespace, facts: &facts)
+        let servicePorts = servicePorts(from: raw, kind: kind, facts: &facts)
+        let serviceMode = serviceMode(from: raw, kind: kind)
+        let podPorts = containerPorts(from: raw, kind: kind, namespace: namespace, facts: &facts)
+        let gatewayClass = gatewayClassSnapshot(from: raw, kind: kind)
+        let gateway = gatewaySnapshot(from: raw, kind: kind)
+        let httpRoute = httpRouteSnapshot(from: raw, kind: kind, namespace: namespace)
         let policy = networkPolicy(from: raw)
         let podNodeName = raw["spec"]["nodeName"].string
         let roleLabels = object.labels.filter { key, _ in key.hasPrefix("node-role.kubernetes.io/") || key == "kubernetes.io/role" }
@@ -206,8 +218,17 @@ nonisolated enum TopologyService {
             podNodeName: podNodeName,
             selector: selectors.matchLabels,
             selectorExpressions: selectors.expressions,
-            ingressBackends: ingress,
+            ingressBackends: ingressData.backends,
+            ingressRoutes: ingressData.routes,
             endpointSlice: endpointSlice,
+            servicePorts: servicePorts,
+            serviceMode: serviceMode,
+            containerPorts: podPorts.container,
+            initContainerPorts: podPorts.initial,
+            ephemeralContainerPorts: podPorts.ephemeral,
+            gatewayClass: gatewayClass,
+            gateway: gateway,
+            httpRoute: httpRoute,
             volumeReferences: volumeReferences,
             configReferences: configReferences,
             roleLabels: filteredLabels(roleLabels, allowedKeys: allowedLabelKeys),
@@ -241,40 +262,64 @@ nonisolated enum TopologyService {
         }
     }
 
-    private static func ingressBackends(from raw: JSONValue, namespace: String?, facts: inout [TopologyFact]) -> [TopologyServiceReference] {
+    private static func ingressData(from raw: JSONValue, namespace: String?, facts: inout [TopologyFact]) -> (backends: [TopologyServiceReference], routes: [TopologyIngressRoute]) {
         var backends: [TopologyServiceReference] = []
-        func add(_ service: JSONValue) {
+        var routes: [TopologyIngressRoute] = []
+        let className = raw["spec"]["ingressClassName"].string
+            ?? raw["metadata"]["annotations"]["kubernetes.io/ingress.class"].string
+        let tlsNames = raw["spec"]["tls"].array.flatMap { $0["secretName"].string.map { [$0] } ?? [] }
+        let ingressIdentity = raw["metadata"]["uid"].string ?? raw["metadata"]["name"].stringValue
+        func add(_ service: JSONValue, isDefault: Bool, ruleIndex: Int?, pathIndex: Int?, host: String?, path: String?, pathType: String?) {
             let name = service["name"].stringValue
             guard !name.isEmpty else { return }
             let port = service["port"]["number"].int.flatMap { Int32(exactly: $0) }
             let named = service["port"]["name"].string.flatMap { $0.isEmpty ? nil : $0 }
-            backends.append(TopologyServiceReference(name: name, namespace: namespace, port: port, portName: named))
+            let backendKind = service["kind"].string ?? "Service"
+            let backendNamespace = service["namespace"].string ?? namespace
+            backends.append(TopologyServiceReference(name: name, namespace: backendNamespace, port: port, portName: named))
+            let routeID = [ingressIdentity, isDefault ? "default" : "rule", String(ruleIndex ?? -1), String(pathIndex ?? -1), host ?? "", path ?? "", name, String(port ?? -1), named ?? ""].joined(separator: "|")
+            routes.append(TopologyIngressRoute(isDefault: isDefault, ruleIndex: ruleIndex, pathIndex: pathIndex, host: host, path: path, pathType: pathType, ingressClass: className, tlsSecretNames: tlsNames, backendKind: backendKind, backendName: name, backendNamespace: backendNamespace, backendPort: port, backendPortName: named, id: routeID))
         }
-        add(raw["spec"]["defaultBackend"]["service"])
-        for rule in raw["spec"]["rules"].array {
-            if let host = rule["host"].string, !host.isEmpty { facts.append(TopologyFact(key: "ingress-host", title: "Host", value: host)) }
-            for path in rule["http"]["paths"].array { add(path["backend"]["service"]) }
+        add(raw["spec"]["defaultBackend"]["service"], isDefault: true, ruleIndex: nil, pathIndex: nil, host: nil, path: nil, pathType: nil)
+        for (ruleIndex, rule) in raw["spec"]["rules"].array.enumerated() {
+            let host = rule["host"].string
+            if let host, !host.isEmpty { facts.append(TopologyFact(key: "ingress-host-\(ruleIndex)", title: "Host", value: host)) }
+            for (pathIndex, path) in rule["http"]["paths"].array.enumerated() {
+                // networking.k8s.io/v1 stores service backend under
+                // backend.service; older fixtures may use backend directly.
+                let service = path["backend"]["service"].isNull ? path["backend"] : path["backend"]["service"]
+                add(service, isDefault: false, ruleIndex: ruleIndex, pathIndex: pathIndex, host: host, path: path["path"].string, pathType: path["pathType"].string)
+            }
         }
-        return backends
+        for condition in raw["status"]["loadBalancer"]["ingress"].array {
+            if let ip = condition["ip"].string { facts.append(TopologyFact(key: "load-balancer-ip", title: "Load balancer IP", value: ip)) }
+            if let hostname = condition["hostname"].string { facts.append(TopologyFact(key: "load-balancer-hostname", title: "Load balancer hostname", value: hostname)) }
+        }
+        return (backends, routes)
     }
 
     private static func endpointSlice(from raw: JSONValue, namespace: String?, facts: inout [TopologyFact]) -> TopologyEndpointSliceSnapshot? {
         let serviceName = raw["metadata"]["labels"]["kubernetes.io/service-name"].string
+        let addressType = raw["addressType"].string
+        let ports = raw["ports"].array.compactMap { port -> TopologyEndpointPort? in
+            guard let number = port["port"].int.flatMap({ Int32(exactly: $0) }) else { return nil }
+            return TopologyEndpointPort(name: port["name"].string, port: number, protocolName: port["protocol"].string ?? "TCP", appProtocol: port["appProtocol"].string)
+        }
         let endpoints = raw["endpoints"].array.compactMap { endpoint -> TopologyEndpointTarget? in
             let target = endpoint["targetRef"]
-            guard !target["name"].stringValue.isEmpty else { return nil }
-            let reference = TopologyObjectReference(apiVersion: target["apiVersion"].string, kind: target["kind"].stringValue.isEmpty ? "Pod" : target["kind"].stringValue, name: target["name"].stringValue, namespace: target["namespace"].string ?? namespace, uid: target["uid"].string)
-            return TopologyEndpointTarget(reference: reference, ready: endpoint["conditions"]["ready"].bool)
+            let reference: TopologyObjectReference? = target["name"].stringValue.isEmpty ? nil : TopologyObjectReference(apiVersion: target["apiVersion"].string, kind: target["kind"].stringValue.isEmpty ? "Pod" : target["kind"].stringValue, name: target["name"].stringValue, namespace: target["namespace"].string ?? namespace, uid: target["uid"].string)
+            return TopologyEndpointTarget(reference: reference, ready: endpoint["conditions"]["ready"].bool, serving: endpoint["conditions"]["serving"].bool, terminating: endpoint["conditions"]["terminating"].bool, addresses: endpoint["addresses"].array.map(\.stringValue), nodeName: endpoint["nodeName"].string, zone: endpoint["zone"].string)
         }
-        guard serviceName != nil || !endpoints.isEmpty else { return nil }
+        guard serviceName != nil || !endpoints.isEmpty || !ports.isEmpty else { return nil }
         let ready = endpoints.filter { $0.ready == true }.count
         facts.append(TopologyFact(key: "endpoint-count", title: "Endpoints", value: "\(ready) ready / \(endpoints.count) listed"))
-        return TopologyEndpointSliceSnapshot(serviceName: serviceName, endpoints: endpoints)
+        if let addressType { facts.append(TopologyFact(key: "endpoint-address-type", title: "Address type", value: addressType)) }
+        return TopologyEndpointSliceSnapshot(serviceName: serviceName, addressType: addressType, ports: ports, endpoints: endpoints)
     }
 
     private static func networkPolicy(from raw: JSONValue) -> TopologyNetworkPolicySnapshot? {
         guard raw["kind"].stringValue.caseInsensitiveCompare("NetworkPolicy") == .orderedSame else { return nil }
-        let selector = selector(from: raw["spec"]["podSelector"])
+        let policySelector = selector(from: raw["spec"]["podSelector"])
         var types = raw["spec"]["policyTypes"].array.map(\.stringValue)
         if types.isEmpty {
             // Kubernetes defaults omitted policyTypes to Ingress, plus Egress
@@ -282,7 +327,157 @@ nonisolated enum TopologyService {
             types = ["Ingress"]
             if !raw["spec"]["egress"].array.isEmpty { types.append("Egress") }
         }
-        return TopologyNetworkPolicySnapshot(podSelector: TopologyLabelSelector(matchLabels: selector.matchLabels, matchExpressions: selector.expressions), policyTypes: types, ingressRuleCount: raw["spec"]["ingress"].array.count, egressRuleCount: raw["spec"]["egress"].array.count)
+        func peers(_ values: [JSONValue]) -> [TopologyNetworkPolicyPeer] {
+            values.map { peer in
+                let pod = selector(from: peer["podSelector"])
+                let ns = selector(from: peer["namespaceSelector"])
+                let ipBlock = peer["ipBlock"]
+                return TopologyNetworkPolicyPeer(
+                    podSelector: peer["podSelector"].isNull ? nil : TopologyLabelSelector(matchLabels: pod.matchLabels, matchExpressions: pod.expressions),
+                    namespaceSelector: peer["namespaceSelector"].isNull ? nil : TopologyLabelSelector(matchLabels: ns.matchLabels, matchExpressions: ns.expressions),
+                    ipBlockCIDR: ipBlock["cidr"].string,
+                    exceptCIDRs: ipBlock["except"].array.map(\.stringValue)
+                )
+            }
+        }
+        func ports(_ values: [JSONValue]) -> [TopologyNetworkPolicyPort] {
+            values.compactMap { item in
+                let number = item["port"].int.flatMap { Int32(exactly: $0) }
+                let name = item["port"].string
+                guard number != nil || name != nil else { return nil }
+                return TopologyNetworkPolicyPort(name: name, number: number, protocolName: item["protocol"].string ?? "TCP", endPort: item["endPort"].int.flatMap { Int32(exactly: $0) })
+            }
+        }
+        var rules: [TopologyNetworkPolicyRule] = []
+        rules += raw["spec"]["ingress"].array.map { TopologyNetworkPolicyRule(direction: .ingress, peers: peers($0["from"].array), ports: ports($0["ports"].array)) }
+        rules += raw["spec"]["egress"].array.map { TopologyNetworkPolicyRule(direction: .egress, peers: peers($0["to"].array), ports: ports($0["ports"].array)) }
+        return TopologyNetworkPolicySnapshot(podSelector: TopologyLabelSelector(matchLabels: policySelector.matchLabels, matchExpressions: policySelector.expressions), policyTypes: types, ingressRuleCount: raw["spec"]["ingress"].array.count, egressRuleCount: raw["spec"]["egress"].array.count, rules: rules)
+    }
+
+    private static func servicePorts(from raw: JSONValue, kind: String, facts: inout [TopologyFact]) -> [TopologyServicePort] {
+        guard kind.caseInsensitiveCompare("Service") == .orderedSame else { return [] }
+        if raw["spec"]["selector"].object.isEmpty {
+            facts.append(TopologyFact(key: "selector-none", title: "Selector", value: "none (external endpoints or manually managed backends)"))
+        }
+        let ports = raw["spec"]["ports"].array.compactMap { item -> TopologyServicePort? in
+            guard let port = item["port"].int.flatMap({ Int32(exactly: $0) }) else { return nil }
+            let target: TopologyPortTarget
+            if let number = item["targetPort"].int.flatMap({ Int32(exactly: $0) }) {
+                target = TopologyPortTarget(number: number)
+            } else if let name = item["targetPort"].string, !name.isEmpty {
+                target = TopologyPortTarget(name: name)
+            } else {
+                target = TopologyPortTarget(defaultPort: true)
+            }
+            return TopologyServicePort(name: item["name"].string, port: port, targetPort: target, protocolName: item["protocol"].string ?? "TCP", appProtocol: item["appProtocol"].string, nodePort: item["nodePort"].int.flatMap { Int32(exactly: $0) })
+        }
+        for servicePort in ports {
+            let target = servicePort.targetPort.number.map(String.init) ?? servicePort.targetPort.name ?? "port"
+            facts.append(TopologyFact(key: "service-port-\(servicePort.id)", title: "Port", value: "\(servicePort.name ?? "unnamed"): \(servicePort.port)/\(servicePort.protocolName) → \(target)"))
+        }
+        return ports
+    }
+
+    private static func serviceMode(from raw: JSONValue, kind: String) -> TopologyServiceMode? {
+        guard kind.caseInsensitiveCompare("Service") == .orderedSame else { return nil }
+        if raw["spec"]["externalName"].string != nil { return .externalName }
+        if raw["spec"]["clusterIP"].string == "None" { return .headless }
+        switch raw["spec"]["type"].stringValue {
+        case "NodePort": return .nodePort
+        case "LoadBalancer": return .loadBalancer
+        default: return raw["spec"]["selector"].object.isEmpty ? .selectorless : .standard
+        }
+    }
+
+    private static func containerPorts(from raw: JSONValue, kind: String, namespace: String?, facts: inout [TopologyFact]) -> (container: [TopologyContainerPort], initial: [TopologyContainerPort], ephemeral: [TopologyContainerPort]) {
+        guard kind.caseInsensitiveCompare("Pod") == .orderedSame else { return (container: [], initial: [], ephemeral: []) }
+        func parse(_ values: [JSONValue]) -> [TopologyContainerPort] {
+            values.flatMap { container in
+                let name = container["name"].stringValue
+                return container["ports"].array.compactMap { (port: JSONValue) -> TopologyContainerPort? in
+                    guard let number = port["containerPort"].int.flatMap({ Int32(exactly: $0) }) else { return nil }
+                    return TopologyContainerPort(containerName: name, name: port["name"].string, port: number, protocolName: port["protocol"].string ?? "TCP", hostPort: port["hostPort"].int.flatMap { Int32(exactly: $0) }, hostIP: port["hostIP"].string)
+                }
+            }
+        }
+        let regular = parse(raw["spec"]["containers"].array)
+        let initial = parse(raw["spec"]["initContainers"].array)
+        let ephemeral = parse(raw["spec"]["ephemeralContainers"].array)
+        if raw["spec"]["hostNetwork"].bool == true { facts.append(TopologyFact(key: "host-network", title: "Network", value: "hostNetwork enabled")) }
+        let readiness = raw["status"]["conditions"].array.first(where: { $0["type"].string == "Ready" })?["status"].string
+        if let readiness { facts.append(TopologyFact(key: "ready", title: "Ready", value: readiness)) }
+        let restarts = raw["status"]["containerStatuses"].array.reduce(0) { $0 + ($1["restartCount"].int ?? 0) }
+        if restarts > 0 { facts.append(TopologyFact(key: "restarts", title: "Restarts", value: String(restarts))) }
+        return (regular, initial, ephemeral)
+    }
+
+    private static func statusConditions(_ raw: JSONValue) -> [String: String] {
+        Dictionary(uniqueKeysWithValues: raw["status"]["conditions"].array.compactMap { item -> (String, String)? in
+            guard let type = item["type"].string, let status = item["status"].string else { return nil }
+            return (type, status)
+        })
+    }
+
+    private static func gatewayClassSnapshot(from raw: JSONValue, kind: String) -> TopologyGatewayClassSnapshot? {
+        guard kind.caseInsensitiveCompare("GatewayClass") == .orderedSame else { return nil }
+        let refValue = raw["spec"]["parametersRef"]
+        let ref: TopologyObjectReference? = refValue["name"].string.map { TopologyObjectReference(apiVersion: refValue["group"].string, kind: refValue["kind"].string ?? "Parameters", name: $0) }
+        return TopologyGatewayClassSnapshot(controllerName: raw["spec"]["controllerName"].string, parametersRef: ref, statusConditions: statusConditions(raw))
+    }
+
+    private static func gatewaySnapshot(from raw: JSONValue, kind: String) -> TopologyGatewaySnapshot? {
+        guard kind.caseInsensitiveCompare("Gateway") == .orderedSame else { return nil }
+        let listeners = raw["spec"]["listeners"].array.compactMap { listener -> TopologyGatewayListener? in
+            guard let port = listener["port"].int.flatMap({ Int32(exactly: $0) }) else { return nil }
+            let kinds = listener["allowedRoutes"]["kinds"].array.compactMap { $0["kind"].string }
+            return TopologyGatewayListener(name: listener["name"].string, protocolName: listener["protocol"].string ?? "TCP", port: port, hostname: listener["hostname"].string, allowedRouteKinds: kinds)
+        }
+        return TopologyGatewaySnapshot(gatewayClassName: raw["spec"]["gatewayClassName"].string, listeners: listeners, statusConditions: statusConditions(raw))
+    }
+
+    /// Gateway API status entries identify a parent by the complete
+    /// ParentReference, not by name alone. A Gateway may expose multiple
+    /// listeners (sections) under the same name, and parentRefs can also
+    /// target another namespace, group, or kind. Normalize the API defaults
+    /// before comparing spec and status so omitted default fields still match
+    /// while distinct references cannot cross-contaminate their conditions.
+    private struct HTTPRouteParentIdentity: Equatable {
+        let name: String
+        let namespace: String?
+        let sectionName: String?
+        let group: String
+        let kind: String
+    }
+
+    private static func httpRouteParentIdentity(_ raw: JSONValue, namespace: String?) -> HTTPRouteParentIdentity? {
+        guard let name = raw["name"].string, !name.isEmpty else { return nil }
+        let group = raw["group"].string.flatMap { $0.isEmpty ? nil : $0 } ?? "gateway.networking.k8s.io"
+        let kind = raw["kind"].string.flatMap { $0.isEmpty ? nil : $0 } ?? "Gateway"
+        let parentNamespace = raw["namespace"].string.flatMap { $0.isEmpty ? nil : $0 } ?? namespace
+        let sectionName = raw["sectionName"].string.flatMap { $0.isEmpty ? nil : $0 }
+        return HTTPRouteParentIdentity(name: name, namespace: parentNamespace, sectionName: sectionName, group: group, kind: kind)
+    }
+
+    private static func httpRouteSnapshot(from raw: JSONValue, kind: String, namespace: String?) -> TopologyHTTPRouteSnapshot? {
+        guard kind.caseInsensitiveCompare("HTTPRoute") == .orderedSame else { return nil }
+        let parents = raw["spec"]["parentRefs"].array.compactMap { parent -> TopologyGatewayParentReference? in
+            guard let identity = httpRouteParentIdentity(parent, namespace: namespace) else { return nil }
+            let status = raw["status"]["parents"].array.first {
+                guard let statusIdentity = httpRouteParentIdentity($0["parentRef"], namespace: namespace) else { return false }
+                return statusIdentity == identity
+            }
+            let accepted = status?["conditions"].array.first(where: { $0["type"].string == "Accepted" })?["status"].string.map { $0 == "True" }
+            let resolved = status?["conditions"].array.first(where: { $0["type"].string == "ResolvedRefs" })?["status"].string.map { $0 == "True" }
+            return TopologyGatewayParentReference(kind: identity.kind, name: identity.name, namespace: identity.namespace, sectionName: identity.sectionName, accepted: accepted, resolvedRefs: resolved)
+        }
+        var backends: [TopologyGatewayBackendReference] = []
+        for rule in raw["spec"]["rules"].array {
+            for backend in rule["backendRefs"].array {
+                guard let name = backend["name"].string else { continue }
+                backends.append(TopologyGatewayBackendReference(kind: backend["kind"].string ?? "Service", name: name, namespace: backend["namespace"].string ?? namespace, port: backend["port"].int.flatMap { Int32(exactly: $0) }, weight: backend["weight"].int.flatMap { Int32(exactly: $0) }))
+            }
+        }
+        return TopologyHTTPRouteSnapshot(hostnames: raw["spec"]["hostnames"].array.map(\.stringValue), parents: parents, backends: backends, statusConditions: statusConditions(raw))
     }
 
     private static func allowlistedFacts(for raw: JSONValue, kind: String) -> [TopologyFact] {

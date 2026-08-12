@@ -139,6 +139,88 @@ final class TopologyGraphTests: XCTestCase {
         XCTAssertFalse(result.unresolvedReferences.first?.reason.contains("annotations=hidden") ?? false)
     }
 
+    func testAvailableSnapshotWithUnresolvedReferenceIsPartial() {
+        let pod = node(
+            "Pod",
+            "consumer",
+            uid: "consumer-pod",
+            volumes: [TopologyObjectReference(kind: "PersistentVolumeClaim", name: "missing", namespace: "demo")]
+        )
+        let result = graph([pod], inputs: [TopologyInputStatus(resourceKind: "pods", availability: .available, observedCount: 1)])
+
+        XCTAssertFalse(result.unresolvedReferences.isEmpty)
+        XCTAssertEqual(result.completeness, .partial)
+    }
+
+    func testAvailableSnapshotWithIncompletePortPathIsPartialButExternalIsComplete() {
+        let service = TopologyResourceSnapshot(
+            identity: identity("Service", "empty", uid: "empty-service"),
+            servicePorts: [TopologyServicePort(port: 80)]
+        )
+        let noEndpointIngress = TopologyResourceSnapshot(
+            identity: identity("Ingress", "empty", uid: "empty-ingress"),
+            ingressRoutes: [TopologyIngressRoute(backendName: "empty", backendPort: 80)]
+        )
+        let partialResult = graph([service, noEndpointIngress])
+        XCTAssertTrue(partialResult.portPaths.contains { $0.status == .noEndpoint })
+        XCTAssertEqual(partialResult.completeness, .partial)
+
+        let externalIngress = TopologyResourceSnapshot(
+            identity: identity("Ingress", "external", uid: "external-ingress"),
+            ingressRoutes: [TopologyIngressRoute(backendKind: "ExternalName", backendName: "outside", backendPort: 443)]
+        )
+        let externalResult = graph([externalIngress])
+        XCTAssertEqual(externalResult.portPaths.first?.status, .external)
+        XCTAssertEqual(externalResult.completeness, .complete)
+    }
+
+    func testEveryNonExternalPortPathStatusMakesSnapshotPartial() {
+        let readyService = TopologyResourceSnapshot(
+            identity: identity("Service", "ready", uid: "ready-service"),
+            servicePorts: [TopologyServicePort(port: 80)]
+        )
+        let noReadySlice = TopologyResourceSnapshot(
+            identity: identity("EndpointSlice", "ready-1", uid: "ready-slice"),
+            endpointSlice: TopologyEndpointSliceSnapshot(
+                serviceName: "ready",
+                ports: [TopologyEndpointPort(port: 8080)],
+                endpoints: [TopologyEndpointTarget(ready: false)]
+            )
+        )
+        let noReadyIngress = TopologyResourceSnapshot(
+            identity: identity("Ingress", "ready", uid: "ready-ingress"),
+            ingressRoutes: [TopologyIngressRoute(backendName: "ready", backendPort: 80)]
+        )
+        let unresolvedIngress = TopologyResourceSnapshot(
+            identity: identity("Ingress", "unresolved", uid: "unresolved-ingress"),
+            ingressRoutes: [TopologyIngressRoute(backendName: "missing", backendPort: 80)]
+        )
+        let partialRoute = TopologyResourceSnapshot(
+            identity: identity("HTTPRoute", "partial", uid: "partial-route"),
+            httpRoute: TopologyHTTPRouteSnapshot(
+                parents: [TopologyGatewayParentReference(name: "unknown")],
+                backends: [TopologyGatewayBackendReference(name: "ready", port: 80)]
+            )
+        )
+
+        let result = graph([readyService, noReadySlice, noReadyIngress, unresolvedIngress, partialRoute])
+        XCTAssertTrue(result.portPaths.contains { $0.status == .noReadyEndpoint })
+        XCTAssertTrue(result.portPaths.contains { $0.status == .unresolved })
+        XCTAssertTrue(result.portPaths.contains { $0.status == .partial })
+        XCTAssertEqual(result.completeness, .partial)
+    }
+
+    func testAvailableEmptySnapshotIsComplete() {
+        let result = graph([], inputs: [
+            TopologyInputStatus(resourceKind: "services", availability: .available, observedCount: 0),
+            TopologyInputStatus(resourceKind: "endpointslices", availability: .available, observedCount: 0),
+        ])
+
+        XCTAssertTrue(result.unresolvedReferences.isEmpty)
+        XCTAssertTrue(result.portPaths.isEmpty)
+        XCTAssertEqual(result.completeness, .complete)
+    }
+
     func testStableDeterministicOutputAndSafeFactsNeverCarryValues() throws {
         let fact = TopologyFact(key: "kubelet", title: "Kubelet", value: "v1\u{0000}")
         let sensitive = TopologyFact(key: "token", title: "Token", value: "secret-value")
@@ -173,5 +255,226 @@ final class TopologyGraphTests: XCTestCase {
         XCTAssertEqual(result.nodes.count, 10_002) // includes Service and typed control-plane boundary
         XCTAssertEqual(result.edges.count, 5_000)
         XCTAssertLessThan(elapsed, 10.0, "10k topology build should remain usable in debug CI")
+    }
+
+    func testNotInMatchesMissingLabelKey() {
+        let selector = TopologyLabelSelector(matchExpressions: [TopologySelectorRequirement(key: "zone", op: .notIn, values: ["blocked"])])
+        XCTAssertTrue(selector.matches([:]))
+        XCTAssertFalse(selector.matches(["zone": "blocked"]))
+        XCTAssertTrue(selector.matches(["zone": "east"]))
+    }
+
+    func testTypedServicePortPathResolvesNamedTargetThroughEndpointSliceAndContainer() {
+        let pod = TopologyResourceSnapshot(
+            identity: identity("Pod", "api-0", uid: "pod-port"),
+            containerPorts: [TopologyContainerPort(containerName: "api", name: "web", port: 8443, protocolName: "TCP")]
+        )
+        let service = TopologyResourceSnapshot(
+            identity: identity("Service", "api", uid: "svc-port"),
+            servicePorts: [TopologyServicePort(name: "https", port: 443, targetPort: TopologyPortTarget(name: "web"), protocolName: "TCP", appProtocol: "https", nodePort: 30443)]
+        )
+        let slice = TopologyResourceSnapshot(
+            identity: identity("EndpointSlice", "api-1", uid: "slice-port"),
+            endpointSlice: TopologyEndpointSliceSnapshot(serviceName: "api", addressType: "IPv4", ports: [TopologyEndpointPort(name: "https", port: 8443, appProtocol: "https")], endpoints: [TopologyEndpointTarget(reference: TopologyObjectReference(kind: "Pod", name: "api-0", namespace: "demo", uid: "pod-port"), ready: true, serving: true, addresses: ["10.0.0.8"], nodeName: "worker-a", zone: "zone-a")])
+        )
+        let ingress = TopologyResourceSnapshot(
+            identity: identity("Ingress", "api", uid: "ing-port"),
+            ingressRoutes: [TopologyIngressRoute(host: "api.example.test", path: "/", pathType: "Prefix", backendName: "api", backendNamespace: "demo", backendPortName: "https")]
+        )
+        let result = graph([pod, service, slice, ingress])
+        let path = try! XCTUnwrap(result.portPaths.first)
+        XCTAssertEqual(path.status, .complete)
+        XCTAssertTrue(path.hops.contains { $0.role == "service-port" && $0.portNumber == 443 && $0.portName == "https" && $0.targetPort?.name == "web" && $0.nodePort == 30443 && $0.appProtocol == "https" })
+        XCTAssertTrue(path.hops.contains { $0.role == "endpoint-port" && $0.portNumber == 8443 && $0.portName == "https" && $0.appProtocol == "https" })
+        XCTAssertTrue(path.hops.contains { $0.role == "endpoint" && $0.addresses == ["10.0.0.8"] })
+        XCTAssertTrue(path.hops.contains { $0.role == "container-port" && $0.portNumber == 8443 })
+        XCTAssertEqual(slice.endpointSlice?.addressType, "IPv4")
+    }
+
+    func testPortHopDecodesLegacyPayloadWithoutNewPortMetadata() throws {
+        let evidence = TopologyEvidence(level: .observed, source: .api(kind: "Service"), freshness: freshness)
+        let hop = TopologyPortHop(role: "service-port", portNumber: 80, evidence: evidence)
+        var legacyObject = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(hop)) as? [String: Any])
+        legacyObject.removeValue(forKey: "targetPort")
+        legacyObject.removeValue(forKey: "nodePort")
+        legacyObject.removeValue(forKey: "appProtocol")
+
+        let decoded = try JSONDecoder().decode(TopologyPortHop.self, from: JSONSerialization.data(withJSONObject: legacyObject))
+        XCTAssertNil(decoded.targetPort)
+        XCTAssertNil(decoded.nodePort)
+        XCTAssertNil(decoded.appProtocol)
+    }
+
+    func testPortPathStatusesCoverNoEndpointExternalAndAmbiguousTarget() {
+        let noEndpointService = TopologyResourceSnapshot(identity: identity("Service", "empty", uid: "svc-empty"), servicePorts: [TopologyServicePort(port: 80)])
+        let noEndpointIngress = TopologyResourceSnapshot(identity: identity("Ingress", "empty", uid: "ing-empty"), ingressRoutes: [TopologyIngressRoute(backendName: "empty", backendPort: 80)])
+        let externalIngress = TopologyResourceSnapshot(identity: identity("Ingress", "external", uid: "ing-external"), ingressRoutes: [TopologyIngressRoute(backendKind: "ExternalName", backendName: "outside", backendPort: 443)])
+        let ambiguousService = TopologyResourceSnapshot(identity: identity("Service", "ambiguous", uid: "svc-ambiguous"), servicePorts: [TopologyServicePort(name: "one", port: 80), TopologyServicePort(name: "two", port: 80)])
+        let ambiguousIngress = TopologyResourceSnapshot(identity: identity("Ingress", "ambiguous", uid: "ing-ambiguous"), ingressRoutes: [TopologyIngressRoute(backendName: "ambiguous", backendPort: 80)])
+        let result = graph([noEndpointService, noEndpointIngress, externalIngress, ambiguousService, ambiguousIngress])
+        XCTAssertTrue(result.portPaths.contains { $0.status == .noEndpoint })
+        XCTAssertTrue(result.portPaths.contains { $0.status == .external })
+        XCTAssertTrue(result.portPaths.contains { $0.status == .unresolved && $0.note?.contains("ambiguous") == true })
+    }
+
+    func testGatewayRouteAndDuplicateIngressPathsRemainDistinct() throws {
+        let gateway = TopologyResourceSnapshot(identity: identity("Gateway", "edge", uid: "gw-1"), gateway: TopologyGatewaySnapshot(gatewayClassName: "istio", listeners: [TopologyGatewayListener(name: "https", protocolName: "HTTPS", port: 443, hostname: "example.test")]))
+        let service = TopologyResourceSnapshot(identity: identity("Service", "api", uid: "svc-gw"), servicePorts: [TopologyServicePort(port: 8080)])
+        let route = TopologyResourceSnapshot(identity: identity("HTTPRoute", "api", uid: "route-1"), httpRoute: TopologyHTTPRouteSnapshot(hostnames: ["example.test"], parents: [TopologyGatewayParentReference(name: "edge", namespace: "demo", sectionName: "https", accepted: true, resolvedRefs: true)], backends: [TopologyGatewayBackendReference(name: "api", port: 8080, resolvedRefs: true)]))
+        let ingress = TopologyResourceSnapshot(identity: identity("Ingress", "dup", uid: "ing-dup"), ingressRoutes: [TopologyIngressRoute(ruleIndex: 0, pathIndex: 0, host: "example.test", path: "/", pathType: "Prefix", backendName: "api", backendPort: 8080), TopologyIngressRoute(ruleIndex: 1, pathIndex: 0, host: "example.test", path: "/", pathType: "Prefix", backendName: "api", backendPort: 8080)])
+        let result = graph([gateway, service, route, ingress])
+        XCTAssertEqual(result.edges.filter { $0.relationship == .routesTo && $0.from.contains("ing-dup") }.count, 2)
+        XCTAssertEqual(Set(result.edges.filter { $0.relationship == .routesTo && $0.from.contains("ing-dup") }.map(\.id)).count, 2)
+        XCTAssertTrue(result.edges.contains { $0.relationship == .routesTo && $0.from.contains("route-1") && $0.to.contains("gw-1") })
+        XCTAssertTrue(result.edges.contains { $0.relationship == .routesTo && $0.from.contains("route-1") && $0.to.contains("svc-gw") })
+    }
+
+    func testNetworkPolicyRetainsPeersPortsAndDerivedTypes() throws {
+        let policy = TopologyNetworkPolicySnapshot(
+            podSelector: TopologyLabelSelector(matchLabels: ["app": "api"]),
+            ingressRuleCount: 1,
+            rules: [TopologyNetworkPolicyRule(direction: .ingress, peers: [TopologyNetworkPolicyPeer(ipBlockCIDR: "10.0.0.0/8", exceptCIDRs: ["10.1.0.0/16"])], ports: [TopologyNetworkPolicyPort(number: 443, protocolName: "TCP", endPort: 445)])]
+        )
+        XCTAssertEqual(policy.policyTypes, ["INGRESS"])
+        XCTAssertEqual(policy.rules.first?.peers.first?.ipBlockCIDR, "10.0.0.0/8")
+        XCTAssertEqual(policy.rules.first?.ports.first?.endPort, 445)
+        let resource = TopologyResourceSnapshot(identity: identity("NetworkPolicy", "api", uid: "np-rich"), networkPolicy: policy)
+        let encoded = String(data: try JSONEncoder().encode(resource), encoding: .utf8) ?? ""
+        XCTAssertFalse(encoded.contains("raw"))
+        let omitted = TopologyNetworkPolicySnapshot(egressRuleCount: 1)
+        XCTAssertEqual(omitted.policyTypes, ["EGRESS", "INGRESS"])
+    }
+
+    func testTypedTopologyEncodingIsDeterministic() throws {
+        let resource = TopologyResourceSnapshot(identity: identity("Service", "stable", uid: "svc-stable"), ingressRoutes: [TopologyIngressRoute(ruleIndex: 0, pathIndex: 0, host: "stable.test", path: "/", backendName: "stable", backendPortName: "https")], servicePorts: [TopologyServicePort(name: "https", port: 443, targetPort: TopologyPortTarget(name: "web"))])
+        let first = graph([resource])
+        let second = graph([resource])
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        XCTAssertEqual(try encoder.encode(first), try encoder.encode(second))
+    }
+
+    func testExplorerQueryProvidesSharedLevelsFiltersAndOneHopFocus() throws {
+        let pod = node("Pod", "api-0", uid: "query-pod")
+        let service = TopologyResourceSnapshot(identity: identity("Service", "api", uid: "query-service"), servicePorts: [TopologyServicePort(name: "https", port: 443, protocolName: "TCP")])
+        let ingress = TopologyResourceSnapshot(identity: identity("Ingress", "api", uid: "query-ingress"), ingressRoutes: [TopologyIngressRoute(host: "api.test", path: "/", backendName: "api", backendPort: 443)])
+        let result = graph([pod, service, ingress])
+        let query = TopologyGraphQuery(graph: result)
+        XCTAssertEqual(TopologyGraphQuery.level(for: "Pod"), .workloads)
+        XCTAssertEqual(query.nodes(level: .network).filter { $0.kind == "Service" || $0.kind == "Ingress" }.count, 2)
+        XCTAssertGreaterThanOrEqual(query.nodes(search: "api").count, 3)
+        XCTAssertFalse(query.edges(level: .network).isEmpty)
+        let serviceNodeID = try XCTUnwrap(result.nodes.first { $0.uid == "query-service" }?.id)
+        let ingressNodeID = try XCTUnwrap(result.nodes.first { $0.uid == "query-ingress" }?.id)
+        let focused = query.oneHopFocus(nodeIDs: [serviceNodeID])
+        XCTAssertTrue(focused.contains(serviceNodeID))
+        XCTAssertTrue(focused.contains(ingressNodeID))
+        XCTAssertEqual(query.portPaths(level: .network, port: 443).count, 1)
+        XCTAssertTrue(query.portPaths(level: .policyDependencies).isEmpty)
+    }
+
+    func testGraphRetainsSanitizedTypedDetailsAndOldGraphDecodeDefaults() throws {
+        let service = TopologyResourceSnapshot(identity: identity("Service", "details", uid: "details-service"), servicePorts: [TopologyServicePort(name: "web", port: 80)], serviceMode: .headless, facts: [TopologyFact(key: "type", title: "Type", value: "ClusterIP")])
+        let result = graph([service])
+        let nodeID = try XCTUnwrap(result.nodes.first { $0.uid == "details-service" }?.id)
+        XCTAssertEqual(result.details[nodeID]?.serviceMode, .headless)
+        XCTAssertEqual(result.details[nodeID]?.servicePorts.first?.name, "web")
+
+        let oldJSON = #"{"contextID":"dev","freshness":{"capturedAt":0,"generation":1},"completeness":"complete","nodes":[],"edges":[]}"#.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode(TopologyGraph.self, from: oldJSON)
+        XCTAssertTrue(decoded.portPaths.isEmpty)
+        XCTAssertTrue(decoded.details.isEmpty)
+        XCTAssertTrue(decoded.inputs.isEmpty)
+    }
+
+    func testNotReadyEndpointIsRetainedAndReadinessQueryUsesConditions() {
+        let service = TopologyResourceSnapshot(identity: identity("Service", "ready", uid: "ready-service"), servicePorts: [TopologyServicePort(name: "web", port: 80, targetPort: TopologyPortTarget(name: "web"))])
+        let slice = TopologyResourceSnapshot(identity: identity("EndpointSlice", "ready-1", uid: "ready-slice"), endpointSlice: TopologyEndpointSliceSnapshot(serviceName: "ready", ports: [TopologyEndpointPort(name: "web", port: 8080)], endpoints: [TopologyEndpointTarget(ready: false, serving: false, terminating: true, addresses: ["10.0.0.9"], nodeName: "worker", zone: "zone-a")]))
+        let ingress = TopologyResourceSnapshot(identity: identity("Ingress", "ready", uid: "ready-ingress"), ingressRoutes: [TopologyIngressRoute(backendName: "ready", backendPort: 80)])
+        let result = graph([service, slice, ingress])
+        let path = result.portPaths[0]
+        XCTAssertEqual(path.status, .noReadyEndpoint)
+        XCTAssertEqual(path.totalEndpointCount, 1)
+        XCTAssertEqual(path.readyEndpointCount, 0)
+        XCTAssertEqual(path.hops.first(where: { $0.role == "endpoint" })?.terminating, true)
+        XCTAssertEqual(TopologyGraphQuery(graph: result).portPaths(readiness: false).count, 1)
+        XCTAssertTrue(TopologyGraphQuery(graph: result).portPaths(readiness: true).isEmpty)
+    }
+
+    func testWrongEndpointSlicePortDoesNotPoisonValidSlice() {
+        let service = TopologyResourceSnapshot(identity: identity("Service", "partitioned", uid: "partitioned-service"), servicePorts: [TopologyServicePort(name: "web", port: 80)])
+        let wrong = TopologyResourceSnapshot(identity: identity("EndpointSlice", "wrong", uid: "wrong-slice"), endpointSlice: TopologyEndpointSliceSnapshot(serviceName: "partitioned", ports: [TopologyEndpointPort(name: "other", port: 9000)], endpoints: [TopologyEndpointTarget(ready: true, addresses: ["10.0.0.1"])]))
+        let right = TopologyResourceSnapshot(identity: identity("EndpointSlice", "right", uid: "right-slice"), endpointSlice: TopologyEndpointSliceSnapshot(serviceName: "partitioned", ports: [TopologyEndpointPort(name: "web", port: 8080)], endpoints: [TopologyEndpointTarget(ready: true, addresses: ["10.0.0.2"])]))
+        let ingress = TopologyResourceSnapshot(identity: identity("Ingress", "partitioned", uid: "partitioned-ingress"), ingressRoutes: [TopologyIngressRoute(backendName: "partitioned", backendPort: 80)])
+        let result = graph([service, wrong, right, ingress])
+        XCTAssertEqual(result.portPaths.first?.status, .complete)
+        XCTAssertEqual(result.portPaths.first?.totalEndpointCount, 1)
+        XCTAssertEqual(result.portPaths.first?.note, "Pod container port declaration unavailable")
+    }
+
+    func testGatewayRejectedReferenceProducesBlockedUnresolvedPath() {
+        let service = TopologyResourceSnapshot(identity: identity("Service", "blocked", uid: "blocked-service"), servicePorts: [TopologyServicePort(port: 80)])
+        let route = TopologyResourceSnapshot(identity: identity("HTTPRoute", "blocked", uid: "blocked-route"), httpRoute: TopologyHTTPRouteSnapshot(parents: [TopologyGatewayParentReference(name: "edge", accepted: false, resolvedRefs: false)], backends: [TopologyGatewayBackendReference(name: "blocked", port: 80)]))
+        let path = graph([service, route]).portPaths.first
+        XCTAssertEqual(path?.status, .unresolved)
+        XCTAssertTrue(path?.note?.contains("rejected") == true)
+    }
+
+    func testSelectorSummaryAllowlistsNamesAndNeverLeaksArbitraryValues() {
+        let selector = TopologyLabelSelector(matchLabels: ["app": "payments", "credential.example/token": "secret-value"])
+        XCTAssertTrue(selector.summary.contains("app=value"))
+        XCTAssertFalse(selector.summary.contains("secret-value"))
+        XCTAssertFalse(selector.summary.contains("credential.example/token"))
+    }
+
+    func testExplorerRawValuesAreStableSnakeCase() {
+        XCTAssertEqual(ExplorerLevel.policyDependencies.rawValue, "policy_dependencies")
+        XCTAssertEqual(ExplorerPresentation.portTable.rawValue, "port_table")
+    }
+
+    func testOmittedEndpointReadyIsEffectiveReadyButRawNilIsPreserved() {
+        let service = TopologyResourceSnapshot(identity: identity("Service", "implicit", uid: "implicit-service"), servicePorts: [TopologyServicePort(name: "web", port: 80)])
+        let slice = TopologyResourceSnapshot(identity: identity("EndpointSlice", "implicit", uid: "implicit-slice"), endpointSlice: TopologyEndpointSliceSnapshot(serviceName: "implicit", ports: [TopologyEndpointPort(name: "web", port: 8080)], endpoints: [TopologyEndpointTarget(addresses: ["10.0.0.1"]) ]))
+        let ingress = TopologyResourceSnapshot(identity: identity("Ingress", "implicit", uid: "implicit-ingress"), ingressRoutes: [TopologyIngressRoute(backendName: "implicit", backendPort: 80)])
+        let path = graph([service, slice, ingress]).portPaths[0]
+        XCTAssertEqual(path.readyEndpointCount, 1)
+        XCTAssertEqual(path.status, .complete)
+        XCTAssertNil(path.hops.first(where: { $0.role == "endpoint" })?.ready)
+        XCTAssertTrue(TopologyGraphQuery(graph: graph([service, slice, ingress])).portPaths(readiness: true).count == 1)
+    }
+
+    func testContainerResolutionRequiresProtocolMatch() {
+        let pod = TopologyResourceSnapshot(identity: identity("Pod", "protocol", uid: "protocol-pod"), containerPorts: [TopologyContainerPort(containerName: "api", name: "web", port: 8080, protocolName: "UDP"), TopologyContainerPort(containerName: "api", name: "web", port: 8080, protocolName: "TCP")])
+        let service = TopologyResourceSnapshot(identity: identity("Service", "protocol", uid: "protocol-service"), servicePorts: [TopologyServicePort(name: "web", port: 80, targetPort: TopologyPortTarget(name: "web"), protocolName: "TCP")])
+        let slice = TopologyResourceSnapshot(identity: identity("EndpointSlice", "protocol", uid: "protocol-slice"), endpointSlice: TopologyEndpointSliceSnapshot(serviceName: "protocol", ports: [TopologyEndpointPort(name: "web", port: 8080, protocolName: "TCP")], endpoints: [TopologyEndpointTarget(reference: TopologyObjectReference(kind: "Pod", name: "protocol", namespace: "demo", uid: "protocol-pod"), ready: true)]))
+        let ingress = TopologyResourceSnapshot(identity: identity("Ingress", "protocol", uid: "protocol-ingress"), ingressRoutes: [TopologyIngressRoute(backendName: "protocol", backendPort: 80)])
+        let path = graph([pod, service, slice, ingress]).portPaths[0]
+        XCTAssertEqual(path.hops.filter { $0.role == "container-port" }.count, 1)
+        XCTAssertEqual(path.hops.first(where: { $0.role == "container-port" })?.protocolName, "TCP")
+    }
+
+    func testHTTPRouteAcceptedParentAllowsPathWhenAnotherParentRejected() {
+        let service = TopologyResourceSnapshot(identity: identity("Service", "multi-parent", uid: "multi-service"), servicePorts: [TopologyServicePort(port: 80)])
+        let route = TopologyResourceSnapshot(identity: identity("HTTPRoute", "multi-parent", uid: "multi-route"), httpRoute: TopologyHTTPRouteSnapshot(parents: [TopologyGatewayParentReference(name: "bad", accepted: false, resolvedRefs: false), TopologyGatewayParentReference(name: "good", accepted: true, resolvedRefs: true)], backends: [TopologyGatewayBackendReference(name: "multi-parent", port: 80)]))
+        XCTAssertNotEqual(graph([service, route]).portPaths.first?.status, .unresolved)
+    }
+
+    func testQuerySearchIncludesTypedPortAndEvidenceFields() {
+        let service = TopologyResourceSnapshot(identity: identity("Service", "searchable", uid: "search-service"), servicePorts: [TopologyServicePort(name: "metrics", port: 9100, protocolName: "TCP", appProtocol: "http")])
+        let ingress = TopologyResourceSnapshot(identity: identity("Ingress", "searchable", uid: "search-ingress"), ingressRoutes: [TopologyIngressRoute(backendName: "searchable", backendPort: 9100)])
+        let result = graph([service, ingress])
+        XCTAssertEqual(TopologyGraphQuery(graph: result).nodes(search: "metrics").count, 1)
+        XCTAssertEqual(TopologyGraphQuery(graph: result).portPaths(search: "spec.route.backend").count, 1)
+        XCTAssertEqual(TopologyGraphQuery(graph: result).portPaths(search: "9100").count, 1)
+    }
+
+    func testIndexedNamespaceSelectorExpansionHandlesManySelectors() {
+        let pods = (0..<2_000).map { index in node("Pod", "indexed-" + String(index), uid: "indexed-" + String(index), labels: ["app": "app-" + String(index % 20)]) }
+        let services = (0..<40).map { index in node("Service", "selector-" + String(index), uid: "selector-" + String(index), selector: ["app": "app-" + String(index % 20)]) }
+        let start = DispatchTime.now().uptimeNanoseconds
+        let result = graph(pods + services)
+        let elapsed = Double(DispatchTime.now().uptimeNanoseconds - start) / 1_000_000_000
+        XCTAssertEqual(result.edges.filter { $0.relationship == .selects }.count, 4_000)
+        XCTAssertLessThan(elapsed, 5.0)
     }
 }

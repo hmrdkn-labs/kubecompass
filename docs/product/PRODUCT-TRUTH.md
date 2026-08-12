@@ -26,12 +26,22 @@ without pretending SwiftUI is a Linux runtime.
   scope, resource tables, detail tabs, live watches/logs, YAML apply, Helm
   inspection, port forwards, and confirmation/error surfaces (see provenance).
 - **Observed in the macOS adapter:** KubeCompass adds a portable, read-only
-  Topology Explorer
-  whose relationships are labeled Observed, Declared, Inferred, or Unavailable.
-  It intentionally does not claim packet flow, CNI enforcement, provider
-  control-plane internals, or cloud-network topology. The Map/List and evidence
-  inspector have been interaction-reviewed against a synthetic read-only
-  fixture; live-cluster validation and a Linux GTK topology route remain open.
+  Topology Explorer whose relationships are labeled Observed, Declared,
+  Inferred, or Unavailable. The integrated route contains Explorer Levels
+  (Cluster, Infrastructure, Workloads, Network, Policy & Dependencies,
+  Evidence), Focus/Trace/Inventory modes, Map/List/Port Table presentations,
+  typed Port Paths, and Fundamentals/evidence copy. It intentionally does not
+  claim packet flow, CNI enforcement, provider control-plane internals,
+  cloud-network topology, production-cluster fidelity, frame/RSS performance,
+  complete VoiceOver coverage, or complete visual/state-matrix parity. A
+  deterministic wide Port Table fixture and disposable kind fixture-conformance
+  run are observed; they do not broaden those claims.
+- **Observed in the Linux fixture adapter:** The GTK fixture route exposes the
+  same Explorer Level, mode, presentation, Port Path, grouped-map fallback,
+  List, Port Table, and Fundamentals vocabulary against shared fixture data.
+  This is fixture-only evidence; live kubectl behavior, full route/state parity,
+  accessibility, visual parity, startup/RSS, and live-cluster validation remain
+  open.
 - **Planned/selected:** KubeCompass shares domain/state/commands and design
   tokens across the macOS SwiftUI adapter and a native GTK4/libadwaita Linux
   adapter using Makoni/Swift Adwaita commit
@@ -52,9 +62,30 @@ native macOS polish, and a validated cross-platform desktop experience—not by
 claiming a generic dashboard is novel. The exact wedge, startup/RSS budget,
 accessibility coverage, permission model, and route-level Linux coverage remain
 unknown until the remaining Makoni GUI parity gates complete. Shared-core
-evidence currently includes 23/23 package tests on macOS, Linux amd64, and
-Linux arm64, a deterministic 15-step trace, and a final local 10k-row p95 of
-37.98–100.67ms across verification runs. Both Debian packages passed fresh Ubuntu install-and-launch smoke;
+evidence includes a passing current package suite in the verification receipt,
+a deterministic trace, and an indexed 10k-object topology benchmark.
+Both Debian packages passed fresh Ubuntu install-and-launch smoke;
 route parity, accessibility/keyboard review, startup, and RSS remain unknown.
 Topology's differentiated learning value must be validated with real users;
-the evidence model and native macOS slice alone do not prove that wedge.
+the evidence model and integrated fixture slices alone do not prove that wedge.
+
+## Topology acceptance boundary
+
+The feature is accepted only when the following evidence exists:
+
+- typed Service, EndpointSlice, Route/Gateway, Pod/container port fixtures;
+- numeric, named, ambiguous, missing, multi-protocol, headless, selectorless,
+  NodePort, LoadBalancer, and ExternalName cases;
+- NetworkPolicy peer/port semantics with explicit non-enforcement language;
+- Cluster → Infrastructure → Workloads → Network → Policy & Dependencies →
+  Evidence drill-down and breadcrumb preservation;
+- Map/List/Port Table selection and filter parity;
+- ready, partial, empty, loading, stale, offline, reconnecting, error, narrow,
+  and wide review scenarios;
+- measurable selection, filter, tier-transition, frame-time, startup, and RSS
+  results on both desktop adapters;
+- disposable-cluster fixture verification plus an explicit distinction
+  between collector, GUI-fixture, and production-cluster evidence.
+
+No current source, fixture, package, or graph benchmark is sufficient by itself
+to claim this acceptance boundary.

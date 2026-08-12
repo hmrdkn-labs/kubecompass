@@ -37,9 +37,9 @@ final class KubeCompassCoreTests: XCTestCase {
         XCTAssertEqual(transition.state.selectedNamespace, "platform"); XCTAssertEqual(transition.state.selectedListScope, .namespace("platform"))
         let fallback = CompassReducer.reduce(state, .namespacesLoaded(["default", "zzz"]))
         XCTAssertEqual(fallback.state.selectedNamespace, "default")
-        var noCurrent = CompassState(); let picker = CompassReducer.reduce(noCurrent, .contextsLoaded([KubeContext(id: "a", name: "a", cluster: "c", user: "u"), KubeContext(id: "b", name: "b", cluster: "c", user: "u")]))
+        let noCurrent = CompassState(); let picker = CompassReducer.reduce(noCurrent, .contextsLoaded([KubeContext(id: "a", name: "a", cluster: "c", user: "u"), KubeContext(id: "b", name: "b", cluster: "c", user: "u")]))
         XCTAssertNil(picker.state.selectedContextID); XCTAssertTrue(picker.events.contains(.contextPickerRequired)); XCTAssertTrue(picker.effects.isEmpty)
-        var oneCurrent = CompassState(); let connected = CompassReducer.reduce(oneCurrent, .contextsLoaded([KubeContext(id: "a", name: "a", cluster: "c", user: "u", isCurrent: true)])); XCTAssertEqual(connected.state.selectedContextID, "a"); XCTAssertEqual(connected.effects, [.loadNamespaces(contextID: "a")])
+        let oneCurrent = CompassState(); let connected = CompassReducer.reduce(oneCurrent, .contextsLoaded([KubeContext(id: "a", name: "a", cluster: "c", user: "u", isCurrent: true)])); XCTAssertEqual(connected.state.selectedContextID, "a"); XCTAssertEqual(connected.effects, [.loadNamespaces(contextID: "a")])
     }
 
     func testTypedPortForwardValidatesTargetNamespacePortsAndLoopback() throws {

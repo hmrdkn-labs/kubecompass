@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kc-web
+  namespace: kc-topology
+  labels:
+    app.kubernetes.io/name: kc-web
+    app.kubernetes.io/part-of: kubecompass-topology-fixture
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kc-web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kc-web
+        topology.kubecompass.dev/role: backend
+    spec:
+      containers:
+        - name: web
+          image: registry.k8s.io/e2e-test-images/agnhost:2.53
+          command: ["/agnhost", "netexec", "--http-port=8443"]
+          ports:
+            - name: web
+              containerPort: 8443
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: web
+            periodSeconds: 2
+          livenessProbe:
+            tcpSocket:
+              port: web
+            periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kc-not-ready
+  namespace: kc-topology
+  labels:
+    app.kubernetes.io/name: kc-not-ready
+    app.kubernetes.io/part-of: kubecompass-topology-fixture
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kc-not-ready
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kc-not-ready
+        topology.kubecompass.dev/role: not-ready
+    spec:
+      containers:
+        - name: web
+          image: registry.k8s.io/e2e-test-images/agnhost:2.53
+          command: ["/agnhost", "netexec", "--http-port=8443"]
+          ports:
+            - name: web
+              containerPort: 8443
+              protocol: TCP
+          # The process is listening on web:8443, but readiness deliberately
+          # probes an unused port so EndpointSlice exposes ready=false.
+          readinessProbe:
+            tcpSocket:
+              port: 29999
+            periodSeconds: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kc-client
+  namespace: kc-topology
+  labels:
+    app.kubernetes.io/name: kc-client
+    app.kubernetes.io/part-of: kubecompass-topology-fixture
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kc-client
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kc-client
+        topology.kubecompass.dev/role: client
+    spec:
+      containers:
+        - name: client
+          image: busybox:1.36
+          command: ["sh", "-c", "sleep 3600"]

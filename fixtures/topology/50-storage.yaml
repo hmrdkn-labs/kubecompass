@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kc-learning-data
+  namespace: kc-topology
+  labels:
+    app.kubernetes.io/part-of: kubecompass-topology-fixture
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Mi

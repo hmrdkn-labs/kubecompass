@@ -1,0 +1,75 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kc-route-a
+  namespace: kc-topology
+  labels:
+    app.kubernetes.io/part-of: kubecompass-topology-fixture
+spec:
+  ingressClassName: kc-fixture
+  rules:
+    - host: demo.kubecompass.test
+      http:
+        paths:
+          - path: /orders
+            pathType: Prefix
+            backend:
+              service:
+                name: kc-web
+                port:
+                  name: https
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kc-route-b
+  namespace: kc-topology
+  labels:
+    app.kubernetes.io/part-of: kubecompass-topology-fixture
+spec:
+  ingressClassName: kc-fixture
+  rules:
+    - host: demo.kubecompass.test
+      http:
+        paths:
+          - path: /orders
+            pathType: Prefix
+            backend:
+              service:
+                name: kc-web
+                port:
+                  number: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kc-web-policy
+  namespace: kc-topology
+  labels:
+    app.kubernetes.io/part-of: kubecompass-topology-fixture
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kc-web
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kc-topology
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: kc-client
+        - ipBlock:
+            cidr: 192.0.2.0/24
+            except: [192.0.2.128/25]
+      ports:
+        - protocol: TCP
+          port: 8443
+          endPort: 8450
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
