@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8366EEB3301364D40084F6DF /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 8366EEB2301364D40084F6DF /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -21,7 +20,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		8366EE0A301364D40084F6DF /* k-dex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "k-dex.app"; path = "K-Dex.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8366EE0A301364D40084F6DF /* KubeCompass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "KubeCompass.app"; path = "KubeCompass.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		83FFFAD830285E1A0047D97A /* K-DexTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "K-DexTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -43,7 +42,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8366EEB3301364D40084F6DF /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -69,7 +67,7 @@
 		8366EE0B301364D40084F6DF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8366EE0A301364D40084F6DF /* k-dex.app */,
+				8366EE0A301364D40084F6DF /* KubeCompass.app */,
 				83FFFAD830285E1A0047D97A /* K-DexTests.xctest */,
 			);
 			name = Products;
@@ -96,10 +94,9 @@
 			);
 			name = "k-dex";
 			packageProductDependencies = (
-				8366EEB2301364D40084F6DF /* Sparkle */,
 			);
 			productName = "k-dex";
-			productReference = 8366EE0A301364D40084F6DF /* k-dex.app */;
+			productReference = 8366EE0A301364D40084F6DF /* KubeCompass.app */;
 			productType = "com.apple.product-type.application";
 		};
 		83FFFAD730285E1A0047D97A /* K-DexTests */ = {
@@ -154,7 +151,6 @@
 			mainGroup = 8366EE01301364D40084F6DF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				8366EEB1301364D40084F6DF /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8366EE0B301364D40084F6DF /* Products */;
@@ -198,7 +194,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nHELPERS=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Helpers\"\nmkdir -p \"${HELPERS}\"\nSRC=\"${KDEX_KUBECTL:-$(command -v kubectl || true)}\"\nif [ -z \"${SRC}\" ] && [ -x /opt/homebrew/bin/kubectl ]; then SRC=/opt/homebrew/bin/kubectl; fi\nif [ -n \"${SRC}\" ] && [ -x \"${SRC}\" ]; then\n  cp -f \"${SRC}\" \"${HELPERS}/kubectl\"\n  # kubectl is Apache-2.0; redistribution requires shipping the license.\n  # Resources, not Helpers: codesign rejects non-code files in Helpers.\n  cp -f \"${SRCROOT}/packaging/kubectl-LICENSE\" \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources/kubectl-LICENSE\"\n  codesign --force --options runtime --sign \"${EXPANDED_CODE_SIGN_IDENTITY:--}\" \"${HELPERS}/kubectl\"\nelse\n  echo \"warning: no kubectl found to bundle (set KDEX_KUBECTL); app will fall back to PATH lookup\"\nfi";
+			shellScript = "set -e\nHELPERS=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Helpers\"\nmkdir -p \"${HELPERS}\"\nSRC=\"${KUBECOMPASS_KUBECTL:-${KDEX_KUBECTL:-$(command -v kubectl || true)}}\"\nif [ -z \"${SRC}\" ] && [ -x /opt/homebrew/bin/kubectl ]; then SRC=/opt/homebrew/bin/kubectl; fi\nif [ -n \"${SRC}\" ] && [ -x \"${SRC}\" ]; then\n  cp -f \"${SRC}\" \"${HELPERS}/kubectl\"\n  # kubectl is Apache-2.0; redistribution requires shipping the license.\n  # Resources, not Helpers: codesign rejects non-code files in Helpers.\n  cp -f \"${SRCROOT}/packaging/kubectl-LICENSE\" \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources/kubectl-LICENSE\"\n  codesign --force --options runtime --sign \"${EXPANDED_CODE_SIGN_IDENTITY:--}\" \"${HELPERS}/kubectl\"\nelse\n  echo \"warning: no kubectl found to bundle (set KUBECOMPASS_KUBECTL); app will fall back to PATH lookup\"\nfi";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -369,8 +365,9 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.irfancen.k-dex";
-				PRODUCT_NAME = "K-Dex";
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.kubecompass.app";
+				PRODUCT_MODULE_NAME = K_Dex;
+				PRODUCT_NAME = "KubeCompass";
 				REGISTER_APP_GROUPS = NO;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -402,8 +399,9 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.irfancen.k-dex";
-				PRODUCT_NAME = "K-Dex";
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.kubecompass.app";
+				PRODUCT_MODULE_NAME = K_Dex;
+				PRODUCT_NAME = "KubeCompass";
 				REGISTER_APP_GROUPS = NO;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -425,14 +423,14 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.irfancen.K-DexTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.kubecompass.KubeCompassTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/K-Dex.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/K-Dex";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KubeCompass.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KubeCompass";
 			};
 			name = Debug;
 		};
@@ -447,14 +445,14 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.irfancen.K-DexTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.kubecompass.KubeCompassTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/K-Dex.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/K-Dex";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KubeCompass.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KubeCompass";
 			};
 			name = Release;
 		};
@@ -490,24 +488,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		8366EEB1301364D40084F6DF /* XCRemoteSwiftPackageReference "Sparkle" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		8366EEB2301364D40084F6DF /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8366EEB1301364D40084F6DF /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8366EE02301364D40084F6DF /* Project object */;
 }

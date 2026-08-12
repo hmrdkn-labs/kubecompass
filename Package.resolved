@@ -1,0 +1,14 @@
+{
+  "originHash" : "162644fc75ff386b8ee46126f7eb11c1dad7d106364d4df54364934ab0a9dd5e",
+  "pins" : [
+    {
+      "identity" : "swift-adwaita",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/makoni/swift-adwaita.git",
+      "state" : {
+        "revision" : "e725f39c4308138da251a8181beb0a40d86efea9"
+      }
+    }
+  ],
+  "version" : 3
+}

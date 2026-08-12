@@ -1,8 +1,21 @@
-# K-Dex
+# KubeCompass
 
-A clean, minimal Kubernetes UI for macOS, built with SwiftUI.
+A native Kubernetes desktop client: SwiftUI on macOS, with a Swift +
+GTK/libadwaita Linux adapter under active development.
 
-## Features
+## Current status
+
+- **macOS:** the full inherited K-Dex workflow is branded as KubeCompass,
+  regression-tested, and locally installable as `KubeCompass.app`.
+- **Shared Swift core:** deterministic state, command, safety, and 10,000-row
+  fixture contracts compile and test on macOS and Linux.
+- **Linux:** the first native GTK vertical slice is deliberately fixture-only.
+  It demonstrates navigation, a virtualized resource table, details, states,
+  confirmations, and packaging without reading kubeconfig or running kubectl.
+- **`kc`:** on macOS, the installed helper opens the desktop app. A complete
+  headless Kubernetes CLI is not shipped yet.
+
+## macOS feature reference
 
 - **Cluster browsing** — switch between kubeconfig contexts; filter by namespace.
 - **Live updates** — each list is fed by a Kubernetes watch stream, so changes
@@ -34,9 +47,10 @@ A clean, minimal Kubernetes UI for macOS, built with SwiftUI.
   to the limit with a tick marking the request; exact numbers on hover. When
   metrics are missing, the app says why (not installed, RBAC, unreachable
   kubelets) and shows the spec'd requests/limits dimmed instead.
-- **Auto-updates** via Sparkle.
+- **Direct distribution** — updater integration is disabled until a dedicated
+  KubeCompass release feed exists.
 
-## How it works
+## How the macOS app works
 
 The app drives a bundled `kubectl` (or your own — path configurable in
 Settings), so every auth mechanism your kubeconfig supports (EKS/GKE/AKS exec
@@ -55,12 +69,23 @@ plugins.
 
 ## Install
 
-Download the notarized DMG from
-[Releases](https://github.com/irfancen/k-dex/releases), or build from source:
+There is no published or notarized KubeCompass release yet. Build locally:
 
 ```sh
-xcodebuild -project k-dex.xcodeproj -scheme k-dex -configuration Release build
+xcodebuild -project k-dex.xcodeproj -scheme k-dex \
+  -configuration Release -destination 'platform=macOS' \
+  CODE_SIGNING_ALLOWED=NO build
 ```
+
+The local `kc` helper supports `kc`, `kc path`, `kc version`, and `kc help`.
+It intentionally does not masquerade as a full cluster CLI.
+
+The locally installed GUI and TUI alternatives, their safe launch commands,
+and a concrete evaluation checklist are recorded in
+[docs/product/COMPARISON-LAB.md](docs/product/COMPARISON-LAB.md).
+
+For the Linux fixture slice, use `scripts/build-linux.sh`; the verified package
+script writes an architecture-specific Debian artifact under `dist/`.
 
 ## Roadmap ideas
 
@@ -71,4 +96,7 @@ xcodebuild -project k-dex.xcodeproj -scheme k-dex -configuration Release build
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). KubeCompass is derived from
+[K-Dex](https://github.com/irfancen/k-dex); the inherited copyright and license
+notice remain intact. See [UPSTREAM.md](UPSTREAM.md) for the exact baseline and
+third-party distribution notes.

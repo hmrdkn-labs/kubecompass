@@ -1,0 +1,44 @@
+#!/bin/sh
+set -eu
+
+app_path="${KUBECOMPASS_APP_PATH:-/Applications/KubeCompass.app}"
+
+case "${1:-open}" in
+    open)
+        test -d "$app_path" || {
+            echo "kc: KubeCompass is not installed at $app_path" >&2
+            exit 1
+        }
+        open "$app_path"
+        ;;
+    path)
+        printf '%s\n' "$app_path"
+        ;;
+    version|--version|-v)
+        test -f "$app_path/Contents/Info.plist" || {
+            echo "kc: KubeCompass is not installed at $app_path" >&2
+            exit 1
+        }
+        /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \
+            "$app_path/Contents/Info.plist"
+        ;;
+    help|--help|-h)
+        cat <<'EOF'
+kc — open the KubeCompass macOS desktop app
+
+Usage:
+  kc              Open KubeCompass
+  kc open         Open KubeCompass
+  kc path         Print the installed application path
+  kc version      Print the installed application version
+  kc help         Show this help
+
+The fixture-backed cross-platform core is available through
+`swift run kubecompass-trace`; a full headless cluster CLI is not shipped yet.
+EOF
+        ;;
+    *)
+        echo "kc: unknown command '$1'; run 'kc help'" >&2
+        exit 2
+        ;;
+esac

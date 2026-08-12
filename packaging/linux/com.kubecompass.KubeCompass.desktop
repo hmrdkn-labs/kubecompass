@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=KubeCompass
+Comment=Fixture-first Kubernetes desktop compass
+Exec=/usr/bin/kubecompass %U
+Icon=kubecompass
+Terminal=false
+Categories=Development;System;
+Keywords=Kubernetes;KubeCompass;kubectl;
+StartupNotify=true

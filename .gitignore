@@ -4,6 +4,7 @@ xcuserdata/
 DerivedData/
 build/
 .build/
+dist/
 
 # Private planning docs
 DISTRIBUTION-PLAN.md

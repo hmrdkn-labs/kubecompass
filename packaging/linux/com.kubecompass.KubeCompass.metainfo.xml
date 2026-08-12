@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.kubecompass.KubeCompass</id>
+  <name>KubeCompass</name>
+  <summary>Native Kubernetes desktop compass</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <launchable type="desktop-id">com.kubecompass.KubeCompass.desktop</launchable>
+  <description>
+    <p>KubeCompass provides a fixture-first native Linux shell for Kubernetes workflows.</p>
+    <p>The initial Linux slice is visibly demo-only and never executes kubectl or mutates a cluster.</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+</component>

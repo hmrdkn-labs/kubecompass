@@ -1,0 +1,302 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://codex.local/schemas/interface-system.schema.json",
+  "title": "Interface System IR",
+  "description": "A platform-neutral intermediate representation for web, webapp, and TUI interfaces.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "name",
+    "platform",
+    "provenance",
+    "tokens",
+    "capabilities",
+    "regions",
+    "components",
+    "states",
+    "events",
+    "actions",
+    "focus",
+    "navigation",
+    "media",
+    "motion",
+    "evaluation"
+  ],
+  "properties": {
+    "$schema": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string", "const": "1.0"},
+    "kind": {"type": "string", "const": "interface-ir"},
+    "name": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "platform": {"type": "string", "enum": ["web", "webapp", "tui"]},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "source", "note"],
+      "properties": {
+        "status": {"type": "string", "enum": ["observed", "inferred", "unknown"]},
+        "source": {"type": "string", "minLength": 1},
+        "note": {"type": "string"}
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["color", "type", "space", "radius", "motion", "provenance"],
+      "properties": {
+        "color": {"type": "object", "additionalProperties": {"$ref": "#/definitions/token"}},
+        "type": {"type": "object", "additionalProperties": {"$ref": "#/definitions/token"}},
+        "space": {"type": "object", "additionalProperties": {"$ref": "#/definitions/token"}},
+        "radius": {"type": "object", "additionalProperties": {"$ref": "#/definitions/token"}},
+        "motion": {"type": "object", "additionalProperties": {"$ref": "#/definitions/token"}},
+        "provenance": {"$ref": "#/definitions/provenance"}
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "description": "Capability support and fallback mapping for all supported runtimes.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["support", "fallback", "requirement", "provenance", "mapping_provenance"],
+        "properties": {
+          "support": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["web", "webapp", "tui"],
+            "properties": {
+              "web": {"type": "string", "enum": ["native", "adapted", "unsupported"]},
+              "webapp": {"type": "string", "enum": ["native", "adapted", "unsupported"]},
+              "tui": {"type": "string", "enum": ["native", "adapted", "unsupported"]}
+            }
+          },
+          "fallback": {"type": "string", "minLength": 1},
+          "requirement": {"type": "string", "enum": ["required", "optional", "unavailable"]},
+          "provenance": {"$ref": "#/definitions/provenance"},
+          "mapping_provenance": {
+            "type": "object",
+            "additionalProperties": {"$ref": "#/definitions/provenance"},
+            "required": ["web", "webapp", "tui"]
+          },
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "role", "children", "provenance"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "role": {"type": "string", "minLength": 1},
+          "label": {"type": "string"},
+          "children": {"type": "array", "items": {"type": "string"}},
+          "provenance": {"$ref": "#/definitions/provenance"}
+        }
+      }
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "region", "states", "events", "actions", "provenance"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "region": {"type": "string", "minLength": 1},
+          "label": {"type": "string"},
+          "capabilities": {"type": "array", "items": {"type": "string"}},
+          "props": {"type": "object"},
+          "states": {"type": "array", "items": {"type": "string"}},
+          "events": {"type": "array", "items": {"type": "string"}},
+          "actions": {"type": "array", "items": {"type": "string"}},
+          "focusable": {"type": "boolean"},
+          "provenance": {"$ref": "#/definitions/provenance"}
+        }
+      }
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "initial", "values", "provenance"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "initial": {"type": "string", "minLength": 1},
+          "values": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "provenance": {"$ref": "#/definitions/provenance"}
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "targets", "provenance"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "type": {"type": "string", "minLength": 1},
+          "targets": {"type": "array", "items": {"type": "string"}},
+          "payload": {"type": "object"},
+          "provenance": {"$ref": "#/definitions/provenance"}
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "targets", "provenance"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "type": {"type": "string", "minLength": 1},
+          "targets": {"type": "array", "items": {"type": "string"}},
+          "params": {"type": "object"},
+          "provenance": {"$ref": "#/definitions/provenance"}
+        }
+      }
+    },
+    "focus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["order", "trap"],
+      "properties": {
+        "order": {"type": "array", "items": {"type": "string"}},
+        "trap": {"type": "boolean"},
+        "default": {"type": ["string", "null"]}
+      }
+    },
+    "navigation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "links"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["spatial", "linear", "mixed", "none"]},
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to"],
+            "properties": {
+              "from": {"type": "string", "minLength": 1},
+              "to": {"type": "string", "minLength": 1},
+              "via": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "media": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "fallback", "implementation_safe", "provenance"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "type": {"type": "string", "enum": ["image", "video", "audio", "icon", "none"]},
+          "src": {"type": ["string", "null"]},
+          "alt": {"type": "string"},
+          "fallback": {"type": "string", "minLength": 1},
+          "implementation_safe": {"type": "boolean"},
+          "provenance": {"$ref": "#/definitions/provenance"}
+        }
+      }
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed", "reduced_motion", "transitions"],
+      "properties": {
+        "allowed": {"type": "boolean"},
+        "reduced_motion": {"type": "string", "enum": ["preserve", "reduce", "remove"]},
+        "transitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "from", "to", "provenance"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "from": {"type": "string", "minLength": 1},
+              "to": {"type": "string", "minLength": 1},
+              "duration": {"type": ["string", "number"]},
+              "easing": {"type": "string"},
+              "provenance": {"$ref": "#/definitions/provenance"}
+            }
+          }
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criteria", "evidence", "status"],
+      "properties": {
+        "criteria": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "statement", "provenance"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "statement": {"type": "string", "minLength": 1},
+              "provenance": {"$ref": "#/definitions/provenance"}
+            }
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "source", "summary", "provenance"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "source": {"type": "string", "minLength": 1},
+              "summary": {"type": "string", "minLength": 1},
+              "observed_at": {"type": ["string", "null"]},
+              "metrics": {"type": "object"},
+              "provenance": {"$ref": "#/definitions/provenance"}
+            }
+          }
+        },
+        "status": {"type": "string", "enum": ["draft", "tested", "accepted", "rejected"]},
+        "notes": {"type": "string"}
+      }
+    }
+  },
+  "definitions": {
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "source", "note"],
+      "properties": {
+        "status": {"type": "string", "enum": ["observed", "inferred", "unknown"]},
+        "source": {"type": "string", "minLength": 1},
+        "note": {"type": "string"}
+      }
+    },
+    "token": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "value", "unit", "provenance"],
+      "properties": {
+        "type": {"type": "string", "minLength": 1},
+        "value": {},
+        "unit": {"type": ["string", "null"]},
+        "provenance": {"$ref": "#/definitions/provenance"}
+      }
+    }
+  }
+}

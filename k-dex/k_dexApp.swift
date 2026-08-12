@@ -1,5 +1,4 @@
 import AppKit
-import Sparkle
 import SwiftUI
 
 /// Scene-independent termination hook: `willTerminateNotification` observers
@@ -13,15 +12,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-struct KDexApp: App {
+struct KubeCompassApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var model = AppModel()
     @State private var portForwards = PortForwardManager()
-    /// Sparkle auto-updates (direct-distribution builds).
-    private let updaterController = SPUStandardUpdaterController(
-        startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil
-    )
-
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -33,11 +27,6 @@ struct KDexApp: App {
             // View → Hide/Show Sidebar (⌃⌘S), absent by default in a
             // NavigationSplitView app unless explicitly requested.
             SidebarCommands()
-            CommandGroup(after: .appInfo) {
-                Button("Check for Updates…") {
-                    updaterController.updater.checkForUpdates()
-                }
-            }
             CommandGroup(after: .toolbar) {
                 // On the cluster picker, refresh means "re-read the
                 // kubeconfig" — requestRefresh() is a no-op before connect,

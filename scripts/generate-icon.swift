@@ -1,6 +1,6 @@
 import AppKit
 
-// K-Dex app icon: macOS squircle, deep navy→blue gradient, white hexagon
+// KubeCompass app icon: macOS squircle, deep navy→blue gradient, white hexagon
 // (the Kubernetes ecosystem shape, sans trademarked wheel) framing a heavy K.
 // Regenerate with:
 //   swift scripts/generate-icon.swift <output-1024.png>

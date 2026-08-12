@@ -1,5 +1,9 @@
 # Known Limitations
 
+> The cluster/runtime limitations below apply to the inherited macOS surface.
+> The current Linux vertical slice is fixture-only and never invokes kubectl;
+> see `docs/interface/NATIVE-ADAPTER.md` for its explicit scope.
+
 Companion to [ARCHITECTURE.md](ARCHITECTURE.md). After the mitigation pass
 that added the live-watch overlay, metrics-API queries, change detection,
 background pausing, and the kubectl version check, these are the limitations

@@ -40,7 +40,7 @@ struct WelcomeView: View {
     private var message: String {
         switch model.bootState {
         case .missingKubectl:
-            return "K-Dex uses your local kubectl to talk to clusters. Install it (e.g. `brew install kubectl`) or point K-Dex at the binary in Settings."
+            return "KubeCompass uses your local kubectl to talk to clusters. Install it (e.g. `brew install kubectl`) or point KubeCompass at the binary in Settings."
         case .noContexts:
             return "Your kubeconfig (~/.kube/config) has no contexts. Add a cluster with your cloud CLI or copy a kubeconfig, then try again. A custom kubeconfig path can be set in Settings."
         case .failed(let error):

@@ -1,5 +1,9 @@
 # K-Dex Architecture
 
+> This document describes the inherited macOS K-Dex runtime. The new portable
+> state/command contracts live under `Sources/KubeCompassCore`; the native Linux
+> adapter is documented in `docs/interface/NATIVE-ADAPTER.md`.
+
 How K-Dex works behind the scenes, and how that differs from Aptakube.
 
 ## The one-line answer

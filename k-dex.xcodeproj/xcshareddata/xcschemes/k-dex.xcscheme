@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8366EE09301364D40084F6DF"
-               BuildableName = "K-Dex.app"
+               BuildableName = "KubeCompass.app"
                BlueprintName = "k-dex"
                ReferencedContainer = "container:k-dex.xcodeproj">
             </BuildableReference>
@@ -57,7 +57,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8366EE09301364D40084F6DF"
-            BuildableName = "K-Dex.app"
+            BuildableName = "KubeCompass.app"
             BlueprintName = "k-dex"
             ReferencedContainer = "container:k-dex.xcodeproj">
          </BuildableReference>
@@ -74,7 +74,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8366EE09301364D40084F6DF"
-            BuildableName = "K-Dex.app"
+            BuildableName = "KubeCompass.app"
             BlueprintName = "k-dex"
             ReferencedContainer = "container:k-dex.xcodeproj">
          </BuildableReference>
