@@ -24,6 +24,8 @@ struct SidebarView: View {
             Section {
                 Label("Overview", systemImage: "rectangle.3.group")
                     .tag(SidebarItem.overview)
+                Label("Topology", systemImage: "point.3.connected.trianglepath.dotted")
+                    .tag(SidebarItem.topology)
             }
 
             Section {

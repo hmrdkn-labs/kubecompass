@@ -1,0 +1,279 @@
+{
+  "$schema": "interface-hierarchy-review/review-contract.schema.json",
+  "schema_version": "1.0",
+  "overall_status": "pass",
+  "scope": {
+    "platform": "desktop",
+    "surface": "macOS Topology Explorer",
+    "actor": "Kubernetes operator, developer, or learner",
+    "task": "Understand how cluster resources relate without implying runtime network truth",
+    "primary_action": "Select a resource node or relationship and inspect its evidence",
+    "consequence": "Read-only inspection; no cluster mutation or sensitive payload reveal",
+    "token_authority": "docs/interface/kubecompass.interface.json",
+    "scenarios": [
+      {
+        "id": "ready-map-control-plane",
+        "state": "Complete synthetic fixture snapshot with the virtual control-plane boundary selected",
+        "viewport": "macOS dark appearance, 1220x724 screenshot"
+      },
+      {
+        "id": "ready-list-relationship",
+        "state": "Complete synthetic fixture snapshot in List mode with a declared Ingress relationship selected by keyboard",
+        "viewport": "macOS dark appearance, 1220x724 screenshot"
+      },
+      {
+        "id": "partial-rbac",
+        "state": "Partial synthetic fixture snapshot with NetworkPolicy access denied and all readable relationships retained",
+        "viewport": "macOS dark appearance, 1220x724 screenshot"
+      }
+    ]
+  },
+  "hierarchy_map": [
+    {
+      "scenario_id": "ready-map-control-plane",
+      "units": [
+        {
+          "id": "workspace-title",
+          "role": "Identify the workspace and context",
+          "intended_priority": "primary",
+          "visual_order": 1,
+          "semantic_order": 1,
+          "action_order": null,
+          "focus_order": null,
+          "evidence_ids": ["map-screenshot", "map-a11y-tree"]
+        },
+        {
+          "id": "scope-controls",
+          "role": "Choose namespace, Map or List, search, policy visibility, or refresh",
+          "intended_priority": "secondary",
+          "visual_order": 2,
+          "semantic_order": 2,
+          "action_order": 1,
+          "focus_order": 1,
+          "evidence_ids": ["map-screenshot", "map-a11y-tree"]
+        },
+        {
+          "id": "snapshot-status",
+          "role": "State completeness, freshness, graph size, and evidence vocabulary",
+          "intended_priority": "secondary",
+          "visual_order": 3,
+          "semantic_order": 3,
+          "action_order": null,
+          "focus_order": null,
+          "evidence_ids": ["map-screenshot", "map-a11y-tree"]
+        },
+        {
+          "id": "resource-map",
+          "role": "Provide deterministic lanes and selectable resource nodes",
+          "intended_priority": "primary",
+          "visual_order": 4,
+          "semantic_order": 4,
+          "action_order": 2,
+          "focus_order": 2,
+          "evidence_ids": ["map-screenshot", "map-a11y-tree", "topology-source"]
+        },
+        {
+          "id": "evidence-inspector",
+          "role": "Explain the selected item, safe facts, provenance, assumptions, and adjacent relationships",
+          "intended_priority": "primary",
+          "visual_order": 5,
+          "semantic_order": 5,
+          "action_order": 3,
+          "focus_order": 3,
+          "evidence_ids": ["map-screenshot", "control-plane-trace"]
+        }
+      ]
+    },
+    {
+      "scenario_id": "ready-list-relationship",
+      "units": [
+        {
+          "id": "list-scope-and-status",
+          "role": "Keep scope, freshness, counts, and evidence legend visible",
+          "intended_priority": "secondary",
+          "visual_order": 1,
+          "semantic_order": 1,
+          "action_order": 1,
+          "focus_order": 1,
+          "evidence_ids": ["list-screenshot", "list-a11y-tree"]
+        },
+        {
+          "id": "semantic-relationship-list",
+          "role": "Expose node and relationship names, types, and evidence without relying on geometry or color",
+          "intended_priority": "primary",
+          "visual_order": 2,
+          "semantic_order": 2,
+          "action_order": 2,
+          "focus_order": 2,
+          "evidence_ids": ["list-screenshot", "list-a11y-tree", "keyboard-focus-trace"]
+        },
+        {
+          "id": "relationship-inspector",
+          "role": "Explain source field, join rule, assumption, and safe attributes for the selected edge",
+          "intended_priority": "primary",
+          "visual_order": 3,
+          "semantic_order": 3,
+          "action_order": 3,
+          "focus_order": 3,
+          "evidence_ids": ["list-screenshot", "keyboard-focus-trace"]
+        }
+      ]
+    },
+    {
+      "scenario_id": "partial-rbac",
+      "units": [
+        {
+          "id": "partial-status",
+          "role": "Keep readable evidence visible while naming incomplete input and snapshot age",
+          "intended_priority": "primary",
+          "visual_order": 1,
+          "semantic_order": 1,
+          "action_order": 1,
+          "focus_order": 1,
+          "evidence_ids": ["partial-screenshot", "topology-source", "adapter-tests"]
+        },
+        {
+          "id": "unavailable-inputs",
+          "role": "Distinguish forbidden, unsupported, and unavailable inputs from an empty cluster",
+          "intended_priority": "primary",
+          "visual_order": 2,
+          "semantic_order": 2,
+          "action_order": null,
+          "focus_order": null,
+          "evidence_ids": ["partial-screenshot", "topology-source", "adapter-tests"]
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "map-screenshot",
+      "kind": "screenshot",
+      "source": "Synthetic read-only kubectl fixture",
+      "location": "docs/interface/evidence/topology-map-control-plane.jpeg",
+      "status": "observed",
+      "note": "Shows deterministic lanes and a truthful unavailable control-plane boundary."
+    },
+    {
+      "id": "list-screenshot",
+      "kind": "screenshot",
+      "source": "Synthetic read-only kubectl fixture",
+      "location": "docs/interface/evidence/topology-relationship-list.jpeg",
+      "status": "observed",
+      "note": "Shows the semantic relationship list and evidence inspector."
+    },
+    {
+      "id": "partial-screenshot",
+      "kind": "screenshot",
+      "source": "Synthetic read-only kubectl fixture with NetworkPolicy list forbidden",
+      "location": "docs/interface/evidence/topology-partial-rbac.jpeg",
+      "status": "observed",
+      "note": "Shows a partial snapshot, exact denied input, retained readable nodes and relationships, and unavailable evidence in the inspector."
+    },
+    {
+      "id": "map-a11y-tree",
+      "kind": "a11y-tree",
+      "source": "Computer Use accessibility snapshot",
+      "status": "observed",
+      "note": "All 15 fixture nodes are exposed as labeled buttons; scope controls and completeness are textual."
+    },
+    {
+      "id": "list-a11y-tree",
+      "kind": "a11y-tree",
+      "source": "Computer Use accessibility snapshot",
+      "status": "observed",
+      "note": "Nodes and relationships are selectable rows with source, target, relationship, and evidence text."
+    },
+    {
+      "id": "keyboard-focus-trace",
+      "kind": "focus-trace",
+      "source": "Computer Use Down-arrow navigation in the relationship List",
+      "status": "observed",
+      "note": "Focus moved to the declared Ingress-to-Service edge and updated the inspector, including named port https."
+    },
+    {
+      "id": "control-plane-trace",
+      "kind": "manual",
+      "source": "Computer Use control-plane selection",
+      "status": "observed",
+      "note": "Inspector says provider-managed internals may not be exposed and does not invent API server, etcd, or cloud-network nodes."
+    },
+    {
+      "id": "topology-source",
+      "kind": "source",
+      "source": "k-dex/Views/TopologyExplorerView.swift and k-dex/State/AppModel.swift",
+      "status": "observed",
+      "note": "Defines state hierarchy, caps, stale-data preservation, semantic List selection, and read-only resource handoff."
+    },
+    {
+      "id": "core-tests",
+      "kind": "command",
+      "source": "swift test --disable-sandbox",
+      "status": "observed",
+      "note": "Portable graph, redaction, relationship semantics, storage resolution, and 10k fixture coverage pass."
+    },
+    {
+      "id": "adapter-tests",
+      "kind": "command",
+      "source": "serialized xcodebuild test",
+      "status": "observed",
+      "note": "Fixture adapter verifies partial inputs, exact read-only argv, and no Secret or ConfigMap payload listing."
+    }
+  ],
+  "findings": [],
+  "remediations": [],
+  "parity": [
+    {
+      "scenario_id": "ready-map-control-plane",
+      "status": "pass",
+      "evidence_ids": ["map-screenshot", "map-a11y-tree", "control-plane-trace"],
+      "note": "Visual hierarchy, semantic labels, and the unavailable boundary agree in the synthetic fixture."
+    },
+    {
+      "scenario_id": "ready-list-relationship",
+      "status": "pass",
+      "evidence_ids": ["list-screenshot", "list-a11y-tree", "keyboard-focus-trace"],
+      "note": "The List is a functional keyboard and accessibility surface, not a screenshot-only fallback."
+    },
+    {
+      "scenario_id": "partial-rbac",
+      "status": "pass",
+      "evidence_ids": ["partial-screenshot", "topology-source", "adapter-tests"],
+      "note": "The denied NetworkPolicy input is named without hiding the 14 readable nodes and 28 remaining relationships."
+    }
+  ],
+  "verification": [
+    {
+      "id": "verify-map-hierarchy",
+      "scenario_id": "ready-map-control-plane",
+      "method": "Inspect screenshot and accessibility tree at the minimum supported app size",
+      "expected": "Scope and completeness precede the map; selecting a node reveals safe facts without hiding context",
+      "result": "The map exposes 15 nodes, 31 relationships, evidence legend, snapshot status, and selected-item inspector without header wrapping.",
+      "status": "pass"
+    },
+    {
+      "id": "verify-control-plane-truth",
+      "scenario_id": "ready-map-control-plane",
+      "method": "Select the virtual control-plane boundary",
+      "expected": "The inspector marks internals unavailable and invents no physical or provider resources",
+      "result": "The inspector states that provider-managed internals may not be exposed and that visibility is not exposed by the cluster API.",
+      "status": "pass"
+    },
+    {
+      "id": "verify-list-keyboard",
+      "scenario_id": "ready-list-relationship",
+      "method": "Select a relationship row and press Down",
+      "expected": "Selection and inspector advance together using only the keyboard",
+      "result": "The selected row advanced to the declared Ingress-to-Service relationship and exposed source field, join rule, assumption, and portName https.",
+      "status": "pass"
+    },
+    {
+      "id": "verify-partial-render",
+      "scenario_id": "partial-rbac",
+      "method": "Render a fixture where NetworkPolicy listing returns Forbidden",
+      "expected": "The denied input is named while readable topology remains usable and is never labeled complete",
+      "result": "The banner names networkpolicies as access denied, marks the snapshot partial, and retains 14 nodes and 28 relationships without a stuck refresh indicator.",
+      "status": "pass"
+    }
+  ]
+}

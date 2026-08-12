@@ -13,8 +13,9 @@ or an accessibility review exists.
 | --- | --- | --- |
 | Makoni/Swift Adwaita commit `e725f39c4308138da251a8181beb0a40d86efea9` | pinned | Native GTK4/libadwaita view adapter; SwiftUI source compatibility absent. |
 | Ubuntu 24.04 / Swift 6.3 / libadwaita 1.5 slice | amd64 + arm64 build/window smoke passed | Fixture-only adapter evidence; full routes/states remain pending. |
-| macOS Swift 6.3.3 shared package | 14/14 tests; deterministic 15-step trace | Core reducer/fixtures/command/index contract plus Linux launch-option tests. |
-| Linux amd64 and arm64 Swift 6.3.3 | 14/14 tests on each architecture | Shared package portability and native GTK link. |
+| macOS Swift 6.3.3 shared package | Local `swift test` passed 23 tests in this checkout (11 core, 3 Linux launch-option, 9 topology) | Current macOS evidence only; no live-cluster validation. |
+| Topology graph performance | Observed macOS debug runs completed the `TopologyGraphTests` 10,000-node build in about 1.6–5.36s under the 10s gate | Graph construction fixture only; not SwiftUI render or API latency. |
+| Linux amd64 and arm64 Swift 6.3.3 | Current topology worktree passed 23/23 package tests, GTK build, and fixture window smoke on both architectures | Shared package/GTK packaging evidence only; topology UI parity remains pending. |
 | Debian packages | both architectures passed metadata, fresh install, `/usr/bin/kc`, and Xvfb/DBus launch smoke | Packaging/install evidence; kubectl intentionally disabled. |
 | 10k-row table benchmark | observed local p95 37.98–100.67ms, under 150ms | Shared index/filter/sort only; not GUI render performance. |
 
@@ -47,6 +48,11 @@ or an accessibility review exists.
 | Settings paths, PATH, log tail | `k-dex/Views/SettingsView.swift:3-30` | observed | partial — GTK settings form pending |
 | Permission/auth-plugin denial | `k-dex/Views/WelcomeView.swift:40-47`; `k-dex/Views/ResourceListView.swift:227-234`; `k-dex/Services/KubectlService.swift:226-267` | partial — error text is observed; RBAC-specific copy is not | missing — must be probed against fake denied API |
 | Offline/reconnecting/watch recovery | `k-dex/State/AppModel.swift:55-64`; `:172-209`; `k-dex/Services/WatchService.swift:8-102` | observed/inferred | partial — shared reducer trace covers reconnect; Linux GUI watch UX pending |
+| Topology Explorer macOS route | `k-dex/Views/TopologyExplorerView.swift:41-310`; `k-dex/Services/TopologyService.swift:34-117`; `docs/interface/evidence/topology-map-control-plane.jpeg` | observed source and synthetic fixture render | missing — Linux has shared graph contracts only; native GTK route pending |
+| Topology evidence levels and virtual boundary | `Sources/KubeCompassCore/TopologyGraph.swift:8-112`; `:448-510` | observed source | shared core only; no Linux UI evidence |
+| Topology partial RBAC/unavailable inputs | `k-dex/Services/TopologyService.swift:60-70`; `:320-332`; `Sources/KubeCompassCore/TopologyGraph.swift:80-112` | fixture-tested | no live-cluster RBAC validation |
+| Topology map/List and accessible fallback | `k-dex/Views/TopologyExplorerView.swift:152-245`; `docs/interface/evidence/topology-relationship-list.jpeg`; `docs/interface/TOPOLOGY-HIERARCHY-REVIEW.json` | observed source, render, accessibility tree, and keyboard trace | Linux route missing |
+| Topology Secret/ConfigMap boundary | `k-dex/Services/TopologyService.swift:34-51`; `:273-295`; `Sources/KubeCompassCore/TopologyGraph.swift:448-450` | observed source; payload listing absent | shared safety contract; no Linux UI |
 
 ## Open coverage questions
 
@@ -58,3 +64,5 @@ or an accessibility review exists.
   answer these.
 - A CLI/TUI counterpart is intentionally not mapped as a complete screen set;
   it is optional headless support, not the desktop acceptance surface.
+- Topology Explorer has no live-cluster, traffic, CNI, provider-internal, or
+  full Linux UI evidence in this provenance pass. Those claims remain open.

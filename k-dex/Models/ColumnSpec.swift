@@ -205,6 +205,7 @@ nonisolated enum ResourceCategory: String, CaseIterable, Identifiable, Sendable 
 
 nonisolated enum SidebarItem: Hashable, Sendable {
     case overview
+    case topology
     case resource(ResourceKind)
     case helm
     /// Transient: clicking a category row toggles its expansion, then the

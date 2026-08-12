@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import KubeCompassCore
 
 @MainActor
 @Observable
@@ -63,6 +64,15 @@ final class AppModel {
     /// True while a `kubectl get --watch` subprocess is live for the current list.
     private(set) var isWatching = false
 
+    // MARK: Topology Explorer
+
+    private(set) var topologyGraph: TopologyGraph?
+    private(set) var topologyIsBuilding = false
+    private(set) var topologyError: String?
+    private(set) var lastTopologyAt: Date?
+    var selectedTopologyNodeID: String?
+    var selectedTopologyEdgeID: String?
+
     // MARK: UI state
 
     var searchText = ""
@@ -97,6 +107,7 @@ final class AppModel {
     @ObservationIgnored private var watchFailures = 0
     @ObservationIgnored private var lastListAt: Date = .distantPast
     @ObservationIgnored private var lastOverviewAt: Date = .distantPast
+    @ObservationIgnored private var lastTopologyLoadAt: Date = .distantPast
     @ObservationIgnored private var generation = 0
     /// Set when navigating to a kind with the intent of selecting one object once loaded.
     @ObservationIgnored private var pendingSelection: (kind: ResourceKind, namespace: String, name: String)?
@@ -279,7 +290,7 @@ final class AppModel {
     /// Navigates to a kind's list and selects one object once it loads.
     func jumpTo(kind: ResourceKind, namespace: String, name: String) {
         pendingSelection = (kind, namespace, name)
-        if let current = selectedNamespace, current != namespace {
+        if kind.isNamespaced, let current = selectedNamespace, current != namespace {
             selectedNamespace = namespace
         }
         if sidebarSelection == .resource(kind) {
@@ -355,6 +366,12 @@ final class AppModel {
         objects = []
         helmReleases = []
         overview = nil
+        topologyGraph = nil
+        topologyIsBuilding = false
+        topologyError = nil
+        lastTopologyAt = nil
+        selectedTopologyNodeID = nil
+        selectedTopologyEdgeID = nil
         workloadUsage = [:]
         // Metrics are keyed by "namespace/name", which collides across
         // clusters — keeping them through a context switch would attribute
@@ -419,6 +436,11 @@ final class AppModel {
 
     func requestRefresh() {
         refreshTask?.cancel()
+        // Mark topology work synchronously so the view's first-appearance
+        // fallback cannot enqueue a second refresh before this Task starts.
+        // That duplicate could leave a cancelled subprocess drain alive and
+        // the progress indicator stuck over an already usable graph.
+        if sidebarSelection == .topology { topologyIsBuilding = true }
         refreshTask = Task { await self.refresh() }
     }
 
@@ -456,6 +478,11 @@ final class AppModel {
             reloadNamespacesIfNeeded(force: false)
             return
         }
+        if quiet, selection == .topology,
+           Date().timeIntervalSince(lastTopologyLoadAt) < 30 {
+            reloadNamespacesIfNeeded(force: false)
+            return
+        }
         generation += 1
         let gen = generation
         if !quiet { isLoading = true }
@@ -471,6 +498,38 @@ final class AppModel {
                 guard gen == generation else { return }
                 overview = data
                 lastOverviewAt = Date()
+            case .topology:
+                lastTopologyLoadAt = Date()
+                topologyIsBuilding = true
+                let result = try await TopologyService.load(context: selectedContext, namespace: selectedNamespace, generation: gen)
+                guard gen == generation else { return }
+                // A transient outage must not erase useful evidence. Keep the
+                // last successful snapshot and its timestamp visibly stale;
+                // first-load failures still show the typed unavailable graph.
+                if result.fetchedResourceCount == 0,
+                   topologyGraph?.nodes.contains(where: { !$0.isVirtual }) == true {
+                    topologyError = result.fatalMessage ?? "Topology refresh failed; previous evidence remains visible."
+                    topologyIsBuilding = false
+                    isLoading = false
+                    return
+                }
+                let previousUID = selectedTopologyNodeID.flatMap { id in
+                    topologyGraph?.nodes.first(where: { $0.id == id })?.uid
+                }
+                topologyGraph = result.graph
+                topologyError = result.fatalMessage
+                lastTopologyAt = result.graph.freshness.capturedAt
+                topologyIsBuilding = false
+                if let previousUID, let match = result.graph.nodes.first(where: { $0.uid == previousUID }) {
+                    selectedTopologyNodeID = match.id
+                } else if let selectedTopologyNodeID,
+                          !result.graph.nodes.contains(where: { $0.id == selectedTopologyNodeID }) {
+                    self.selectedTopologyNodeID = nil
+                }
+                if let selectedTopologyEdgeID,
+                   !result.graph.edges.contains(where: { $0.id == selectedTopologyEdgeID }) {
+                    self.selectedTopologyEdgeID = nil
+                }
             case .resource(let kind):
                 let namespace = kind.isNamespaced ? selectedNamespace : nil
                 var fetched: [KubeObject]
@@ -508,9 +567,18 @@ final class AppModel {
         } catch is CancellationError {
             return
         } catch {
-            if gen == generation { lastError = error.localizedDescription }
+            if gen == generation {
+                if selection == .topology {
+                    topologyError = "Topology refresh failed; previous evidence remains visible."
+                } else {
+                    lastError = error.localizedDescription
+                }
+            }
         }
-        if gen == generation { isLoading = false }
+        if gen == generation {
+            isLoading = false
+            if selection == .topology { topologyIsBuilding = false }
+        }
     }
 
     // MARK: Live watch

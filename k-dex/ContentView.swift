@@ -58,6 +58,8 @@ struct RootView: View {
             switch model.sidebarSelection {
             case .overview:
                 OverviewView()
+            case .topology:
+                TopologyExplorerView()
             case .resource(let kind):
                 ResourceListView(kind: kind)
                     .id(kind) // reset table/scroll state when switching kinds

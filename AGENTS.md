@@ -27,6 +27,9 @@ interface contract must preserve its workflows before adding Linux support.
   boundary. Mark gaps `partial` or `missing`; do not turn inference into a
   product claim.
 - Product wording and claim limits live in `docs/product/PRODUCT-TRUTH.md`.
+- Topology language, evidence levels, state copy, and sensitive-data boundary
+  live in `docs/product/TOPOLOGY-EXPLORER.md` and `CONTEXT.md`. Do not describe
+  selectors or object references as traffic, connectivity, or packet truth.
 - Every major route must cover loading, empty, error, offline/reconnecting,
   permission, confirmation, and success states where applicable.
 
@@ -34,7 +37,7 @@ interface contract must preserve its workflows before adding Linux support.
 
 Run `bash scripts/validate-interface.sh` after interface edits. It must invoke
 the canonical `engineer-interfaces` validator. Also parse both JSON documents
-with Python's standard library. The shared package passes 14/14 tests on macOS,
+with Python's standard library. The shared package passes 23/23 tests on macOS,
 Linux amd64, and Linux arm64; the deterministic trace has 15 steps and the
 observed local 10k-row p95 range was 37.98–100.67ms under the 150ms budget. Both Debian
 packages build and launch after fresh-container installation. Full Linux route
@@ -45,3 +48,8 @@ parity, accessibility/keyboard review, startup, and RSS remain pending.
 Do not print kubeconfig contents, tokens, secret manifests, private keys, or
 cluster dumps. Keep CLI/TUI work optional and companion-only; it is not a
 replacement for the desktop GUI or a k9s clone.
+
+Topology shared state may contain only typed, allowlisted relationship fields.
+Never retain raw YAML/JSON, annotations, Secret or ConfigMap values, raw command
+diagnostics, or provider credentials in the graph. Forbidden and unsupported
+inputs are explicit partial state, not empty data.

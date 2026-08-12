@@ -6,8 +6,9 @@
 | --- | --- | --- |
 | Boot/welcome | kubectl and kubeconfig readiness | Retry; open settings. |
 | Cluster picker | contexts, current-context badge, filter | Connect; reload; open settings. |
-| Sidebar shell | context switcher, Overview, resource categories, Helm | Expand/collapse/reorder; hide kinds; go to resource (`⌘K` on macOS). |
+| Sidebar shell | context switcher, Overview, Topology, resource categories, Helm | Open a workspace; expand/collapse/reorder; hide kinds; go to resource (`⌘K` on macOS). |
 | Overview | workload cards, warnings, restarts, abnormal usage | Jump to resource/events/pod; choose namespace; refresh; inspect port forwards. |
+| Topology Explorer | evidence-aware resource map, relationship list, partial-input status, selected-node details | Choose layer and namespace; search; select a Resource Node or Relationship; refresh; jump to its resource list. Read-only. |
 | Resource list | sortable/customizable columns, namespace scope, selection | Filter; select one/many; create; refresh; open detail; logs; YAML; delete; scale; restart; port forward. |
 | Resource detail | Overview, Pods, YAML, Logs, Events tabs | Close; switch tab; apply YAML; retry; destructive/action menu. |
 | Helm | release table and release detail tabs | Select release; inspect values/manifests/notes/history; refresh. |
@@ -29,6 +30,12 @@ next step where one exists:
 | Permission | Kubernetes RBAC or local executable/auth-plugin denial; identify the denied operation and avoid destructive retry loops. |
 | Confirmation | Delete and rollout restart dialogs identify count, resource, namespace, context, and irreversible effect. |
 | Success | Connected context, applied manifest, active forward, refreshed data, or completed action is visible without implying more than the command returned. |
+
+Topology adds a **Partial** condition inside its data state: valid relationships
+remain visible while each forbidden, unsupported, timed-out, or unresolved
+input is named. Partial is never rendered as complete or empty. The exact
+relationship language and security boundary live in
+`docs/product/TOPOLOGY-EXPLORER.md`.
 
 The direct source/state inventory and Linux coverage status live in
 `docs/interface/PROVENANCE.md`.

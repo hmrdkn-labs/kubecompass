@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000000000000000000001 /* KubeCompassCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000004 /* KubeCompassCore */; };
+		A10000000000000000000002 /* KubeCompassCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000004 /* KubeCompassCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000001 /* KubeCompassCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,6 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000002 /* KubeCompassCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +98,7 @@
 			);
 			name = "k-dex";
 			packageProductDependencies = (
+				A10000000000000000000004 /* KubeCompassCore */,
 			);
 			productName = "k-dex";
 			productReference = 8366EE0A301364D40084F6DF /* KubeCompass.app */;
@@ -117,6 +122,7 @@
 			);
 			name = "K-DexTests";
 			packageProductDependencies = (
+				A10000000000000000000004 /* KubeCompassCore */,
 			);
 			productName = "K-DexTests";
 			productReference = 83FFFAD830285E1A0047D97A /* K-DexTests.xctest */;
@@ -151,6 +157,7 @@
 			mainGroup = 8366EE01301364D40084F6DF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				A10000000000000000000003 /* XCLocalSwiftPackageReference "." */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8366EE0B301364D40084F6DF /* Products */;
@@ -351,7 +358,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 83JA994J48;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -364,7 +371,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.kubecompass.app";
 				PRODUCT_MODULE_NAME = K_Dex;
 				PRODUCT_NAME = "KubeCompass";
@@ -385,7 +392,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 83JA994J48;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -398,7 +405,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.kubecompass.app";
 				PRODUCT_MODULE_NAME = K_Dex;
 				PRODUCT_NAME = "KubeCompass";
@@ -487,6 +494,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A10000000000000000000003 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ".";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A10000000000000000000004 /* KubeCompassCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000003 /* XCLocalSwiftPackageReference "." */;
+			productName = KubeCompassCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 	};
 	rootObject = 8366EE02301364D40084F6DF /* Project object */;

@@ -10,6 +10,10 @@ claim that KubeCompass is a browser app. The runtime targets are explicitly:
 | Linux | Makoni / Swift Adwaita, pinned `e725f39c4308138da251a8181beb0a40d86efea9` | fixture slice packages and launches; full route parity pending | Native GTK4/libadwaita view adapter on Ubuntu 24.04, Swift 6.3, libadwaita 1.5. SwiftUI source compatibility is absent. |
 | headless/SSH | optional CLI/TUI companion | not MVP | Share commands and state where useful; do not target k9s parity. |
 
+Topology Explorer follows the same boundary: the current SwiftUI Map/List
+route is macOS-only. Linux can consume the portable evidence graph and input
+status contracts, but it has no implemented GTK topology view or parity proof.
+
 ## ADR-001: choose native GTK4/libadwaita for Linux
 
 **Decision (2026-08-12):** use Makoni/Swift Adwaita at commit
@@ -26,12 +30,15 @@ milestone because its pre-1.0 table and shortcut gaps were not the selected
 evidence path. The shared Foundation core remains the parity anchor; adapter
 views may be rewritten.
 
-**Evidence boundary:** the package passes 14/14 tests on macOS, Linux amd64,
-and Linux arm64; its deterministic trace has 15 steps, and final local 10k-row
-p95 ranged from 37.98–100.67ms (under 150ms). The Makoni fixture slice built on Ubuntu 24.04
-with libadwaita 1.5, and both Debian packages passed fresh-container
-install-and-launch smoke. Full Linux route/state coverage,
-accessibility/keyboard review, startup, and RSS remain pending.
+**Evidence boundary:** the current macOS Swift 6.3.3 `swift test` run passed 23
+tests (11 existing core, 3 Linux launch-option, and 9 topology graph tests).
+The deterministic trace remains a shared-core fixture, and observed macOS
+debug runs built the 10,000-node topology fixture in about 1.6–5.36s under the
+10s gate. These are not live-cluster or GUI-render measurements. Fresh Linux
+amd64 and arm64 runs passed the same 23 package tests, built the GTK fixture
+app, launched its 10-surface smoke window, and produced Debian packages. Full
+Linux topology route/state coverage, accessibility/keyboard review, startup,
+RSS, and live-cluster behavior remain pending.
 
 ## 1:1 definition
 
@@ -67,8 +74,9 @@ screen/state is built.
 
 ## Gates and stop line
 
-- Shared-package `swift test` passes on macOS, Linux amd64, and Linux arm64
-  (14/14 on each platform).
+- Current macOS, Linux amd64, and Linux arm64 `swift test` runs each pass 23
+  tests, including the nine topology graph tests. The Linux smoke remains a
+  fixture app; run GTK topology UI gates before claiming route parity.
 - A deterministic 15-step context-to-logs/reconnect trace is stable, and the
   observed local 10k-row table p95 range is 37.98–100.67ms under the 150ms budget.
 - Ubuntu 24.04 Swift 6.3/libadwaita 1.5 builds, native window smoke, Debian
@@ -76,6 +84,9 @@ screen/state is built.
 - Full Linux GUI routes/states, accessibility/keyboard review, startup/RSS,
   and live-cluster behavior remain pending. Do not infer them from the
   fixture-only package.
+- Topology Explorer's Map/List route is a macOS SwiftUI implementation. Linux
+  currently has only the shared graph/core contracts; no GTK topology screen or
+  live-cluster route validation is evidenced.
 - Every probe has a traceable result and a screenshot/state review for
   hierarchy—not pixel identity.
 - If the pinned adapter fails a remaining gate, retain macOS SwiftUI and defer

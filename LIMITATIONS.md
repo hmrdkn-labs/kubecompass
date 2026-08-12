@@ -1,8 +1,9 @@
 # Known Limitations
 
-> The cluster/runtime limitations below apply to the inherited macOS surface.
-> The current Linux vertical slice is fixture-only and never invokes kubectl;
-> see `docs/interface/NATIVE-ADAPTER.md` for its explicit scope.
+> The cluster/runtime limitations below apply to the inherited macOS surface
+> and the new Topology Explorer snapshot route. The current Linux vertical
+> slice is fixture-only and never invokes kubectl; see
+> `docs/interface/NATIVE-ADAPTER.md` for its explicit scope.
 
 Companion to [ARCHITECTURE.md](ARCHITECTURE.md). After the mitigation pass
 that added the live-watch overlay, metrics-API queries, change detection,
@@ -17,6 +18,10 @@ that remain — and why each one is deliberately not being fixed right now.
 | Metrics lag by 15–60 s | Upstream (metrics-server) | A richer telemetry source is added |
 | Watch events carry managedFields | Upstream (kubectl) | Large clusters make events heavy |
 | Everything runs through kubectl | Philosophy, not a bug | Never — it *is* the architecture |
+| Topology is a snapshot, not traffic telemetry | Deliberate boundary | A separately permissioned telemetry source exists |
+| Topology inputs can be partial under RBAC/API gaps | Permission/upstream | Required list permissions and API support are available |
+| Secret/ConfigMap payloads are outside the topology graph | Security boundary | A separately authorized payload workflow is designed |
+| Linux topology UI is not implemented | Deferred adapter work | GTK route and parity gates are complete |
 
 ## No Mac App Store distribution (App Sandbox stays off)
 
@@ -104,3 +109,32 @@ don't need it installed; the sharp edges are mitigated rather than removed:
 a Settings override for using your own binary, PATH resolution for GUI apps
 when falling back, and a version check at boot that warns before an old
 kubectl breaks watch or metrics quietly.
+
+## Topology Explorer boundaries
+
+Topology Explorer is intentionally read-only and evidence-aware. Its current
+adapter lists only the allowlisted resource kinds needed for ownership,
+placement, selectors, declared ingress backends, EndpointSlices, policy
+metadata, and storage references. It does not list Secret or ConfigMap
+resources and never carries their data/stringData/binaryData values. References
+from a Pod may therefore remain unresolved, which is shown as unavailable
+evidence rather than an empty target.
+
+The graph distinguishes explicit API fields from declarations and deterministic
+joins. An Ingress backend is a declared reference; a Service selector or
+NetworkPolicy pod selection is an inferred match; an EndpointSlice target or
+Pod `spec.nodeName` is observed metadata. None of these proves request traffic,
+reachability, CNI enforcement, kube-proxy behavior, provider load-balancer
+internals, VPC routes, or firewall state. A virtual control-plane boundary
+marks those provider-managed internals when they are not exposed by the API.
+
+Forbidden, unsupported, timed-out, offline, or cancelled inputs are recorded as
+partial/unavailable status with safe copy. A successful empty result is not
+substituted for a denied list. Current tests exercise fixture graphs and RBAC
+classification; no live-cluster Topology Explorer validation has been run.
+
+Observed macOS debug runs of the 10,000-node graph test took about 1.6–5.36s,
+under the 10s gate. That is a graph-construction observation only, not a
+promised GUI frame rate, API latency, or capacity limit. Map mode is
+intentionally capped and List mode is the accessible semantic fallback; full
+Linux GTK UI parity and an accessibility/keyboard review remain open.
