@@ -1,0 +1,124 @@
+name: macOS stability and topology
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stability-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: macOS 26 app stability and topology contracts
+    runs-on: macos-26
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Report toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+
+      - name: Run SwiftPM regression tests
+        run: swift test --disable-sandbox --configuration debug
+
+      - name: Run fresh unsigned Xcode tests
+        run: |
+          set -euo pipefail
+          derived_data="${RUNNER_TEMP}/kubecompass-xcode-test"
+          rm -rf "$derived_data"
+          xcodebuild \
+            -project k-dex.xcodeproj \
+            -scheme k-dex \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -derivedDataPath "$derived_data" \
+            -resultBundlePath "${RUNNER_TEMP}/kubecompass-xcode-tests.xcresult" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            test
+
+      - name: Prepare kubectl bundle input
+        run: |
+          set -euo pipefail
+          version="v1.36.3"
+          arm64_sha256="fc8582acde13869a606730a79379d6515f30c68afcced0b5ac8789d5d002b7d6"
+          x86_64_sha256="158b3b46cf74e8b6bd9b1d7cd30f665e3efb2bc1ec3c843ec925bcfdd2930de0"
+          bundle_dir="${RUNNER_TEMP}/kubecompass-kubectl"
+          rm -rf "$bundle_dir"
+          mkdir -p "$bundle_dir"
+          curl -fsSL --retry 3 -o "$bundle_dir/arm64" "https://dl.k8s.io/release/${version}/bin/darwin/arm64/kubectl"
+          curl -fsSL --retry 3 -o "$bundle_dir/amd64" "https://dl.k8s.io/release/${version}/bin/darwin/amd64/kubectl"
+          echo "${arm64_sha256}  $bundle_dir/arm64" | shasum -a 256 -c -
+          echo "${x86_64_sha256}  $bundle_dir/amd64" | shasum -a 256 -c -
+          lipo -create "$bundle_dir/arm64" "$bundle_dir/amd64" -output "$bundle_dir/kubectl"
+          chmod 0755 "$bundle_dir/kubectl"
+          archs=" $(lipo -archs "$bundle_dir/kubectl") "
+          [[ "$archs" == *" arm64 "* ]]
+          [[ "$archs" == *" x86_64 "* ]]
+          echo "KUBECOMPASS_KUBECTL=$bundle_dir/kubectl" >> "$GITHUB_ENV"
+          echo "KUBECOMPASS_KUBECTL_ARCHS=arm64 x86_64" >> "$GITHUB_ENV"
+          "$bundle_dir/kubectl" version --client
+
+      - name: Build fresh unsigned Release app
+        run: |
+          set -euo pipefail
+          derived_data="${RUNNER_TEMP}/kubecompass-xcode-release"
+          rm -rf "$derived_data"
+          xcodebuild \
+            -project k-dex.xcodeproj \
+            -scheme k-dex \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            -derivedDataPath "$derived_data" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+          app_path="$(find "$derived_data/Build/Products/Release" -maxdepth 1 -type d -name '*.app' -print -quit)"
+          test -n "$app_path"
+          test -x "$app_path/Contents/Helpers/kubectl"
+          test -f "$app_path/Contents/Resources/kubectl-LICENSE"
+          app_archs="$(lipo -archs "$app_path/Contents/MacOS/KubeCompass")"
+          helper_archs="$(lipo -archs "$app_path/Contents/Helpers/kubectl")"
+          test "$app_archs" = "arm64 x86_64"
+          test "$helper_archs" = "arm64 x86_64"
+          echo "app: $app_archs; kubectl: $helper_archs"
+
+      - name: Validate interface contracts
+        run: |
+          set -euo pipefail
+          bash scripts/validate-interface.sh
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('.')
+          json_files = sorted(root.glob('docs/interface/*.json'))
+          if not json_files:
+              raise SystemExit('no interface JSON files found')
+          for path in json_files:
+              json.loads(path.read_text())
+          print(f'interface-json: parsed {len(json_files)} documents')
+          PY
+
+      - name: Run fake topology backend self-test
+        run: bash scripts/topology-fake-kubectl.sh --self-test
+
+      - name: Run bounded full topology benchmark
+        env:
+          KUBECOMPASS_BENCHMARK_SAMPLES: '3'
+          KUBECOMPASS_BENCHMARK_WALL_SECONDS: '240'
+        run: bash scripts/topology-benchmark.sh

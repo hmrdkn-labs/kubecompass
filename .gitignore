@@ -5,6 +5,20 @@ DerivedData/
 build/
 .build/
 dist/
+default.profraw
+**/__pycache__/
+*.py[cod]
+
+# Local credentials and cluster access material
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+kubeconfig
+kubeconfig.*
+*.kubeconfig
 
 # Private planning docs
 DISTRIBUTION-PLAN.md

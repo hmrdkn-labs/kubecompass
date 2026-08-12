@@ -33,7 +33,7 @@ Podman-compatible kind prerequisites. Do not pass a production kubeconfig.
 ## Run the real fixture
 
 ```sh
-cd /Users/hamardikan-mac/repos/kubecompass
+cd "$(git rev-parse --show-toplevel)"
 scripts/topology-e2e.sh --help
 scripts/topology-e2e.sh --run
 ```

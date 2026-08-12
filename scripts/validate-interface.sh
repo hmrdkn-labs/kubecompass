@@ -2,11 +2,11 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-validator="${ENGINEER_INTERFACES_VALIDATOR:-/Users/hamardikan-mac/.codex/skills/engineer-interfaces/scripts/validate_interface.py}"
+validator="${ENGINEER_INTERFACES_VALIDATOR:-$repo_root/scripts/validate-interface.py}"
 interface_file="$repo_root/docs/interface/kubecompass.interface.json"
 
 if [[ ! -f "$validator" ]]; then
-  echo "ERROR: canonical engineer-interfaces validator not found: $validator" >&2
+  echo "ERROR: interface validator not found: $validator" >&2
   exit 2
 fi
 if [[ ! -f "$interface_file" ]]; then

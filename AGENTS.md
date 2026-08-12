@@ -35,9 +35,10 @@ interface contract must preserve its workflows before adding Linux support.
 
 ## Verification gates
 
-Run `bash scripts/validate-interface.sh` after interface edits. It must invoke
-the canonical `engineer-interfaces` validator. Also parse both JSON documents
-with Python's standard library. Run the complete Swift package and Xcode test
+Run `bash scripts/validate-interface.sh` after interface edits. It uses the
+vendored repository validator by default and may be pointed at the canonical
+`engineer-interfaces` validator with `ENGINEER_INTERFACES_VALIDATOR`. Also parse
+both JSON documents with Python's standard library. Run the complete Swift package and Xcode test
 suites, the topology fixture and benchmark gates, and both Linux architecture
 build/package smokes before release. Record exact test counts and timings in
 the verification receipt rather than freezing them in this rule file. Full

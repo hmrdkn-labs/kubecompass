@@ -1,7 +1,12 @@
 # KubeCompass
 
+[![macOS stability and topology](https://github.com/hmrdkn-labs/kubecompass/actions/workflows/stability.yml/badge.svg)](https://github.com/hmrdkn-labs/kubecompass/actions/workflows/stability.yml)
+
 A native Kubernetes desktop client: SwiftUI on macOS, with a Swift +
 GTK/libadwaita Linux adapter under active development.
+
+A [Hamardikan Labs](https://github.com/hmrdkn-labs) project, derived from
+[K-Dex](https://github.com/irfancen/k-dex) with its MIT provenance preserved.
 
 ## Current status
 
@@ -98,6 +103,20 @@ xcodebuild -project k-dex.xcodeproj -scheme k-dex \
   -configuration Release -destination 'platform=macOS' \
   CODE_SIGNING_ALLOWED=NO build
 ```
+
+Release builds target `arm64` and `x86_64`, and must bundle a helper containing
+both slices. Provide a checked universal helper with
+`KUBECOMPASS_KUBECTL=/absolute/path/to/universal/kubectl`, or provide both thin
+inputs with `KUBECOMPASS_KUBECTL_ARM64` and `KUBECOMPASS_KUBECTL_X86_64`.
+`scripts/bundle-kubectl-macos.sh` combines and validates the inputs; the build
+fails instead of silently producing an app that cannot connect on one of the
+supported Macs. Debug builds may use a host-compatible helper from `PATH`, but
+the build prints a host-only warning when the helper is not universal.
+
+The reproducible CI and Xcode Cloud paths fetch official Kubernetes `kubectl`
+v1.36.3 `darwin/arm64` and `darwin/amd64` binaries with pinned SHA-256
+checksums, then assemble the universal helper. No Homebrew dependency is used
+for release packaging.
 
 The local `kc` helper supports `kc`, `kc path`, `kc version`, and `kc help`.
 It intentionally does not masquerade as a full cluster CLI.

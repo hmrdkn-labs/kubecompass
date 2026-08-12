@@ -4,10 +4,10 @@ cask "kubecompass" do
   version "VERSION"
   sha256 "SHA256"
 
-  url "https://github.com/OWNER/kubecompass/releases/download/v#{version}/KubeCompass-#{version}.dmg"
+  url "https://github.com/hmrdkn-labs/kubecompass/releases/download/v#{version}/KubeCompass-#{version}.dmg"
   name "KubeCompass"
   desc "Native Kubernetes desktop client"
-  homepage "https://github.com/OWNER/kubecompass"
+  homepage "https://github.com/hmrdkn-labs/kubecompass"
 
   depends_on macos: ">= :tahoe"
   app "KubeCompass.app"

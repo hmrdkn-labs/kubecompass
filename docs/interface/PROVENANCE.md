@@ -1,8 +1,9 @@
-# K-Dex interface provenance and Linux coverage
+# KubeCompass interface provenance and Linux coverage
 
 This table is the evidence boundary for the Interface IR. “Observed” means the
-current K-Dex source directly contains the behavior. Linux status describes the
-pinned Makoni/Swift Adwaita adapter and its evidence boundary. The Ubuntu 24.04
+KubeCompass macOS source, derived from K-Dex, directly contains the behavior.
+Linux status describes the pinned Makoni/Swift Adwaita adapter and its evidence
+boundary. The Ubuntu 24.04
 / Swift 6.3 / libadwaita 1.5 slice builds, packages, installs, and launches on
 Linux amd64 and arm64; this is not evidence that full live-cluster route parity
 or an accessibility review exists.
