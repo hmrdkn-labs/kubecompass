@@ -124,15 +124,18 @@ mutations are `kubectl delete/scale/rollout restart`; YAML editing pipes the
 buffer into `kubectl apply -f -` over stdin. Because kubectl does the
 authenticating, every auth mechanism a kubeconfig can express — EKS/GKE/AKS
 exec plugins, OIDC, client certs, tokens — works without K-Dex containing a
-single line of auth code. The app never sees a credential; it only sees
-command output.
+single line of auth code. Kubectl owns the authentication credentials; the
+app can still hold whatever requested command output a user opens in a view.
 
 ### 3. Dynamic models — `Support/JSONValue.swift`, `Models/KubeObject.swift`
 
 There are no typed structs for Deployment, Pod, Service, etc. Every object is
 kept as a raw `JSONValue` tree (a recursive enum: null/bool/number/string/
 array/object) wrapped in a `KubeObject` that pre-extracts only the universal
-fields: name, namespace, uid, creation date, labels, annotations.
+fields: name, namespace, uid, creation date, labels, annotations. Explicit
+Secret, ConfigMap, YAML, and Helm views can therefore place requested payload
+values in process memory while they are displayed, edited, or decoded; those
+values are not persisted by the app.
 
 Anything kind-specific is read lazily with path subscripts at render time:
 
@@ -226,8 +229,9 @@ Secret of type `helm.sh/release.v1`. K-Dex lists those secrets
 (`-l owner=helm`) and unwraps the payload: base64 (Kubernetes secret data) →
 base64 again (Helm's own encoding) → gzip (decompressed by piping through
 the Compression framework, size-bounded) → JSON containing the chart metadata, computed values,
-rendered manifest, and notes. Revision history is grouped from the per-version
-secrets.
+rendered manifest, and notes. This explicit Helm view can expose requested
+release values in process memory; revision history is grouped from the
+per-version secrets and nothing is cached or persisted.
 
 ### 8. Long-lived subprocesses
 
@@ -246,9 +250,13 @@ Two features hold child processes open instead of running one-shot commands:
 App Sandbox is **disabled**. This is a hard requirement of the architecture:
 the app must read `~/.kube/config`, execute arbitrary user-installed binaries
 (kubectl and whatever auth plugins the kubeconfig invokes), and let those
-binaries do network I/O and write their own caches. The flip side is that the
-app itself holds no secrets and opens no sockets — its security boundary is
-exactly your terminal's.
+binaries do network I/O and write their own caches. Kubectl and its plugins own
+auth credentials; KubeCompass does not parse or persist those credentials. The
+flip side is that explicit Secret/ConfigMap/YAML/Helm views may hold requested
+sensitive values in process/app memory while open. Topology never fetches or
+retains Secret/ConfigMap payloads, and KubeCompass has no cache, database, or
+persistence layer for either topology or detail payloads. Its subprocesses,
+not the SwiftUI process, own cluster sockets and kubectl caches.
 
 ## How Aptakube does it differently
 
@@ -309,8 +317,10 @@ integration effort for independence from the kubectl binary.
   clean slate.
 - **Trivially debuggable.** Any behavior can be reproduced by running the
   same argv by hand.
-- **No credential handling.** The app never sees a token; secrets stay inside
-  kubectl and its plugins.
+- **Credential boundary stays with kubectl.** Kubectl and its plugins handle
+  tokens, certificates, and exec-plugin output; explicit Secret/ConfigMap/YAML/
+  Helm views may still place requested values in app memory, without caching or
+  persistence.
 
 #### Subprocess cons
 

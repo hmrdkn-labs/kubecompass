@@ -24,11 +24,29 @@ DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}" \
 xcodebuild -project k-dex.xcodeproj -scheme k-dex -configuration Release \
     -destination 'platform=macOS' CONFIGURATION_BUILD_DIR="$build_dir" build
 test -d "$app" || { echo "error: build product missing: $app" >&2; exit 1; }
-
-if [ -x "$app/Contents/Helpers/kubectl" ]; then
-    codesign --force --timestamp --options runtime --sign "$identity" \
-        "$app/Contents/Helpers/kubectl"
+kubectl_helper="$app/Contents/Helpers/kubectl"
+if [ ! -x "$kubectl_helper" ]; then
+    echo "error: Release app is missing bundled executable: $kubectl_helper" >&2
+    exit 1
 fi
+app_binary="$app/Contents/MacOS/KubeCompass"
+if [ ! -x "$app_binary" ]; then
+    echo "error: Release app is missing its executable: $app_binary" >&2
+    exit 1
+fi
+app_archs=$(lipo -archs "$app_binary")
+helper_archs=$(lipo -archs "$kubectl_helper")
+for arch in $app_archs; do
+    case " $helper_archs " in
+        *" $arch "*) ;;
+        *)
+            echo "error: bundled kubectl [$helper_archs] does not cover app slice [$arch] ($app_archs)" >&2
+            exit 1
+            ;;
+    esac
+done
+echo "==> Universal slices: app [$app_archs], kubectl [$helper_archs]"
+codesign --force --timestamp --options runtime --sign "$identity" "$kubectl_helper"
 codesign --force --timestamp --options runtime --sign "$identity" "$app"
 codesign --verify --deep --strict "$app"
 

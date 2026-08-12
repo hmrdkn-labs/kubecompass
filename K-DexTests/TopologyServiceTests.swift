@@ -171,6 +171,17 @@ struct TopologyServiceTests {
         #expect(result.graph.details[podID]?.containerPorts.first?.port == 8080)
     }
 
+    @Test func endpointSliceReadyFactUsesEffectiveReadiness() async throws {
+        let runner = TopologyFixtureRunner { args in
+            let kind = args.count > 1 ? args[1] : ""
+            guard kind.contains("endpointslices") else { return fixtureJSON("") }
+            return fixtureJSON("{\"apiVersion\":\"discovery.k8s.io/v1\",\"kind\":\"EndpointSlice\",\"metadata\":{\"name\":\"web-1\",\"namespace\":\"demo\",\"uid\":\"slice-ready\",\"labels\":{\"kubernetes.io/service-name\":\"web\"}},\"addressType\":\"IPv4\",\"endpoints\":[{\"addresses\":[\"10.42.0.1\"],\"conditions\":{\"ready\":false}},{\"addresses\":[\"10.42.0.2\"],\"conditions\":{}},{\"addresses\":[\"10.42.0.3\"],\"conditions\":{\"terminating\":true,\"serving\":false}}]}")
+        }
+        let result = try await TopologyService.load(context: "effective-ready", namespace: "demo", runner: runner)
+        let slice = try #require(result.graph.nodes.first { $0.uid == "slice-ready" })
+        #expect(slice.facts.contains { $0.key == "endpoint-count" && $0.value == "1 ready / 3 listed" })
+    }
+
     @Test func serviceModesAndNumericDefaultTargetPortAreTyped() async throws {
         let runner = TopologyFixtureRunner { args in
             let kind = args.count > 1 ? args[1] : ""
@@ -205,7 +216,7 @@ struct TopologyServiceTests {
         let runner = TopologyFixtureRunner { args in
             let kind = args.count > 1 ? args[1] : ""
             if kind.contains("gatewayclasses") {
-                return fixtureJSON("{\"apiVersion\":\"gateway.networking.k8s.io/v1\",\"kind\":\"GatewayClass\",\"metadata\":{\"name\":\"istio\",\"uid\":\"gc-1\"},\"spec\":{\"controllerName\":\"istio.io/gateway-controller\"},\"status\":{\"conditions\":[{\"type\":\"Accepted\",\"status\":\"True\"}]}}")
+                return fixtureJSON("{\"apiVersion\":\"gateway.networking.k8s.io/v1\",\"kind\":\"GatewayClass\",\"metadata\":{\"name\":\"istio\",\"uid\":\"gc-1\"},\"spec\":{\"controllerName\":\"istio.io/gateway-controller\"},\"status\":{\"conditions\":[{\"type\":\"Accepted\",\"status\":\"False\"},{\"type\":\"Accepted\",\"status\":\"True\"}]}}")
             }
             if kind.contains("gateways") {
                 return fixtureJSON("{\"apiVersion\":\"gateway.networking.k8s.io/v1\",\"kind\":\"Gateway\",\"metadata\":{\"name\":\"edge\",\"namespace\":\"demo\",\"uid\":\"gw-1\"},\"spec\":{\"gatewayClassName\":\"istio\",\"listeners\":[{\"name\":\"https\",\"protocol\":\"HTTPS\",\"port\":443,\"hostname\":\"demo.example\"}]},\"status\":{\"conditions\":[{\"type\":\"Programmed\",\"status\":\"True\"}]}}")
@@ -217,6 +228,8 @@ struct TopologyServiceTests {
         }
         let result = try await TopologyService.load(context: "gateway", namespace: "demo", runner: runner)
         #expect(result.graph.nodes.contains { $0.kind == "GatewayClass" && $0.name == "istio" })
+        let gatewayClassID = try #require(result.graph.nodes.first { $0.uid == "gc-1" }?.id)
+        #expect(result.graph.details[gatewayClassID]?.gatewayClass?.statusConditions["Accepted"] == "True")
         #expect(result.graph.nodes.contains { $0.kind == "Gateway" && $0.name == "edge" })
         #expect(result.graph.nodes.contains { $0.kind == "HTTPRoute" && $0.name == "web" })
         let routeID = try #require(result.graph.nodes.first { $0.uid == "hr-1" }?.id)

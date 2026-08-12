@@ -17,9 +17,19 @@ creates a signed local DMG but not a public release artifact. KubeCompass has no
 update feed yet; the upstream K-Dex Sparkle feed and keys are intentionally not
 used.
 
-The app bundles a local `kubectl` when available. Set `KUBECOMPASS_KUBECTL` to
-an explicit binary; `KDEX_KUBECTL` remains a temporary compatibility fallback.
-The Apache-2.0 kubectl license is copied into the bundle.
+Release packaging targets a universal (`arm64` + `x86_64`) macOS app. It
+requires a bundled universal `kubectl`, supplied either as
+`KUBECOMPASS_KUBECTL=/absolute/path/to/universal/kubectl` or as both
+`KUBECOMPASS_KUBECTL_ARM64` and `KUBECOMPASS_KUBECTL_X86_64`. The build phase
+uses `scripts/bundle-kubectl-macos.sh` to combine thin inputs with `lipo`, copy
+the Apache-2.0 license, and validate that every app `ARCHS` slice is present.
+Release packaging fails when the helper is thin or missing. `KDEX_KUBECTL`
+remains a temporary compatibility fallback only for Debug builds.
+
+The Xcode Cloud post-clone hook and GitHub Actions workflow fetch pinned
+Kubernetes `v1.36.3` `darwin/arm64` and `darwin/amd64` binaries directly from
+`dl.k8s.io`, verify their SHA-256 checksums, and assemble one universal helper;
+neither path installs kubectl with Homebrew.
 
 ## Linux
 

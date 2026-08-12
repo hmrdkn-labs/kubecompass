@@ -459,6 +459,49 @@ final class TopologyGraphTests: XCTestCase {
         XCTAssertNotEqual(graph([service, route]).portPaths.first?.status, .unresolved)
     }
 
+    func testHTTPRouteParentWrappingRetainsTruncationMetadataAndNotes() {
+        let endpoints = (0..<900).map { index in
+            TopologyEndpointTarget(
+                reference: TopologyObjectReference(kind: "Pod", name: "route-fanout-\(index)", namespace: "demo", uid: "route-fanout-pod-\(index)"),
+                ready: true,
+                addresses: ["10.43.\(index / 255).\(index % 255)"]
+            )
+        }
+        let service = TopologyResourceSnapshot(
+            identity: identity("Service", "route-fanout", uid: "route-fanout-service"),
+            servicePorts: [TopologyServicePort(name: "web", port: 80)]
+        )
+        let slice = TopologyResourceSnapshot(
+            identity: identity("EndpointSlice", "route-fanout", uid: "route-fanout-slice"),
+            endpointSlice: TopologyEndpointSliceSnapshot(
+                serviceName: "route-fanout",
+                ports: [TopologyEndpointPort(name: "web", port: 8080)],
+                endpoints: endpoints
+            )
+        )
+        let route = TopologyResourceSnapshot(
+            identity: identity("HTTPRoute", "route-fanout", uid: "route-fanout-http"),
+            httpRoute: TopologyHTTPRouteSnapshot(
+                // Unknown parent state wraps the resolved path as partial.
+                parents: [TopologyGatewayParentReference(name: "edge")],
+                backends: [TopologyGatewayBackendReference(name: "route-fanout", port: 80, resolvedRefs: true)]
+            )
+        )
+
+        let path = try! XCTUnwrap(graph([service, slice, route]).portPaths.first)
+
+        XCTAssertEqual(path.status, .partial)
+        XCTAssertTrue(path.isTruncated)
+        XCTAssertEqual(path.totalEndpointCount, 900)
+        XCTAssertEqual(path.readyEndpointCount, 900)
+        XCTAssertEqual(path.omittedEndpointPortCount, 0)
+        XCTAssertGreaterThan(path.omittedEndpointCount, 0)
+        XCTAssertGreaterThan(path.omittedHopCount, 0)
+        XCTAssertTrue(path.note?.contains("HTTPRoute parent acceptance or reference resolution is not yet observed") == true)
+        XCTAssertTrue(path.note?.contains("Endpoint fanout truncated") == true)
+        XCTAssertTrue(path.provenance.contains { $0.source.sourceField == "EndpointSlice.endpoints[]" && $0.source.assumption?.contains("bounded") == true })
+    }
+
     func testQuerySearchIncludesTypedPortAndEvidenceFields() {
         let service = TopologyResourceSnapshot(identity: identity("Service", "searchable", uid: "search-service"), servicePorts: [TopologyServicePort(name: "metrics", port: 9100, protocolName: "TCP", appProtocol: "http")])
         let ingress = TopologyResourceSnapshot(identity: identity("Ingress", "searchable", uid: "search-ingress"), ingressRoutes: [TopologyIngressRoute(backendName: "searchable", backendPort: 9100)])
@@ -476,5 +519,58 @@ final class TopologyGraphTests: XCTestCase {
         let elapsed = Double(DispatchTime.now().uptimeNanoseconds - start) / 1_000_000_000
         XCTAssertEqual(result.edges.filter { $0.relationship == .selects }.count, 4_000)
         XCTAssertLessThan(elapsed, 5.0)
+    }
+
+    func testEndpointFanoutIsBoundedAndExplicitlyMarkedTruncated() {
+        let endpoints = (0..<900).map { index in
+            TopologyEndpointTarget(
+                reference: TopologyObjectReference(kind: "Pod", name: "fanout-\(index)", namespace: "demo", uid: "fanout-pod-\(index)"),
+                ready: true,
+                addresses: ["10.42.\(index / 255).\(index % 255)"]
+            )
+        }
+        let pods = (0..<900).map { index in
+            node("Pod", "fanout-\(index)", uid: "fanout-pod-\(index)")
+        }
+        let service = TopologyResourceSnapshot(
+            identity: identity("Service", "fanout", uid: "fanout-service"),
+            servicePorts: [TopologyServicePort(name: "web", port: 80)]
+        )
+        let slice = TopologyResourceSnapshot(
+            identity: identity("EndpointSlice", "fanout", uid: "fanout-slice"),
+            endpointSlice: TopologyEndpointSliceSnapshot(
+                serviceName: "fanout",
+                ports: [TopologyEndpointPort(name: "web", port: 8080)],
+                endpoints: endpoints
+            )
+        )
+        let ingress = TopologyResourceSnapshot(
+            identity: identity("Ingress", "fanout", uid: "fanout-ingress"),
+            ingressRoutes: [TopologyIngressRoute(backendName: "fanout", backendPort: 80)]
+        )
+
+        let first = graph(pods + [service, slice, ingress])
+        let second = graph(pods.reversed() + [service, TopologyResourceSnapshot(
+            identity: identity("EndpointSlice", "fanout", uid: "fanout-slice"),
+            endpointSlice: TopologyEndpointSliceSnapshot(
+                serviceName: "fanout",
+                ports: [TopologyEndpointPort(name: "web", port: 8080)],
+                endpoints: endpoints.reversed()
+            )
+        ), ingress])
+        let path = try! XCTUnwrap(first.portPaths.first)
+
+        XCTAssertEqual(first, second)
+        XCTAssertEqual(path.status, .partial)
+        XCTAssertTrue(path.isTruncated)
+        XCTAssertEqual(path.totalEndpointCount, 900)
+        XCTAssertEqual(path.readyEndpointCount, 900)
+        XCTAssertEqual(path.omittedEndpointPortCount, 0)
+        XCTAssertGreaterThan(path.omittedEndpointCount, 0)
+        XCTAssertGreaterThan(path.omittedHopCount, 0)
+        XCTAssertLessThanOrEqual(path.hops.count, 512)
+        XCTAssertTrue(path.note?.contains("Endpoint fanout truncated") == true)
+        XCTAssertTrue(path.provenance.contains { $0.source.sourceField == "EndpointSlice.endpoints[]" && $0.source.assumption?.contains("bounded") == true })
+        XCTAssertEqual(TopologyGraphQuery(graph: first).portPaths(search: "truncated").count, 1)
     }
 }

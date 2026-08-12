@@ -311,7 +311,10 @@ nonisolated enum TopologyService {
             return TopologyEndpointTarget(reference: reference, ready: endpoint["conditions"]["ready"].bool, serving: endpoint["conditions"]["serving"].bool, terminating: endpoint["conditions"]["terminating"].bool, addresses: endpoint["addresses"].array.map(\.stringValue), nodeName: endpoint["nodeName"].string, zone: endpoint["zone"].string)
         }
         guard serviceName != nil || !endpoints.isEmpty || !ports.isEmpty else { return nil }
-        let ready = endpoints.filter { $0.ready == true }.count
+        // EndpointSlice omits `ready` for an effective-ready endpoint. An
+        // endpoint that is terminating and no longer serving is the one
+        // exception, even when `ready` is omitted or still true.
+        let ready = endpoints.filter { $0.ready != false && !($0.terminating == true && $0.serving == false) }.count
         facts.append(TopologyFact(key: "endpoint-count", title: "Endpoints", value: "\(ready) ready / \(endpoints.count) listed"))
         if let addressType { facts.append(TopologyFact(key: "endpoint-address-type", title: "Address type", value: addressType)) }
         return TopologyEndpointSliceSnapshot(serviceName: serviceName, addressType: addressType, ports: ports, endpoints: endpoints)
@@ -412,10 +415,15 @@ nonisolated enum TopologyService {
     }
 
     private static func statusConditions(_ raw: JSONValue) -> [String: String] {
-        Dictionary(uniqueKeysWithValues: raw["status"]["conditions"].array.compactMap { item -> (String, String)? in
-            guard let type = item["type"].string, let status = item["status"].string else { return nil }
-            return (type, status)
-        })
+        // Conditions should be unique by type, but malformed or transitional
+        // API responses can contain duplicates. Preserve payload order and let
+        // the last valid occurrence win instead of trapping on duplicate keys.
+        var conditions: [String: String] = [:]
+        for item in raw["status"]["conditions"].array {
+            guard let type = item["type"].string, let status = item["status"].string else { continue }
+            conditions[type] = status
+        }
+        return conditions
     }
 
     private static func gatewayClassSnapshot(from raw: JSONValue, kind: String) -> TopologyGatewayClassSnapshot? {

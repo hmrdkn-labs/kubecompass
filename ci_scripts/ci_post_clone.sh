@@ -1,26 +1,33 @@
 #!/bin/sh
-# Xcode Cloud hook (runs after clone, before the build): fetch the kubectl
-# that the "Bundle kubectl" build phase copies into Contents/Helpers.
-#
-# Pinned and checksummed: the shipped kubectl must be a property of the
-# commit, not of whatever a package manager served that day — the binary
-# ends up Developer ID-signed and notarized inside the app.
-# On bumping KUBECTL_VERSION, refresh the hash from
-#   https://dl.k8s.io/release/<version>/bin/darwin/arm64/kubectl.sha256
+# Xcode Cloud hook (runs after clone, before the build): download both official
+# kubectl slices and install one checked universal helper on PATH. The Xcode
+# build phase then uses the same release contract as local and GitHub builds.
 set -eu
 
 KUBECTL_VERSION="v1.36.3"
-KUBECTL_SHA256="fc8582acde13869a606730a79379d6515f30c68afcced0b5ac8789d5d002b7d6"
+ARM64_SHA256="fc8582acde13869a606730a79379d6515f30c68afcced0b5ac8789d5d002b7d6"
+X86_64_SHA256="158b3b46cf74e8b6bd9b1d7cd30f665e3efb2bc1ec3c843ec925bcfdd2930de0"
 
-# Xcode Cloud runners are Apple silicon; the pinned hash is darwin/arm64.
-if [ "$(uname -m)" != "arm64" ]; then
-    echo "error: expected an arm64 runner; add a hash for $(uname -m) before building here" >&2
-    exit 1
-fi
+TMP=$(mktemp -d "${TMPDIR:-/tmp}/kubecompass-kubectl.XXXXXX")
+trap 'rm -rf "$TMP"' EXIT
 
-TMP=$(mktemp -d)
-curl -fsSLo "$TMP/kubectl" "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/darwin/arm64/kubectl"
-echo "${KUBECTL_SHA256}  $TMP/kubectl" | shasum -a 256 -c -
+download() {
+    arch=$1
+    expected=$2
+    path="$TMP/kubectl-$arch"
+    curl -fsSL --retry 3 -o "$path" "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/darwin/${arch}/kubectl"
+    echo "${expected}  ${path}" | shasum -a 256 -c -
+    chmod 0755 "$path"
+}
+
+download arm64 "$ARM64_SHA256"
+download amd64 "$X86_64_SHA256"
+lipo -create "$TMP/kubectl-arm64" "$TMP/kubectl-amd64" -output "$TMP/kubectl"
+chmod 0755 "$TMP/kubectl"
+archs=$(lipo -archs "$TMP/kubectl")
+case " $archs " in *" arm64 "*) ;; *) echo "error: universal helper is missing arm64" >&2; exit 1 ;; esac
+case " $archs " in *" x86_64 "*) ;; *) echo "error: universal helper is missing x86_64" >&2; exit 1 ;; esac
+
+mkdir -p /opt/homebrew/bin
 install -m 0755 "$TMP/kubectl" /opt/homebrew/bin/kubectl
-rm -rf "$TMP"
 /opt/homebrew/bin/kubectl version --client

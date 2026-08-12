@@ -309,8 +309,8 @@ public struct TopologyEndpointSliceSnapshot: Codable, Hashable, Sendable {
         self.addressType = addressType.map(TopologySanitizer.clean)
         self.ports = ports.sorted { $0.id < $1.id }
         self.endpoints = endpoints.sorted { lhs, rhs in
-            let l = [lhs.reference?.namespace ?? "", lhs.reference?.name ?? "", lhs.addresses.joined(separator: ",")].joined(separator: "|")
-            let r = [rhs.reference?.namespace ?? "", rhs.reference?.name ?? "", rhs.addresses.joined(separator: ",")].joined(separator: "|")
+            let l = [lhs.reference?.namespace ?? "", lhs.reference?.name ?? "", lhs.reference?.uid ?? "", lhs.addresses.joined(separator: ","), lhs.nodeName ?? "", lhs.zone ?? "", lhs.ready.map(String.init) ?? "", lhs.serving.map(String.init) ?? "", lhs.terminating.map(String.init) ?? ""].joined(separator: "|")
+            let r = [rhs.reference?.namespace ?? "", rhs.reference?.name ?? "", rhs.reference?.uid ?? "", rhs.addresses.joined(separator: ","), rhs.nodeName ?? "", rhs.zone ?? "", rhs.ready.map(String.init) ?? "", rhs.serving.map(String.init) ?? "", rhs.terminating.map(String.init) ?? ""].joined(separator: "|")
             return l < r
         }
     }
@@ -785,7 +785,12 @@ public struct TopologyPortHop: Codable, Hashable, Sendable, Identifiable {
         self.zone = zone.map(TopologySanitizer.clean)
         self.containerName = containerName.map(TopologySanitizer.clean)
         self.evidence = evidence
-        self.id = TopologyHash.id([self.role, reference?.kind ?? "", reference?.namespace ?? "", reference?.name ?? "", portName ?? "", String(portNumber ?? -1), targetPort?.name ?? "", targetPort?.number.map(String.init) ?? "", String(nodePort ?? -1), self.appProtocol ?? "", self.addresses.joined(separator: ",")].joined(separator: "|"))
+        var idParts: [String] = [self.role]
+        idParts.append(contentsOf: [reference?.apiVersion ?? "", reference?.kind ?? "", reference?.namespace ?? "", reference?.name ?? "", reference?.uid ?? ""])
+        idParts.append(contentsOf: [self.portName ?? "", String(self.portNumber ?? -1), targetPort?.name ?? "", targetPort?.number.map { String($0) } ?? "", String(nodePort ?? -1)])
+        idParts.append(contentsOf: [self.protocolName ?? "", self.appProtocol ?? "", self.addresses.joined(separator: ",")])
+        idParts.append(contentsOf: [self.ready.map { String($0) } ?? "", self.serving.map { String($0) } ?? "", self.terminating.map { String($0) } ?? "", self.nodeName ?? "", self.zone ?? "", self.containerName ?? ""])
+        self.id = TopologyHash.id(idParts.joined(separator: "|"))
     }
 
     private enum CodingKeys: String, CodingKey { case role, reference, portName, portNumber, protocolName, targetPort, nodePort, appProtocol, addresses, ready, serving, terminating, nodeName, zone, containerName, evidence }
@@ -804,8 +809,15 @@ public struct TopologyPortPath: Codable, Hashable, Sendable, Identifiable {
     public let note: String?
     public let readyEndpointCount: Int
     public let totalEndpointCount: Int
+    /// True when the bounded path representation omitted one or more
+    /// EndpointSlice/endpoint observations. A truncated path is always
+    /// partial; consumers must not interpret the visible hops as exhaustive.
+    public let isTruncated: Bool
+    public let omittedHopCount: Int
+    public let omittedEndpointCount: Int
+    public let omittedEndpointPortCount: Int
 
-    public init(source: TopologyObjectReference, status: TopologyPortPathStatus, hops: [TopologyPortHop] = [], provenance: [TopologyEvidence] = [], note: String? = nil, readyEndpointCount: Int = 0, totalEndpointCount: Int = 0, id: String? = nil) {
+    public init(source: TopologyObjectReference, status: TopologyPortPathStatus, hops: [TopologyPortHop] = [], provenance: [TopologyEvidence] = [], note: String? = nil, readyEndpointCount: Int = 0, totalEndpointCount: Int = 0, id: String? = nil, isTruncated: Bool = false, omittedHopCount: Int = 0, omittedEndpointCount: Int = 0, omittedEndpointPortCount: Int = 0) {
         self.source = source
         self.status = status
         self.hops = hops
@@ -813,13 +825,17 @@ public struct TopologyPortPath: Codable, Hashable, Sendable, Identifiable {
         self.note = note.map(TopologySanitizer.clean)
         self.readyEndpointCount = max(0, readyEndpointCount)
         self.totalEndpointCount = max(0, totalEndpointCount)
+        self.isTruncated = isTruncated
+        self.omittedHopCount = max(0, omittedHopCount)
+        self.omittedEndpointCount = max(0, omittedEndpointCount)
+        self.omittedEndpointPortCount = max(0, omittedEndpointPortCount)
         self.id = id.map(TopologySanitizer.clean) ?? TopologyHash.id([source.kind, source.namespace ?? "", source.name, status.rawValue, hops.map(\.id).joined(separator: ",")].joined(separator: "|"))
     }
 
-    private enum CodingKeys: String, CodingKey { case source, status, hops, provenance, note, readyEndpointCount, totalEndpointCount, id }
+    private enum CodingKeys: String, CodingKey { case source, status, hops, provenance, note, readyEndpointCount, totalEndpointCount, id, isTruncated, omittedHopCount, omittedEndpointCount, omittedEndpointPortCount }
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        self.init(source: try c.decode(TopologyObjectReference.self, forKey: .source), status: try c.decode(TopologyPortPathStatus.self, forKey: .status), hops: try c.decodeIfPresent([TopologyPortHop].self, forKey: .hops) ?? [], provenance: try c.decodeIfPresent([TopologyEvidence].self, forKey: .provenance) ?? [], note: try c.decodeIfPresent(String.self, forKey: .note), readyEndpointCount: try c.decodeIfPresent(Int.self, forKey: .readyEndpointCount) ?? 0, totalEndpointCount: try c.decodeIfPresent(Int.self, forKey: .totalEndpointCount) ?? 0, id: try c.decodeIfPresent(String.self, forKey: .id))
+        self.init(source: try c.decode(TopologyObjectReference.self, forKey: .source), status: try c.decode(TopologyPortPathStatus.self, forKey: .status), hops: try c.decodeIfPresent([TopologyPortHop].self, forKey: .hops) ?? [], provenance: try c.decodeIfPresent([TopologyEvidence].self, forKey: .provenance) ?? [], note: try c.decodeIfPresent(String.self, forKey: .note), readyEndpointCount: try c.decodeIfPresent(Int.self, forKey: .readyEndpointCount) ?? 0, totalEndpointCount: try c.decodeIfPresent(Int.self, forKey: .totalEndpointCount) ?? 0, id: try c.decodeIfPresent(String.self, forKey: .id), isTruncated: try c.decodeIfPresent(Bool.self, forKey: .isTruncated) ?? false, omittedHopCount: try c.decodeIfPresent(Int.self, forKey: .omittedHopCount) ?? 0, omittedEndpointCount: try c.decodeIfPresent(Int.self, forKey: .omittedEndpointCount) ?? 0, omittedEndpointPortCount: try c.decodeIfPresent(Int.self, forKey: .omittedEndpointPortCount) ?? 0)
     }
 }
 
@@ -1002,7 +1018,7 @@ public struct TopologyGraphQuery: Codable, Hashable, Sendable {
     }
 
     private static func pathSearch(_ path: TopologyPortPath) -> String {
-        var parts = [path.source.kind, path.source.name, path.source.namespace ?? "", path.status.rawValue, path.note ?? ""]
+        var parts = [path.source.kind, path.source.name, path.source.namespace ?? "", path.status.rawValue, path.note ?? "", path.isTruncated ? "truncated" : "", String(path.omittedHopCount), String(path.omittedEndpointCount), String(path.omittedEndpointPortCount)]
         parts.append(contentsOf: path.hops.map { hop in
             let target = hop.targetPort.map { [$0.name ?? "", $0.number.map(String.init) ?? "", $0.usesServicePortByDefault ? "default" : ""].joined(separator: " ") } ?? ""
             return [hop.role, hop.portName ?? "", hop.portNumber.map(String.init) ?? "", hop.protocolName ?? "", target, hop.nodePort.map(String.init) ?? "", hop.appProtocol ?? "", hop.addresses.joined(separator: " "), hop.containerName ?? "", hop.evidence.level.rawValue, hop.evidence.source.sourceField ?? "", hop.evidence.source.joinRule ?? "", hop.evidence.source.assumption ?? ""].joined(separator: " ")
@@ -1095,6 +1111,11 @@ public struct TopologyBuildInput: Codable, Hashable, Sendable {
 /// graph. No raw payloads, annotations, Secret values, or ConfigMap values are
 /// accepted by this boundary.
 public enum TopologyGraphBuilder {
+    /// Hard cap on materialized hops for one route path. Counts route/service,
+    /// EndpointSlice ports, endpoints and optional container declarations.
+    /// Counts and evidence remain explicit when this bound is reached.
+    private static let maxPortPathHops = 512
+
     public static func build(_ input: TopologyBuildInput) -> TopologyGraph {
         build(contextID: input.contextID, resources: input.resources, inputs: input.inputs, freshness: input.freshness)
     }
@@ -1373,7 +1394,25 @@ public enum TopologyGraphBuilder {
         func makePath(sourceResource: TopologyResourceSnapshot, backendKind: String, backendName: String, backendNamespace: String?, backendPort: Int32?, backendPortName: String?, routeID: String) -> TopologyPortPath {
             let source = TopologyObjectReference(apiVersion: sourceResource.identity.apiVersion, kind: sourceResource.identity.kind, name: sourceResource.identity.name, namespace: sourceResource.identity.namespace, uid: sourceResource.identity.uid.isEmpty ? nil : sourceResource.identity.uid)
             let declaredEvidence = pathEvidence(sourceResource, level: .declared, field: "spec.route.backend", assumption: "declaration does not prove traffic")
-            var hops = [TopologyPortHop(role: "route", reference: source, portName: backendPortName, portNumber: backendPort, evidence: declaredEvidence)]
+            var hops: [TopologyPortHop] = []
+            var fanoutTruncated = false
+            var omittedHopCount = 0
+            var emittedEndpointCount = 0
+            var emittedEndpointPortCount = 0
+            var endpointPortCount = 0
+            @discardableResult
+            func appendHop(_ hop: TopologyPortHop) -> Bool {
+                guard hops.count < Self.maxPortPathHops else {
+                    fanoutTruncated = true
+                    omittedHopCount += 1
+                    return false
+                }
+                hops.append(hop)
+                if hop.role == "endpoint" { emittedEndpointCount += 1 }
+                if hop.role == "endpoint-port" { emittedEndpointPortCount += 1 }
+                return true
+            }
+            appendHop(TopologyPortHop(role: "route", reference: source, portName: backendPortName, portNumber: backendPort, evidence: declaredEvidence))
             guard backendKind.caseInsensitiveCompare("Service") == .orderedSame else {
                 return TopologyPortPath(source: source, status: .external, hops: hops, provenance: [declaredEvidence], note: "Backend kind is \(TopologySanitizer.clean(backendKind)); Service port resolution is not applicable", id: routeID)
             }
@@ -1386,7 +1425,7 @@ public enum TopologyGraphBuilder {
             }
             let serviceRef = TopologyObjectReference(apiVersion: service.identity.apiVersion, kind: service.identity.kind, name: service.identity.name, namespace: service.identity.namespace, uid: service.identity.uid.isEmpty ? nil : service.identity.uid)
             let serviceEvidence = pathEvidence(service, level: .observed, field: "spec.ports[]")
-            hops.append(TopologyPortHop(role: "service", reference: serviceRef, evidence: serviceEvidence))
+            appendHop(TopologyPortHop(role: "service", reference: serviceRef, evidence: serviceEvidence))
             let matchingPorts = service.servicePorts.filter { port in
                 if let backendPort { return port.port == backendPort }
                 if let backendPortName { return port.name == backendPortName }
@@ -1396,7 +1435,7 @@ public enum TopologyGraphBuilder {
                 let note = matchingPorts.isEmpty ? "Requested Service port is not declared" : "Service port reference is ambiguous"
                 return TopologyPortPath(source: source, status: .unresolved, hops: hops, provenance: [declaredEvidence, serviceEvidence], note: note, id: routeID)
             }
-            hops.append(TopologyPortHop(role: "service-port", reference: serviceRef, portName: servicePort.name, portNumber: servicePort.port, protocolName: servicePort.protocolName, evidence: serviceEvidence, targetPort: servicePort.targetPort, nodePort: servicePort.nodePort, appProtocol: servicePort.appProtocol))
+            appendHop(TopologyPortHop(role: "service-port", reference: serviceRef, portName: servicePort.name, portNumber: servicePort.port, protocolName: servicePort.protocolName, evidence: serviceEvidence, targetPort: servicePort.targetPort, nodePort: servicePort.nodePort, appProtocol: servicePort.appProtocol))
             let targetNumber = servicePort.targetPort.number ?? (servicePort.targetPort.usesServicePortByDefault ? servicePort.port : nil)
             let targetName = servicePort.targetPort.name
             let slices = slicesByService[serviceKey] ?? []
@@ -1416,7 +1455,8 @@ public enum TopologyGraphBuilder {
                 if matchingEndpointPorts.isEmpty { continue }
                 matchedEndpointSlice = true
                 for endpointPort in matchingEndpointPorts {
-                    hops.append(TopologyPortHop(role: "endpoint-port", reference: TopologyObjectReference(apiVersion: slice.identity.apiVersion, kind: slice.identity.kind, name: slice.identity.name, namespace: slice.identity.namespace, uid: slice.identity.uid.isEmpty ? nil : slice.identity.uid), portName: endpointPort.name, portNumber: endpointPort.port, protocolName: endpointPort.protocolName, evidence: pathEvidence(slice, level: .observed, field: "ports[]"), appProtocol: endpointPort.appProtocol))
+                    endpointPortCount += 1
+                    appendHop(TopologyPortHop(role: "endpoint-port", reference: TopologyObjectReference(apiVersion: slice.identity.apiVersion, kind: slice.identity.kind, name: slice.identity.name, namespace: slice.identity.namespace, uid: slice.identity.uid.isEmpty ? nil : slice.identity.uid), portName: endpointPort.name, portNumber: endpointPort.port, protocolName: endpointPort.protocolName, evidence: pathEvidence(slice, level: .observed, field: "ports[]"), appProtocol: endpointPort.appProtocol))
                     for endpoint in endpointSlice.endpoints {
                         endpointCount += 1
                         // Omitted ready is effective-ready per EndpointSlice
@@ -1425,8 +1465,8 @@ public enum TopologyGraphBuilder {
                         let effectiveReady = endpoint.ready != false && !(endpoint.terminating == true && endpoint.serving == false)
                         if effectiveReady { readyEndpointCount += 1 }
                         let endpointEvidence = pathEvidence(slice, level: .observed, field: "endpoints[]")
-                        hops.append(TopologyPortHop(role: "endpoint", reference: endpoint.reference, portNumber: endpointPort.port, protocolName: endpointPort.protocolName, addresses: endpoint.addresses, ready: endpoint.ready, serving: endpoint.serving, terminating: endpoint.terminating, nodeName: endpoint.nodeName, zone: endpoint.zone, evidence: endpointEvidence))
-                        if let endpointUID = endpoint.reference?.uid, let endpointNode = nodesByUID[endpointUID], let target = resourcesByNodeID[endpointNode.id] {
+                        let endpointHop = TopologyPortHop(role: "endpoint", reference: endpoint.reference, portNumber: endpointPort.port, protocolName: endpointPort.protocolName, addresses: endpoint.addresses, ready: endpoint.ready, serving: endpoint.serving, terminating: endpoint.terminating, nodeName: endpoint.nodeName, zone: endpoint.zone, evidence: endpointEvidence)
+                        if appendHop(endpointHop), let endpointUID = endpoint.reference?.uid, let endpointNode = nodesByUID[endpointUID], let target = resourcesByNodeID[endpointNode.id] {
                             let containerPorts = target.containerPorts + target.initContainerPorts + target.ephemeralContainerPorts
                             let matches = containerPorts.filter { port in
                                 guard port.protocolName == servicePort.protocolName && port.protocolName == endpointPort.protocolName else { return false }
@@ -1434,21 +1474,30 @@ public enum TopologyGraphBuilder {
                                 if let targetName { return port.name == targetName }
                                 return port.port == endpointPort.port
                             }
-                            if let containerPort = matches.first { hops.append(TopologyPortHop(role: "container-port", reference: endpoint.reference, portName: containerPort.name, portNumber: containerPort.port, protocolName: containerPort.protocolName, containerName: containerPort.containerName, evidence: pathEvidence(target, level: .declared, field: "spec.containers[].ports[]", assumption: "declared port does not prove process listening"))) }
+                            if let containerPort = matches.first { appendHop(TopologyPortHop(role: "container-port", reference: endpoint.reference, portName: containerPort.name, portNumber: containerPort.port, protocolName: containerPort.protocolName, containerName: containerPort.containerName, evidence: pathEvidence(target, level: .declared, field: "spec.containers[].ports[]", assumption: "declared port does not prove process listening"))) }
                         }
                     }
                 }
             }
             let missingTarget = !matchedEndpointSlice
             let status: TopologyPortPathStatus
-            if endpointCount == 0 { status = slices.isEmpty ? .noEndpoint : (missingTarget ? .unresolved : .noEndpoint) }
+            if fanoutTruncated { status = .partial }
+            else if endpointCount == 0 { status = slices.isEmpty ? .noEndpoint : (missingTarget ? .unresolved : .noEndpoint) }
             else if readyEndpointCount == 0 { status = .noReadyEndpoint }
             else if !missingTarget { status = .complete }
             else { status = .partial }
-            let provenance = hops.map(\.evidence)
+            let omittedEndpointCount = max(0, endpointCount - emittedEndpointCount)
+            let omittedEndpointPortCount = max(0, endpointPortCount - emittedEndpointPortCount)
+            let truncationEvidence = pathEvidence(service, level: .observed, field: "EndpointSlice.endpoints[]", assumption: "path fan-out is bounded; omitted observations are not represented")
+            let provenance = hops.map(\.evidence) + (fanoutTruncated ? [truncationEvidence] : [])
             let hasContainerDeclaration = hops.contains { $0.role == "container-port" }
-            let note = missingTarget ? "No EndpointSlice port matched the Service port name" : (!hasContainerDeclaration && readyEndpointCount > 0 ? "Pod container port declaration unavailable" : nil)
-            return TopologyPortPath(source: source, status: status, hops: hops, provenance: provenance, note: note, readyEndpointCount: readyEndpointCount, totalEndpointCount: endpointCount, id: routeID)
+            var notes: [String] = []
+            if fanoutTruncated {
+                notes.append("Endpoint fanout truncated at \(Self.maxPortPathHops) hops; omitted \(omittedHopCount) hops; represented \(emittedEndpointCount) of \(endpointCount) endpoint observations and \(emittedEndpointPortCount) of \(endpointPortCount) EndpointSlice port observations")
+            }
+            if missingTarget { notes.append("No EndpointSlice port matched the Service port name") }
+            if !hasContainerDeclaration && readyEndpointCount > 0 { notes.append("Pod container port declaration unavailable") }
+            return TopologyPortPath(source: source, status: status, hops: hops, provenance: provenance, note: notes.isEmpty ? nil : notes.joined(separator: "; "), readyEndpointCount: readyEndpointCount, totalEndpointCount: endpointCount, id: routeID, isTruncated: fanoutTruncated, omittedHopCount: omittedHopCount, omittedEndpointCount: omittedEndpointCount, omittedEndpointPortCount: omittedEndpointPortCount)
         }
         for resource in unique {
             let routes = resource.ingressRoutes.isEmpty
@@ -1466,14 +1515,18 @@ public enum TopologyGraphBuilder {
                 for backend in route.backends {
                     let routeID = TopologyHash.id("\(resource.identity.apiVersion)|\(resource.identity.kind)|\(resource.identity.namespace ?? "")|\(resource.identity.name)|\(resource.identity.uid)|\(backend.id)")
                     let resolved = makePath(sourceResource: resource, backendKind: backend.kind, backendName: backend.name, backendNamespace: backend.namespace ?? resource.identity.namespace, backendPort: backend.port, backendPortName: nil, routeID: routeID)
+                    func wrap(_ status: TopologyPortPathStatus, note: String) -> TopologyPortPath {
+                        let notes = [note, resolved.note].compactMap { $0 }.joined(separator: "; ")
+                        return TopologyPortPath(source: resolved.source, status: status, hops: resolved.hops, provenance: resolved.provenance, note: notes, readyEndpointCount: resolved.readyEndpointCount, totalEndpointCount: resolved.totalEndpointCount, id: resolved.id, isTruncated: resolved.isTruncated, omittedHopCount: resolved.omittedHopCount, omittedEndpointCount: resolved.omittedEndpointCount, omittedEndpointPortCount: resolved.omittedEndpointPortCount)
+                    }
                     let path: TopologyPortPath
                     if hasExplicitParentRejection {
                         let rejectedNames = route.parents.filter { $0.accepted == false || $0.resolvedRefs == false }.map(\.name).joined(separator: ", ")
-                        path = TopologyPortPath(source: resolved.source, status: .unresolved, hops: resolved.hops, provenance: resolved.provenance, note: "HTTPRoute parent references are rejected or unresolved (\(rejectedNames))", readyEndpointCount: resolved.readyEndpointCount, totalEndpointCount: resolved.totalEndpointCount, id: resolved.id)
+                        path = wrap(.unresolved, note: "HTTPRoute parent references are rejected or unresolved (\(rejectedNames))")
                     } else if backend.resolvedRefs == false {
-                        path = TopologyPortPath(source: resolved.source, status: .unresolved, hops: resolved.hops, provenance: resolved.provenance, note: "HTTPRoute backend reference is unresolved", readyEndpointCount: resolved.readyEndpointCount, totalEndpointCount: resolved.totalEndpointCount, id: resolved.id)
+                        path = wrap(.unresolved, note: "HTTPRoute backend reference is unresolved")
                     } else if hasUnknownParent {
-                        path = TopologyPortPath(source: resolved.source, status: .partial, hops: resolved.hops, provenance: resolved.provenance, note: "HTTPRoute parent acceptance or reference resolution is not yet observed", readyEndpointCount: resolved.readyEndpointCount, totalEndpointCount: resolved.totalEndpointCount, id: resolved.id)
+                        path = wrap(.partial, note: "HTTPRoute parent acceptance or reference resolution is not yet observed")
                     } else {
                         path = resolved
                     }

@@ -146,7 +146,10 @@ Snapshot Status is separate from Exposure Status:
 | Error | Identify the failed input and offer a read-only retry. |
 
 Partial and Unavailable are never represented as Empty. The inspector lists the
-kind, scope, reason, and timestamp for every unavailable input.
+kind, scope, reason, and timestamp for every unavailable input. A single Port
+Path materializes at most 512 deterministic hops; larger EndpointSlice fan-out
+remains Partial and reports the omitted hop, endpoint, and port counts rather
+than silently implying that the visible path is exhaustive.
 
 ## Policy and dependency boundaries
 
