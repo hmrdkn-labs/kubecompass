@@ -72,26 +72,36 @@ Service port, targetPort, EndpointSlice port/address/readiness, and declared
 container port; it does not assert that a packet can traverse the path.
 
 `k-dex/Views/TopologyExplorerView.swift` is the current macOS SwiftUI adapter.
-It presents six semantic Explorer Levels—Cluster, Infrastructure, Workloads,
-Network, Policy & Dependencies, and Evidence—inside a stable scope rail,
-exploration surface, and evidence inspector. Focus, Trace, and Inventory share
-one selection model across Map, List, and Port Table. The list and table are
-the canonical keyboard/semantic views; the map progressively discloses more
-nodes instead of silently dropping them. Refreshes are generation- and
-token-guarded so superseded work cannot clear or strand newer progress state.
+The chosen interaction contract is Outline by default, a selected-root Map
+bounded to one or two hops, and typed Paths diagnostics. A persistent evidence
+inspector follows the same stable selection through each surface; narrow
+navigation pushes that detail surface with an explicit back path. Map geometry
+is never a traffic claim, and Traffic is unavailable without telemetry.
+Refreshes are generation- and token-guarded so superseded work cannot clear or
+strand newer progress state. Legacy semantic grouping metadata remains an
+internal implementation detail, not the product default.
 
-The Linux GTK adapter consumes the same Explorer Level, mode, presentation,
-graph, and Port Path contracts, but remains a deterministic fixture route: it
-does not yet read kubeconfig or invoke kubectl. Full cross-platform live-route,
-accessibility, frame-time, startup, and RSS parity remain pending.
+The Linux GTK adapter currently remains a deterministic, pre-parity fixture
+route: it does not read kubeconfig or invoke kubectl. Its observed topology
+controls still use the historical `ExplorerLevel` (`Cluster`,
+`Infrastructure`, `Workloads`, `Network`, `Policy & Dependencies`, `Evidence`),
+`ExplorerMode` (`Focus`, `Trace`, `Inventory`), and
+`ExplorerPresentation` (`Map fallback`, `List`, `Port table`) vocabulary. That
+route is wired to the shared graph, but it is not the current macOS
+Outline/selected-root Map/Paths interaction contract. Migrating the fixture to
+the canonical contract, then proving live-route, accessibility, frame-time,
+startup, and RSS parity, remains pending.
 
-The current Release synthetic benchmark constructs 10,001 nodes and 94,950
-edges from 10,000 objects in about 3.56s after indexed selector matching and
-evidence reuse. Explorer-level, search, one-hop, and Port Path queries remain
-below 100ms in that run. These are graph/query observations, not GUI frame
-rate, API-server load, or production-cluster latency. The collector semantics
-also match a disposable kind-cluster fixture conformance run; rendered tiered
-Port Path evidence is recorded in
+The final 2026-08-13 presentation-inclusive Release synthetic 10k fixture
+produced 10,001 nodes and 94,950 edges: graphBuild 5488.727ms, Outline
+1150.021ms, Map 188.782ms, Paths 196.633ms, level 13.646ms, search 42.085ms,
+one-hop 91.238ms, and Port filter 10.37ms (one sample per metric). Any graph/query result is
+distinct from GUI frame rate, API-server load, or production-cluster latency.
+An opt-in disposable kind-cluster harness exists, but the current gate uses
+unit fixtures and the deterministic fake backend rather than a live cluster.
+A new macOS shell launch against the deterministic fixture is observed, but the original
+wide/narrow capture matrix is incomplete; state, accessibility, frame/RSS, and
+live-cluster gates remain unverified. Hierarchy evidence is recorded in
 `docs/interface/TOPOLOGY-HIERARCHY-REVIEW.json`.
 
 ## Layer by layer

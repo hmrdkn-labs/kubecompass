@@ -13,18 +13,20 @@ A [Hamardikan Labs](https://github.com/hmrdkn-labs) project, derived from
 - **macOS:** the full inherited K-Dex workflow is branded as KubeCompass,
   regression-tested, and locally installable as `KubeCompass.app`.
 - **Shared Swift core:** deterministic state, command, mutation-safety,
-  evidence, Explorer Level, and typed Port Path contracts compile and test on
-  macOS and Linux.
+  evidence, Outline/Map/Paths presentation, and typed Port Path contracts
+  compile and test on macOS and Linux.
 - **Topology Explorer:** a read-only macOS SwiftUI route builds an
-  evidence-aware snapshot from allowlisted `kubectl get -o json` inputs. Six
-  semantic Explorer Levels, Focus/Trace/Inventory modes, and Map/List/Port
-  Table presentations expose fundamentals, health, declared routes, resolved
-  ports, incomplete evidence, and assumptions without claiming packet flow.
-  The current synthetic 10,000-object Release benchmark builds 94,950
-  relationships in about 3.56s; interactive core queries remain below 73ms in
-  that fixture. A disposable kind-cluster conformance run also passed the
-  supported relationship and port cases. These are core/collector measurements,
-  not GUI frame-rate or production-cluster latency claims.
+  evidence-aware snapshot from allowlisted `kubectl get -o json` inputs. Outline
+  is the default; Map is a selected-root view bounded to one or two hops; Paths
+  is the typed diagnostic surface; a persistent inspector carries fundamentals
+  and provenance across all three. Traffic is unavailable without an explicit
+  telemetry adapter. The synthetic Release benchmark and deterministic fake-
+  kubectl checks are core/collector evidence only, not GUI frame-rate or
+  production-cluster latency claims. A disposable kind-cluster harness exists
+  but is opt-in and is not a current CI gate.
+  A new macOS shell launch against the deterministic fixture is observed, while
+  the original wide/narrow reference matrix remains incomplete and state,
+  accessibility, frame/RSS, and live-cluster gates remain unverified.
 - **Linux:** the independently versioned 0.2.x native GTK vertical slice is
   deliberately fixture-only.
   It demonstrates navigation, a virtualized resource table, details, states,
@@ -64,16 +66,16 @@ A [Hamardikan Labs](https://github.com/hmrdkn-labs) project, derived from
   to the limit with a tick marking the request; exact numbers on hover. When
   metrics are missing, the app says why (not installed, RBAC, unreachable
   kubelets) and shows the spec'd requests/limits dimmed instead.
-- **Topology Explorer (read-only)** — move from Cluster to Infrastructure,
-  Workloads, Network, Policy & Dependencies, and Evidence. Focus or trace a
-  resource across Map, List, and Port Table presentations. Typed Port Paths
-  retain Ingress/HTTPRoute host and path, Service port/protocol/targetPort,
-  EndpointSlice address/readiness, and Pod container-port evidence. Every hop
-  is Observed, Declared, Inferred, or Unavailable and explains what it proves,
-  what it does not prove, and which API field produced it. Partial RBAC and
-  unsupported inputs stay visible; provider-managed control-plane internals
-  remain an explicit unavailable boundary. Secret and ConfigMap payloads are
-  never listed for topology.
+- **Topology Explorer (read-only)** — start in Outline, select a workload or
+  relationship, then open a bounded selected-root Map (one or two hops) or a
+  typed Paths diagnostic. The persistent inspector retains Fundamentals,
+  provenance, unavailable inputs, and “what this proves / does not prove” copy.
+  Narrow navigation pushes the inspector and preserves a back path. Typed Port
+  Paths retain Route host/path, Service port/protocol/targetPort, EndpointSlice
+  address/readiness, and Pod container-port evidence. Traffic is unavailable
+  without telemetry; Partial RBAC and unsupported inputs stay visible, and
+  provider-managed control-plane internals remain an explicit unavailable
+  boundary. Secret and ConfigMap payloads are never listed for topology.
 - **Direct distribution** — updater integration is disabled until a dedicated
   KubeCompass release feed exists.
 
@@ -129,9 +131,10 @@ Topology Explorer's relationship vocabulary, unavailable-input behavior, and
 data-safety boundary are recorded in
 [docs/product/TOPOLOGY-EXPLORER.md](docs/product/TOPOLOGY-EXPLORER.md).
 
-Tiered Port Path fixture preview:
+Generated design-direction preview (not a runtime capture; it does not satisfy
+the reference coverage matrix):
 
-![Topology Explorer Port Table tracing Ingress through Service and EndpointSlice to Pod container ports](docs/interface/evidence/topology-tiered-port-path.jpeg)
+![Generated KubeCompass topology outline design target](docs/interface/reference-topology-v2/topology-outline-design-target.png)
 
 For the Linux fixture slice, use `scripts/build-linux.sh`; the verified package
 script writes an architecture-specific Debian artifact under `dist/`.

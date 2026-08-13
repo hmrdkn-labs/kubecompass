@@ -1,0 +1,381 @@
+{
+  "$schema": "https://codex.local/schemas/reference-image-coverage.schema.json",
+  "schema_version": "1.0",
+  "kind": "reference-image-coverage",
+  "id": "kubecompass-topology-v2",
+  "policy": "reference-coverage.policy.md",
+  "asset_contract": {
+    "format": "png",
+    "viewport_field": "represented-css-viewport",
+    "presentation_modes": ["full-frame"]
+  },
+  "required_coverage": {
+    "dimensions": {
+      "route": ["/topology-explorer"],
+      "viewport": ["desktop"],
+      "shell_state": ["wide", "narrow"],
+      "interaction_state": [
+        "outline",
+        "selected-workload",
+        "scoped-map",
+        "path-details",
+        "partial-rbac",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "data_state": ["ready", "partial-rbac", "loading", "empty", "error"]
+    },
+    "categories": [
+      "topology-shell",
+      "wide",
+      "narrow",
+      "outline-ready",
+      "selected-workload-detail",
+      "scoped-map",
+      "path-details",
+      "partial-rbac",
+      "loading",
+      "empty",
+      "error"
+    ],
+    "scenario_ids": [
+      "topology-outline-ready-wide",
+      "topology-outline-ready-narrow",
+      "topology-selected-workload-wide",
+      "topology-selected-workload-narrow",
+      "topology-scoped-map-wide",
+      "topology-scoped-map-narrow",
+      "topology-path-details-wide",
+      "topology-path-details-narrow",
+      "topology-partial-rbac-wide",
+      "topology-partial-rbac-narrow",
+      "topology-loading-wide",
+      "topology-loading-narrow",
+      "topology-empty-wide",
+      "topology-empty-narrow",
+      "topology-error-wide",
+      "topology-error-narrow"
+    ],
+    "route_context_scenarios": {
+      "/topology-explorer": "topology-outline-ready-wide"
+    },
+    "context_pairs": [
+      {
+        "id": "wide-outline-to-workload",
+        "scope": "wide outline selection",
+        "applicable_routes": ["/topology-explorer"],
+        "trigger_frame": "topology-outline-ready-wide",
+        "result_frame": "topology-selected-workload-wide",
+        "expected": {
+          "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+          "trigger": {"shell_state": {"id": "wide"}, "interaction_state": {"id": "outline"}},
+          "result": {"shell_state": {"id": "wide"}, "interaction_state": {"id": "selected-workload"}}
+        }
+      },
+      {
+        "id": "narrow-outline-to-workload",
+        "scope": "narrow outline selection",
+        "applicable_routes": ["/topology-explorer"],
+        "trigger_frame": "topology-outline-ready-narrow",
+        "result_frame": "topology-selected-workload-narrow",
+        "expected": {
+          "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+          "trigger": {"shell_state": {"id": "narrow"}, "interaction_state": {"id": "outline"}},
+          "result": {"shell_state": {"id": "narrow"}, "interaction_state": {"id": "selected-workload"}}
+        }
+      },
+      {
+        "id": "wide-map-to-path",
+        "scope": "wide scoped map diagnostic",
+        "applicable_routes": ["/topology-explorer"],
+        "trigger_frame": "topology-scoped-map-wide",
+        "result_frame": "topology-path-details-wide",
+        "expected": {
+          "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+          "trigger": {"shell_state": {"id": "wide"}, "interaction_state": {"id": "scoped-map"}},
+          "result": {"shell_state": {"id": "wide"}, "interaction_state": {"id": "path-details"}}
+        }
+      },
+      {
+        "id": "narrow-map-to-path",
+        "scope": "narrow scoped map diagnostic",
+        "applicable_routes": ["/topology-explorer"],
+        "trigger_frame": "topology-scoped-map-narrow",
+        "result_frame": "topology-path-details-narrow",
+        "expected": {
+          "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+          "trigger": {"shell_state": {"id": "narrow"}, "interaction_state": {"id": "scoped-map"}},
+          "result": {"shell_state": {"id": "narrow"}, "interaction_state": {"id": "path-details"}}
+        }
+      }
+    ],
+    "lifecycle_sequences": [
+      {
+        "id": "wide-topology-inspection",
+        "route": "/topology-explorer",
+        "frame_ids": [
+          "topology-outline-ready-wide",
+          "topology-selected-workload-wide",
+          "topology-scoped-map-wide",
+          "topology-path-details-wide"
+        ],
+        "expected_interaction_states": ["outline", "selected-workload", "scoped-map", "path-details"]
+      },
+      {
+        "id": "narrow-topology-inspection",
+        "route": "/topology-explorer",
+        "frame_ids": [
+          "topology-outline-ready-narrow",
+          "topology-selected-workload-narrow",
+          "topology-scoped-map-narrow",
+          "topology-path-details-narrow"
+        ],
+        "expected_interaction_states": ["outline", "selected-workload", "scoped-map", "path-details"]
+      }
+    ]
+  },
+  "frames": [
+    {
+      "id": "topology-outline-ready-wide",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 1440, "height": 900},
+      "shell_state": {"id": "wide", "layout": "three-pane"},
+      "interaction_state": {"id": "outline", "selection": "none"},
+      "data_state": {"id": "ready", "description": "outline snapshot rendered"},
+      "categories": ["topology-shell", "wide", "outline-ready"],
+      "required_visible_controls": ["context picker", "namespace scope", "Outline", "Map", "Paths", "Snapshot Status"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh wide capture required for default Outline context and hierarchy."},
+      "file_path": "captures/topology-outline-ready-wide.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-outline-ready-narrow",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 900, "height": 700},
+      "shell_state": {"id": "narrow", "layout": "single-pane-with-back-path"},
+      "interaction_state": {"id": "outline", "selection": "none"},
+      "data_state": {"id": "ready", "description": "outline snapshot rendered"},
+      "categories": ["topology-shell", "narrow", "outline-ready"],
+      "required_visible_controls": ["back path", "namespace scope", "Outline", "Snapshot Status"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh narrow capture required for single-pane Outline and context retention."},
+      "file_path": "captures/topology-outline-ready-narrow.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-selected-workload-wide",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 1440, "height": 900},
+      "shell_state": {"id": "wide", "layout": "three-pane"},
+      "interaction_state": {"id": "selected-workload", "selection": "workload"},
+      "data_state": {"id": "ready", "description": "selected workload detail rendered"},
+      "categories": ["topology-shell", "wide", "selected-workload-detail"],
+      "required_visible_controls": ["selected workload", "Fundamentals", "owner", "status", "evidence inspector"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh wide capture required after selecting a workload from Outline."},
+      "file_path": "captures/topology-selected-workload-wide.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-selected-workload-narrow",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 900, "height": 700},
+      "shell_state": {"id": "narrow", "layout": "single-pane-with-back-path"},
+      "interaction_state": {"id": "selected-workload", "selection": "workload"},
+      "data_state": {"id": "ready", "description": "selected workload detail rendered"},
+      "categories": ["topology-shell", "narrow", "selected-workload-detail"],
+      "required_visible_controls": ["back path", "selected workload", "Fundamentals", "status", "evidence inspector"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh narrow capture required for workload detail and back navigation."},
+      "file_path": "captures/topology-selected-workload-narrow.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-scoped-map-wide",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 1440, "height": 900},
+      "shell_state": {"id": "wide", "layout": "three-pane"},
+      "interaction_state": {"id": "scoped-map", "scope": "selected workload"},
+      "data_state": {"id": "ready", "description": "selected-root node/fanout-bounded scoped map rendered with explicit truncation status"},
+      "categories": ["topology-shell", "wide", "scoped-map"],
+      "required_visible_controls": ["selected root", "1 hop / 2 hops", "namespace scope", "truncation status", "Outline handoff", "evidence inspector"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh wide capture required for the selected-root node/fanout-bounded Map, visible truncation status, and explicit handoff back to Outline. Core cap is 180 nodes; runtime capture remains pending."},
+      "file_path": "captures/topology-scoped-map-wide.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-scoped-map-narrow",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 900, "height": 700},
+      "shell_state": {"id": "narrow", "layout": "single-pane-with-back-path"},
+      "interaction_state": {"id": "scoped-map", "scope": "selected workload"},
+      "data_state": {"id": "ready", "description": "selected-root node/fanout-bounded scoped map rendered with explicit truncation status"},
+      "categories": ["topology-shell", "narrow", "scoped-map"],
+      "required_visible_controls": ["back path", "selected root", "1 hop / 2 hops", "truncation status", "Outline handoff"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh narrow capture required for scoped Map recomposition, visible node/fanout truncation, and explicit Outline handoff. Core cap is 180 nodes; runtime capture remains pending."},
+      "file_path": "captures/topology-scoped-map-narrow.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-path-details-wide",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 1440, "height": 900},
+      "shell_state": {"id": "wide", "layout": "three-pane"},
+      "interaction_state": {"id": "path-details", "selection": "port-path"},
+      "data_state": {"id": "ready", "description": "typed Port Path details rendered"},
+      "categories": ["topology-shell", "wide", "path-details"],
+      "required_visible_controls": ["Paths", "typed hops", "targetPort", "EndpointSlice readiness", "what this proves", "what this does not prove"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh wide capture required for Port Path diagnostic detail."},
+      "file_path": "captures/topology-path-details-wide.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-path-details-narrow",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 900, "height": 700},
+      "shell_state": {"id": "narrow", "layout": "single-pane-with-back-path"},
+      "interaction_state": {"id": "path-details", "selection": "port-path"},
+      "data_state": {"id": "ready", "description": "typed Port Path details rendered"},
+      "categories": ["topology-shell", "narrow", "path-details"],
+      "required_visible_controls": ["back path", "Paths", "typed hops", "readiness", "proof boundary"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh narrow capture required for readable path detail and back path."},
+      "file_path": "captures/topology-path-details-narrow.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-partial-rbac-wide",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 1440, "height": 900},
+      "shell_state": {"id": "wide", "layout": "three-pane"},
+      "interaction_state": {"id": "partial-rbac", "selection": "safe"},
+      "data_state": {"id": "partial-rbac", "description": "forbidden input retained as unavailable"},
+      "categories": ["topology-shell", "wide", "partial-rbac"],
+      "required_visible_controls": ["Partial status", "forbidden input", "available evidence", "retry", "not Empty"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh wide capture required for RBAC-denied input and partial evidence."},
+      "file_path": "captures/topology-partial-rbac-wide.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-partial-rbac-narrow",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 900, "height": 700},
+      "shell_state": {"id": "narrow", "layout": "single-pane-with-back-path"},
+      "interaction_state": {"id": "partial-rbac", "selection": "safe"},
+      "data_state": {"id": "partial-rbac", "description": "forbidden input retained as unavailable"},
+      "categories": ["topology-shell", "narrow", "partial-rbac"],
+      "required_visible_controls": ["back path", "Partial status", "forbidden input", "available evidence", "not Empty"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh narrow capture required for partial RBAC without collapsing context."},
+      "file_path": "captures/topology-partial-rbac-narrow.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-loading-wide",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 1440, "height": 900},
+      "shell_state": {"id": "wide", "layout": "three-pane"},
+      "interaction_state": {"id": "loading", "selection": "preserved-or-none"},
+      "data_state": {"id": "loading", "description": "snapshot loading"},
+      "categories": ["topology-shell", "wide", "loading"],
+      "required_visible_controls": ["context", "scope", "progress", "cancel/refresh state"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh wide capture required for loading shell before graph data."},
+      "file_path": "captures/topology-loading-wide.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-loading-narrow",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 900, "height": 700},
+      "shell_state": {"id": "narrow", "layout": "single-pane-with-back-path"},
+      "interaction_state": {"id": "loading", "selection": "preserved-or-none"},
+      "data_state": {"id": "loading", "description": "snapshot loading"},
+      "categories": ["topology-shell", "narrow", "loading"],
+      "required_visible_controls": ["back path", "context", "scope", "progress"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh narrow capture required for loading shell and safe back path."},
+      "file_path": "captures/topology-loading-narrow.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-empty-wide",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 1440, "height": 900},
+      "shell_state": {"id": "wide", "layout": "three-pane"},
+      "interaction_state": {"id": "empty", "selection": "none"},
+      "data_state": {"id": "empty", "description": "scope has no matching resources"},
+      "categories": ["topology-shell", "wide", "empty"],
+      "required_visible_controls": ["context", "scope", "Empty status", "change scope/level"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh wide capture required for explicit Empty state and next step."},
+      "file_path": "captures/topology-empty-wide.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-empty-narrow",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 900, "height": 700},
+      "shell_state": {"id": "narrow", "layout": "single-pane-with-back-path"},
+      "interaction_state": {"id": "empty", "selection": "none"},
+      "data_state": {"id": "empty", "description": "scope has no matching resources"},
+      "categories": ["topology-shell", "narrow", "empty"],
+      "required_visible_controls": ["back path", "scope", "Empty status", "change scope/level"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh narrow capture required for Empty state and explicit next action."},
+      "file_path": "captures/topology-empty-narrow.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-error-wide",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 1440, "height": 900, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 1440, "height": 900},
+      "shell_state": {"id": "wide", "layout": "three-pane"},
+      "interaction_state": {"id": "error", "selection": "safe-prior"},
+      "data_state": {"id": "error", "description": "refresh failed with prior evidence retained"},
+      "categories": ["topology-shell", "wide", "error"],
+      "required_visible_controls": ["failed input", "Error status", "safe prior evidence", "read-only retry"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh wide capture required for failed refresh and safe retry."},
+      "file_path": "captures/topology-error-wide.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    },
+    {
+      "id": "topology-error-narrow",
+      "route": "/topology-explorer",
+      "viewport": {"class": "desktop", "width": 900, "height": 700, "presentation": "full-frame"},
+      "represented_region": {"x": 0, "y": 0, "width": 900, "height": 700},
+      "shell_state": {"id": "narrow", "layout": "single-pane-with-back-path"},
+      "interaction_state": {"id": "error", "selection": "safe-prior"},
+      "data_state": {"id": "error", "description": "refresh failed with prior evidence retained"},
+      "categories": ["topology-shell", "narrow", "error"],
+      "required_visible_controls": ["back path", "failed input", "Error status", "safe prior evidence", "retry"],
+      "provenance": {"status": "planned-reference", "source": "original KubeCompass capture brief", "note": "Fresh narrow capture required for error state and retained selection."},
+      "file_path": "captures/topology-error-narrow.png",
+      "coverage_status": "planned",
+      "mandatory": true
+    }
+  ],
+  "visual_reviews": {}
+}

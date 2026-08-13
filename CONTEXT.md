@@ -11,12 +11,20 @@ The read-only learning workspace for navigating Kubernetes resources,
 evidence-backed relationships, and scoped cluster questions.
 _Avoid_: Network map, cluster truth, packet map
 
-**Explorer Level**:
-A semantic scale of the Topology Explorer: Cluster, Infrastructure,
-Workloads, Network, Policy & Dependencies, or Evidence. Levels control what is
-aggregated, what can be expanded, and which question the surface answers.
-_Avoid_: Tier, when it could be confused with a Kubernetes label or platform
-tier
+**Outline**:
+The default deterministic Topology Explorer surface. It groups the current
+snapshot by namespace, primary workload/controller, dependents, and unattached
+resources before any graph geometry is shown.
+
+**Scoped Map**:
+A secondary selected-root relationship view. It shows one or two typed hops
+from the selected root, preserves stable IDs and evidence, and is never a
+cluster-wide traffic map.
+
+**Paths**:
+A diagnostic surface for one typed Route, Service, EndpointSlice,
+Pod/container, policy, or dependency path. It shows hops and evidence rather
+than implying reachability.
 
 **Fundamentals**:
 The plain-language explanation attached to a selected resource, relationship,
@@ -49,19 +57,15 @@ The freshness and completeness state of a Topology Snapshot: Loading, Ready,
 Empty, Partial, Stale, Offline, Reconnecting, or Error. Snapshot Status is
 separate from Exposure Status.
 
-**Focus mode**:
-A bounded view centered on the selected object and its directly relevant
-neighbors, with unrelated graph content de-emphasized or hidden.
+**Persistent inspector**:
+The always-available evidence surface for a selected object, relationship, or
+Port Path. It retains Fundamentals, status, provenance, unavailable inputs,
+and safe next actions while the user changes between Outline, Map, and Paths.
 
-**Trace mode**:
-A semantic step-through of one relationship, Route, Port Path, policy, or
-dependency. Trace mode shows each hop and its evidence instead of drawing an
-unqualified line.
-
-**Inventory mode**:
-A tabular, searchable view of the resources or Port Hops in the current
-Explorer Level. Inventory mode is the parity surface when geometry is crowded,
-unavailable, or inaccessible.
+**Narrow push navigation**:
+At narrow widths, selecting a root or diagnostic pushes the inspector/detail
+surface onto a single-pane stack with an explicit back path; it does not drop
+scope, selection, or evidence.
 
 **Resource Node**:
 A displayed Kubernetes object identified by context, API identity, and UID.
@@ -70,7 +74,7 @@ _Avoid_: Node, when that could be confused with a Kubernetes Node object
 **Relationship**:
 A directional association between two Resource Nodes, supported by a named
 source field or a documented join rule.
-_Avoid_: Connection, traffic flow
+_Avoid_: Connection, traffic flow, global lane
 
 **Evidence Level**:
 The strength and origin of a Relationship: Observed, Declared, Inferred, or

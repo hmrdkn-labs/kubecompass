@@ -21,67 +21,41 @@ questions in plain language:
    targets, with an Evidence Level.
 4. **What does it not prove?** — unknown runtime behavior, missing API input,
    provider internals, or a declaration that has not been observed as ready.
-5. **What should I inspect next?** — a bounded Focus, Trace, or Inventory
-   action, or an existing resource view.
+5. **What should I inspect next?** — an Outline expansion, a selected-root Map
+   (one or two hops), a typed Paths diagnostic, or an existing resource view.
 
 The copy labels these blocks **Fundamentals**. The product must not require a
 learner to infer the claim boundary from color, line style, or Kubernetes
 jargon.
 
-## Approved Explorer Levels
+## Approved topology surfaces
 
-Explorer Levels are semantic navigation scales, not Kubernetes labels or
-implementation “tiers.” Each level has a default aggregation, a question, and
-an equivalent Map, List, and Port Table surface.
-
-| Level | Primary question | Default content |
+| Surface | Primary question | Contract |
 | --- | --- | --- |
-| **Cluster** | What is in this snapshot, and how complete is it? | Context, snapshot status, namespaces, control-plane boundary, nodes/zones, entry points, cluster-scoped resources, denied inputs. |
-| **Infrastructure** | Where can workloads run, and what is observable about the substrate? | Current: Nodes, roles, addresses, zones, Pod CIDRs, kubelet/runtime/OS/architecture, Pod scheduling, and storage classes. Planned facts: complete Node conditions, capacity/allocatable, and taints. |
-| **Workloads** | Which workloads own, create, and run these Pods? | Current: Deployment → ReplicaSet → Pod, StatefulSet, DaemonSet, Job, CronJob, containers, phase/readiness/restarts, replica counts, and unresolved ownership. Planned facts: workload conditions and probe declarations. |
-| **Network** | How is an application exposed or selected? | Ingress/Gateway/Route → Service port → targetPort → EndpointSlice port/address → Pod/container port. Selectorless, headless, NodePort, LoadBalancer, and ExternalName semantics remain distinct. |
-| **Policy & Dependencies** | What declares access and what does the workload depend on? | Current: NetworkPolicy peers/ports and policy types, storage, ConfigMap/Secret references by name, and unresolved references. Planned inputs: ServiceAccounts/RBAC, quotas, disruption budgets, and autoscaling. |
-| **Evidence** | What exactly supports each claim? | Source field, join rule, resource version, snapshot time, assumptions, unavailable inputs, unresolved references, and “what this proves / does not prove.” |
+| **Outline (default)** | What is here, and why is it grouped this way? | Deterministic namespace → primary workload/controller → dependents grouping, plus unattached resources and explicit evidence gaps. |
+| **Scoped Map** | Which nearby objects explain this selected root? | Selected root plus one or two typed relationship hops; node/fanout-bounded output with visible truncation status and an explicit Outline handoff, never a traffic or physical-topology implication. |
+| **Paths** | How does one declared or inferred path resolve? | Typed Route/Service/EndpointSlice/Pod-container, policy, or dependency hops with status, source field, resolution, readiness, and Evidence Level. |
+| **Persistent inspector** | What does the selection prove? | Fundamentals, provenance, unavailable inputs, safe next actions, and “what this proves / does not prove” remain available across all surfaces. |
 
-Drilling down changes aggregation and focus; it does not discard the selected
-object. Breadcrumbs always show `Cluster / Level / Scope / Selection` and allow
-one-step return without resetting filters.
+Outline is the canonical keyboard semantic hierarchy. Map and Paths share its
+selection, filters, breadcrumbs, and evidence model. Paths is the canonical
+typed diagnostic list, and every selected item opens the persistent inspector;
+there is no separate List or Port Table fallback surface. At narrow widths,
+selecting a root or diagnostic uses push navigation with an explicit back path;
+the inspector is not removed.
 
-## Three-pane desktop shell
+Traffic is unavailable unless a separately permissioned telemetry adapter
+supplies flow evidence. Kubernetes selectors, owner references, Routes, and
+EndpointSlices never become traffic claims.
 
-The approved desktop shell is a stable three-pane layout:
-
-1. **Scope rail** — context, namespace, Explorer Level, Snapshot Status,
-   search, filters, and the breadcrumb.
-2. **Exploration canvas** — Map, List, or Port Table for the current level and
-   Focus/Trace/Inventory mode.
-3. **Evidence inspector** — Fundamentals, selected object or relationship,
-   port hops, status, provenance, unavailable inputs, and safe next actions.
-
-The panes may collapse at narrow widths, but the information order remains the
-same. A narrow layout must expose a single-pane equivalent with a clear back
-path; it must not remove the inspector or make the map the only route.
-
-### View parity
-
-| View | Purpose | Required parity |
-| --- | --- | --- |
-| **Map** | Show nested semantic groups and bounded relationships. | Selectable objects and relationships; compound groups; bundled/orthogonal edges; selected Focus preserved; no physics implying traffic. |
-| **List** | Provide the semantic and accessibility fallback. | Same objects, relationships, evidence labels, status, filters, ordering, selection, and handoff as Map. |
-| **Port Table** | Make typed port semantics inspectable at a glance. | Same selected Route/Service/EndpointSlice/Pod set; protocol, names, numbers, targetPort resolution, readiness, and Evidence Levels are explicit. |
-
-The current macOS implementation now contains the approved Explorer Level
-navigation, breadcrumb, Focus/Trace/Inventory modes, Map/List/Port Table
-switching, typed Port Path rows, a Fundamentals/evidence inspector, and a
-wide three-pane or narrow stacked layout. A fresh deterministic wide fixture
-review confirms the hierarchy and full Ingress → Service → EndpointSlice → Pod
-container-port evidence in the Port Table and inspector. Narrow-state parity,
-human VoiceOver review, and GUI frame/RSS smoothness remain unverified.
-
-The Linux adapter contains a fixture-only GTK topology route with Explorer
-Level, mode, presentation, search, grouped-map fallback, List, Port Table, and
-Fundamentals/evidence surfaces. It is useful for proving shared vocabulary and
-fixture wiring, but it is not live-cluster evidence or full GTK route parity.
+The new macOS shell has been launched against a deterministic fixture. This is
+runtime truth for the shell/fixture path only: the original wide/narrow
+reference coverage matrix is incomplete, and state, accessibility, GUI
+frame/RSS, and live-cluster gates remain unverified. The Linux adapter remains
+a fixture-only GTK route using the historical ExplorerLevel/ExplorerMode/
+ExplorerPresentation controls (including Map fallback, List, and Port table),
+not the current Outline/selected-root Map/Paths contract and not live-cluster
+or full parity evidence. Migration is pending.
 
 ## Port Path contract
 
@@ -172,31 +146,31 @@ auth-plugin output, command argv, and stderr remain outside the graph.
 
 ## Interaction quality contract
 
-- Focus mode shows the selected object and directly relevant neighbors; the
-  user can expand one additional hop without losing selection.
-- Trace mode walks one Route, Port Path, policy, or dependency hop at a time;
-  each step updates the inspector and the equivalent List/Port Table row.
-- Inventory mode is searchable, deterministically ordered, virtualized by the
-  native List, and complete for the selected scope, with an explicit aggregate
-  count rather than a silent cap. User-controlled sort remains future work.
-- Map edges are bundled, routed, and selectable. Edge geometry is not the only
-  carrier of meaning.
+- Outline expansion reveals the selected root and directly relevant dependents
+  without losing selection.
+- Scoped Map starts only from a selected root, is capped at one or two
+  relationship hops and a node/fanout budget, and exposes visible truncation
+  status plus an explicit handoff back to Outline.
+- Paths walks one Route, Port Path, policy, or dependency hop at a time; each
+  step updates the persistent inspector and typed diagnostic list.
+- Map edges are selectable, but edge geometry is never the only carrier of
+  meaning and never implies traffic.
 - Loading renders shell and scope first, then progressively fills resources,
   relationships, and details. Refresh cancellation cannot overwrite a newer
   generation.
-- Selection, filter, and breadcrumb changes preserve context across Map, List,
-  and Port Table.
-- Motion is short and comprehension-oriented for selection, focus, and level
+- Selection, filter, and breadcrumb changes preserve context across Outline,
+  Map, and Paths.
+- Motion is short and comprehension-oriented for selection, scope, and path
   changes. Reduced Motion removes travel/physics while preserving state,
   selection, and status updates.
 - Keyboard traversal, screen-reader labels, focus order, contrast, and narrow
-  layouts must expose the same task outcomes as the Map.
+  layouts must expose the same task outcomes as Outline, Map, and Paths.
 
 Provisional performance gates are recorded in the interface review. They are
 targets to measure, not claims that the current implementation passes. The
-current Map uses an explicit page size and offers a List handoff instead of a
-silent truncation; this is a bounded usability safeguard, not a frame-time
-benchmark.
+current selected-root Map has an explicit hop limit and a core 180-node cap;
+the macOS surface reports visible truncation and offers an explicit handoff to
+Outline. This is correctness evidence, not frame-time evidence.
 
 ## Security and provider boundary
 
@@ -209,26 +183,31 @@ documented at [Services and networking](https://kubernetes.io/docs/concepts/serv
 
 ## Current implementation and later work
 
-Observed now: the macOS SwiftUI route and portable graph implement the semantic
-Explorer Levels, Focus/Trace/Inventory modes, Map/List/Port Table surfaces,
-typed Route → Service → EndpointSlice → endpoint → declared-container Port
-Paths, unresolved/no-endpoint/no-ready/external statuses, Fundamentals copy,
-and partial-input retention. The current source and fixture tests cover these
-contracts. A disposable kind run also verifies the fixture API shapes and RBAC
-denial, while a deterministic desktop fixture records the tiered Port Table
-hierarchy. No claim is made for arbitrary production-cluster fidelity, runtime
-traffic, frame/RSS performance, complete VoiceOver coverage, or the untested
-narrow/state scenarios.
+Observed now: the macOS SwiftUI route and portable graph expose the chosen
+Outline/selected-root Map/typed Paths intent, typed Route → Service →
+EndpointSlice → endpoint → declared-container Port Paths, unresolved/no-
+endpoint/no-ready/external statuses, persistent Fundamentals copy, and
+partial-input retention. A new macOS shell launch against a deterministic
+fixture is observed. The current source and fixture tests cover these
+contracts. An opt-in disposable kind harness covers fixture API shapes and
+RBAC denial, but it was not run by the current redesign gate. No claim is made
+for arbitrary production-cluster fidelity, runtime
+traffic, frame/RSS performance, complete accessibility coverage, or the
+original wide/narrow/state scenarios.
 
 Observed in the Linux fixture slice: a GTK topology route is wired to the
-shared graph and renders the same level/mode/presentation vocabulary, grouped
-map fallback, List, Port Table, and Fundamentals/evidence copy. This remains
-fixture-only: live kubectl behavior, full route/state parity, accessibility,
-startup/RSS, and visual parity are open.
+shared graph and exposes the historical ExplorerLevel/ExplorerMode/
+ExplorerPresentation controls and evidence inspector against fixture data.
+This remains fixture-only: migration to the canonical Outline/selected-root
+Map/Paths contract, live kubectl behavior, full route/state parity,
+accessibility, startup/RSS, and visual parity are open.
 
-Planned next: fresh narrow and remaining state screenshots, GUI smoothness and
-memory measurements, human accessibility review, broader provider/controller
-conformance, and full live GTK route parity.
+Planned next: capture the 16 original wide/narrow reference scenarios, review
+the generated design-direction target
+(`docs/interface/reference-topology-v2/topology-outline-design-target.png`),
+measure GUI smoothness and memory, complete human accessibility review, and
+validate broader provider/controller conformance and full live GTK route
+parity.
 
 ## Existing Kubernetes references
 

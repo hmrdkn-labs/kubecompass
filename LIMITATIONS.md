@@ -131,15 +131,21 @@ marks those provider-managed internals when they are not exposed by the API.
 Forbidden, unsupported, timed-out, offline, or cancelled inputs are recorded as
 partial/unavailable status with safe copy. A successful empty result is not
 substituted for a denied list. Fixture tests cover port/path joins and RBAC
-classification, and a disposable kind-cluster run validates the fixture API
-shapes and RBAC denial used by those cases. This is not a claim that every
-provider, controller, CNI,
+classification. An opt-in disposable kind-cluster harness covers those API
+shapes and RBAC cases, but it was not run by the current redesign gate and is
+not part of CI. This is not a claim that every provider, controller, CNI,
 service mesh, or production-cluster behavior is modeled.
 
-The current Release synthetic 10,000-object benchmark took about 3.56s to
-construct 10,001 nodes and 94,950 edges; core level/search/focus/port queries
-were below 100ms in that run. That is graph/query evidence only, not promised
-GUI frame rate, API latency, memory use, or a hard capacity limit. The map uses
-progressive disclosure and List/Port Table remain the semantic fallbacks. Full
-Linux live-data parity, human VoiceOver review, GUI frame/RSS measurement, and
-the complete narrow/state matrix remain open.
+The final 2026-08-13 presentation-inclusive Release synthetic 10k fixture
+produced 10,001 nodes and 94,950 edges: graphBuild 5488.727ms, Outline
+1150.021ms, Map 188.782ms, Paths 196.633ms, level 13.646ms, search 42.085ms,
+one-hop 91.238ms, and Port filter 10.37ms (one sample per metric). This is graph/query evidence
+only, not promised GUI frame rate, API latency, memory use, or a hard capacity
+limit.
+Outline is the default; a selected-root Map is node/fanout bounded to one or
+two hops with visible truncation and an implemented Outline handoff;
+Paths is the canonical typed diagnostic list. Traffic remains unavailable
+without telemetry. A new macOS shell launch against the deterministic fixture is
+observed, but the original wide/narrow reference matrix is incomplete. Full
+Linux live-data parity, human accessibility review, GUI frame/RSS measurement,
+and the complete narrow/state matrix remain open.

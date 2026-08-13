@@ -30,6 +30,15 @@ final class TopologyPerformanceTests: XCTestCase {
             XCTAssertLessThan(benchmarkCase.metrics.searchFilter.maxMilliseconds, 10_000, "search exceeded safety bound for \(benchmarkCase.objectCount) objects")
             XCTAssertLessThan(benchmarkCase.metrics.oneHopFocus.maxMilliseconds, 10_000, "focus exceeded safety bound for \(benchmarkCase.objectCount) objects")
             XCTAssertLessThan(benchmarkCase.metrics.portPathFilter.maxMilliseconds, 10_000, "port filter exceeded safety bound for \(benchmarkCase.objectCount) objects")
+            XCTAssertLessThan(benchmarkCase.metrics.presentationOutline.maxMilliseconds, 30_000, "outline presentation exceeded safety bound for \(benchmarkCase.objectCount) objects")
+            XCTAssertLessThan(benchmarkCase.metrics.presentationMap.maxMilliseconds, 30_000, "map presentation exceeded safety bound for \(benchmarkCase.objectCount) objects")
+            XCTAssertLessThan(benchmarkCase.metrics.presentationPaths.maxMilliseconds, 30_000, "paths presentation exceeded safety bound for \(benchmarkCase.objectCount) objects")
+            if benchmarkCase.objectCount >= 10_000 {
+                // Full-profile scale probe only: this has 2.4x headroom over
+                // the observed 1.22s debug / 0.81s release measurements on
+                // the acceptance machine, while catching an O(n²) relapse.
+                XCTAssertLessThan(benchmarkCase.metrics.presentationOutline.maxMilliseconds, 3_000, "10k outline exceeded 3 second scale target")
+            }
         }
     }
 }
@@ -60,6 +69,9 @@ struct TopologyBenchmarkMetrics: Codable, Sendable {
     let searchFilter: TopologyBenchmarkMetric
     let oneHopFocus: TopologyBenchmarkMetric
     let portPathFilter: TopologyBenchmarkMetric
+    let presentationOutline: TopologyBenchmarkMetric
+    let presentationMap: TopologyBenchmarkMetric
+    let presentationPaths: TopologyBenchmarkMetric
 }
 
 struct TopologyBenchmarkMetric: Codable, Sendable {
@@ -105,6 +117,7 @@ private struct TopologyBenchmarkRunner {
         let graph = TopologyGraphBuilder.build(fixture.input)
         let query = TopologyGraphQuery(graph: graph)
         let selectedServiceIDs = Set(graph.nodes.filter { $0.kind == "Service" }.prefix(8).map(\.id))
+        let selectedRootID = graph.nodes.first(where: { $0.kind == "Service" })?.id
 
         let levelSamples = measure(samples: caseSamples) {
             for level in ExplorerLevel.allCases {
@@ -121,6 +134,15 @@ private struct TopologyBenchmarkRunner {
         let portSamples = measure(samples: caseSamples) {
             _ = query.portPaths(level: .network, protocolName: "TCP", port: 8080, readiness: true, search: "service-")
         }
+        let outlinePresentationSamples = measure(samples: caseSamples) {
+            _ = TopologyExplorerPresentation(graph: graph, surface: .outline)
+        }
+        let mapPresentationSamples = measure(samples: caseSamples) {
+            _ = TopologyExplorerPresentation(graph: graph, surface: .map, selectedRootID: selectedRootID, maxHops: 2)
+        }
+        let pathsPresentationSamples = measure(samples: caseSamples) {
+            _ = TopologyExplorerPresentation(graph: graph, surface: .paths)
+        }
 
         return TopologyBenchmarkCase(
             objectCount: objectCount,
@@ -134,7 +156,10 @@ private struct TopologyBenchmarkRunner {
                 explorerLevelQuery: summarize(levelSamples),
                 searchFilter: summarize(searchSamples),
                 oneHopFocus: summarize(focusSamples),
-                portPathFilter: summarize(portSamples)
+                portPathFilter: summarize(portSamples),
+                presentationOutline: summarize(outlinePresentationSamples),
+                presentationMap: summarize(mapPresentationSamples),
+                presentationPaths: summarize(pathsPresentationSamples)
             )
         )
     }

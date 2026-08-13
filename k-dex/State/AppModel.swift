@@ -74,13 +74,13 @@ final class AppModel {
     var selectedTopologyEdgeID: String?
     var selectedTopologyPortPathID: String?
 
-    /// Shared semantic navigation state for the native topology front end.
-    /// These values intentionally live in the model so a later Linux/TUI
-    /// adapter can retain the same scope and selection semantics.
-    var topologyExplorerLevel: ExplorerLevel = .cluster
-    var topologyExplorerMode: ExplorerMode = .focus
-    var topologyExplorerPresentation: ExplorerPresentation = .map
-    var topologyFocusPath: [ExplorerLevel] = [.cluster]
+    /// Primary topology surface. Outline is the deterministic default; Map is
+    /// intentionally scoped from a selected root; Paths is a diagnostic view.
+    var topologySurface: TopologyExplorerSurface = .outline
+    var topologyMapExpansionHops = 1
+    var topologyOutlineExpandedIDs: Set<String> = []
+    var topologyNarrowDetailVisible = false
+
     var topologySearchText = ""
     var topologyKindFilter: String?
     var topologyEvidenceFilter: TopologyEvidenceLevel?
@@ -106,23 +106,11 @@ final class AppModel {
         }
     }
 
-    func setTopologyLevel(_ level: ExplorerLevel) {
-        topologyExplorerLevel = level
-        if let index = topologyFocusPath.firstIndex(of: level) {
-            topologyFocusPath = Array(topologyFocusPath.prefix(through: index))
-        } else {
-            topologyFocusPath.append(level)
-        }
-        if level != .network && level != .evidence {
-            selectedTopologyPortPathID = nil
-        }
-    }
-
     func resetTopologyExplorerState() {
-        topologyExplorerLevel = .cluster
-        topologyExplorerMode = .focus
-        topologyExplorerPresentation = .map
-        topologyFocusPath = [.cluster]
+        topologySurface = .outline
+        topologyMapExpansionHops = 1
+        topologyOutlineExpandedIDs = []
+        topologyNarrowDetailVisible = false
         topologySearchText = ""
         topologyKindFilter = nil
         topologyEvidenceFilter = nil
@@ -133,6 +121,12 @@ final class AppModel {
         selectedTopologyNodeID = nil
         selectedTopologyEdgeID = nil
         selectedTopologyPortPathID = nil
+    }
+
+    func setTopologySurface(_ surface: TopologyExplorerSurface) {
+        topologySurface = surface
+        topologyNarrowDetailVisible = false
+        if surface != .paths { selectedTopologyPortPathID = nil }
     }
 
     // MARK: UI state

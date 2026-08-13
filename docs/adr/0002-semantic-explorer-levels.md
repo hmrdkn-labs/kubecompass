@@ -2,9 +2,11 @@
 
 ## Status
 
-Accepted for the next Topology Explorer implementation slice. The current
-macOS view remains a fixture-backed prototype until the replacement is built
-and reviewed.
+Superseded by [ADR 0003](0003-topology-interaction-model.md) on 2026-08-13.
+This ADR records the historical ExplorerLevel/ExplorerMode/
+ExplorerPresentation prototype contract. The Linux fixture still contains
+that vocabulary, but it is compatibility evidence only; the current product
+contract is defined by ADR 0003 and is not implemented by this ADR.
 
 ## Decision
 

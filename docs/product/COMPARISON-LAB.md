@@ -31,8 +31,11 @@ same context caution applies to them.
 6. In Topology Explorer, whether each relationship is clearly labeled
    Observed, Declared, Inferred, or Unavailable, and whether partial RBAC is
    distinguishable from an empty scope.
-7. Whether Explorer Levels, Focus/Trace/Inventory, and Map/List/Port Table make
-   the same evidence and Port Paths understandable at wide and narrow sizes.
+7. Whether Outline starts with a readable namespace/workload hierarchy, a
+   selected root opens a bounded one/two-hop Map, typed Paths expose Port Hops,
+   and the persistent inspector plus semantic text fallback retain the same
+   evidence at wide and narrow sizes. Traffic remains unavailable unless an
+   explicit telemetry source is present.
 
 ## Product boundary
 
@@ -41,19 +44,27 @@ macOS surface remains SwiftUI. The Linux surface is native Swift with
 GTK4/libadwaita and shares portable state, command, safety, and fixture
 contracts; Apple does not provide a SwiftUI Linux backend. The current Linux
 package is a fixture-backed vertical slice and does not read kubeconfig or run
-kubectl yet.
+kubectl yet. Its topology screen still exposes the historical
+ExplorerLevel/ExplorerMode/ExplorerPresentation controls (including Map
+fallback, List, and Port table); it has not migrated to the macOS
+Outline/selected-root Map/Paths contract.
 
 The macOS Topology Explorer route is read-only and available in the local
 1.4.0 build. It builds a sanitized snapshot from allowlisted `kubectl get -o
 json` inputs, exposes a virtual control-plane boundary when provider internals
 are not represented by the API, and keeps forbidden/unsupported inputs
-explicitly partial. It now contains Explorer Levels, Focus/Trace/Inventory,
-Map/List/Port Table, typed Port Paths, and Fundamentals/evidence copy. It does
+explicitly partial. Outline is the default surface; selecting a workload or
+service opens a bounded one/two-hop Map, and typed Paths provide diagnostic
+Port Hop details. A persistent Fundamentals/evidence inspector and semantic
+text fallback preserve the same evidence for keyboard and narrow layouts.
+Traffic is unavailable without explicit telemetry, and selectors, owner refs,
+Routes, and EndpointSlices are not treated as traffic proof. The route does
 not list Secret or ConfigMap payloads and does not claim packet flow, CNI
 enforcement, provider-network internals, arbitrary production-cluster fidelity,
-frame/RSS, or complete VoiceOver coverage. A fresh wide Port Table fixture and
-disposable kind fixture-conformance run are recorded; narrow and remaining
-state-matrix visual review is still pending.
+frame/RSS, or complete VoiceOver coverage. A new macOS shell launch against a
+deterministic fixture is observed, but the original wide/narrow reference
+matrix and state, accessibility, frame/RSS, and live-cluster gates remain
+unverified.
 Linux has a fixture-only GTK topology route wired to the shared graph; full
 route/state, live-cluster, accessibility, and visual parity remain pending.
 

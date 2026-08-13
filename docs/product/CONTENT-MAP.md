@@ -8,7 +8,7 @@
 | Cluster picker | contexts, current-context badge, filter | Connect; reload; open settings. |
 | Sidebar shell | context switcher, Overview, Topology, resource categories, Helm | Open a workspace; expand/collapse/reorder; hide kinds; go to resource (`⌘K` on macOS). |
 | Overview | workload cards, warnings, restarts, abnormal usage | Jump to resource/events/pod; choose namespace; refresh; inspect port forwards. |
-| Topology Explorer | three-pane, evidence-aware Explorer Levels, Map/List/Port Table, Snapshot Status, selected-object Fundamentals, Port Paths, and unavailable-input notices | Choose context, namespace, Explorer Level, and Focus/Trace/Inventory mode; search/filter; select a Resource Node, Relationship, Route, or Port Hop; refresh; jump to its resource list. Read-only. |
+| Topology Explorer | Outline default, selected-root Map (one or two hops), typed Paths diagnostics, persistent Fundamentals/evidence inspector, Snapshot Status, and unavailable-input notices | Choose context and namespace; expand Outline; select a workload/root or relationship; open Map or Paths; search/filter; refresh; jump to its resource list. Narrow selection uses push navigation with a back path. Read-only; Traffic is unavailable without telemetry. |
 | Resource list | sortable/customizable columns, namespace scope, selection | Filter; select one/many; create; refresh; open detail; logs; YAML; delete; scale; restart; port forward. |
 | Resource detail | Overview, Pods, YAML, Logs, Events tabs | Close; switch tab; apply YAML; retry; destructive/action menu. |
 | Helm | release table and release detail tabs | Select release; inspect values/manifests/notes/history; refresh. |
@@ -39,27 +39,19 @@ relationship language and security boundary live in
 
 ## Topology Explorer content contract
 
-| Explorer Level | Primary content | Learner prompt |
+| Surface | Primary content | Learner prompt |
 | --- | --- | --- |
-| Cluster | Context, namespaces, Snapshot Status, control-plane boundary, entry points, cluster-scoped resources | “What can this snapshot tell me, and what is unavailable?” |
-| Infrastructure | Current: Nodes, roles, addresses, zones, Pod CIDRs, runtime/OS facts, scheduling and storage classes. Planned: complete conditions, capacity/allocatable, and taints. | “Where can workloads run?” |
-| Workloads | Current: owners, replicas, Pods, containers, phase/readiness/restarts, and unresolved ownership. Planned: workload conditions and probe declarations. | “What created this workload, and where is it running?” |
-| Network | Ingress/Gateway/Route, Service ports, targetPort resolution, EndpointSlices, backend Pods and container ports | “How is this application declared and exposed?” |
-| Policy & Dependencies | Current: NetworkPolicy peers/ports, storage, ConfigMap/Secret resource names, and unresolved references. Planned: ServiceAccount/RBAC identity, quotas, disruption budgets, and autoscaling. | “What declares access, and what does it depend on?” |
-| Evidence | Source fields, join rules, resource versions, assumptions, Exposure Status, unavailable inputs | “What does this prove, and what does it not prove?” |
+| Outline (default) | Namespace groups, primary workload/controller, dependents, unattached resources, Snapshot Status, and evidence gaps | “What is here, and why is it grouped this way?” |
+| Scoped Map | Selected root plus one or two typed relationship hops, explicit scope/filter/source controls, and stable selection | “Which nearby objects explain this selection?” |
+| Paths | One typed Route/Service/EndpointSlice/Pod-container, policy, or dependency diagnostic with hop-level evidence | “How does this declared path resolve, and what remains unknown?” |
+| Persistent inspector | Fundamentals, status, provenance, unavailable inputs, safe next actions, and proof/non-proof copy | “What does this selection prove?” |
 
-Every level supports these equivalent modes:
-
-- **Focus** — selected object plus bounded neighbors.
-- **Trace** — one Route, Port Path, policy, or dependency hop at a time.
-- **Inventory** — complete searchable rows for the current scope.
-
-Map, List, and Port Table share selection, filters, evidence, and handoff. Map
-and List represent resources and relationships; Port Table represents the
-corresponding typed route and exposure paths. It is not a decorative legend:
-it is the canonical compact
-surface for protocol, name, port, targetPort resolution, endpoint readiness,
-and Evidence Level.
+Outline is the canonical keyboard semantic hierarchy; Map and Paths share its
+selection, filters, evidence, and handoff. Paths is the canonical typed
+diagnostic list, and the persistent inspector carries detail across surfaces.
+There is no separate List or Port Table fallback surface. Traffic is not a
+fourth surface: it is unavailable unless an explicit telemetry adapter supplies
+flow evidence.
 
 Topology-specific copy must distinguish:
 
