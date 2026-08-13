@@ -1,19 +1,5 @@
-# Release template. Replace VERSION and SHA256 only after producing and
-# publishing one notarized KubeCompass DMG from the same release run.
-cask "kubecompass" do
-  version "VERSION"
-  sha256 "SHA256"
-
-  url "https://github.com/hmrdkn-labs/kubecompass/releases/download/v#{version}/KubeCompass-#{version}.dmg"
-  name "KubeCompass"
-  desc "Native Kubernetes desktop client"
-  homepage "https://github.com/hmrdkn-labs/kubecompass"
-
-  depends_on macos: ">= :tahoe"
-  app "KubeCompass.app"
-
-  zap trash: [
-    "~/Library/Preferences/dev.kubecompass.app.plist",
-    "~/Library/Saved Application State/dev.kubecompass.app.savedState",
-  ]
-end
+# Generated release artifact marker.
+#
+# This file is intentionally not a Homebrew cask between releases. The release
+# flow stages an exact cask under build/; only update this tap path explicitly
+# after the matching DMG has been uploaded and tagged. Do not publish marker.

@@ -122,6 +122,9 @@ jobs:
           print(f'interface-json: parsed {len(json_files)} documents')
           PY
 
+      - name: Verify Homebrew release safety guards
+        run: bash scripts/test-homebrew-release.sh
+
       - name: Run fake topology backend self-test
         run: bash scripts/topology-fake-kubectl.sh --self-test
 

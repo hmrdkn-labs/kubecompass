@@ -46,6 +46,28 @@ images commonly exclude other documentation paths during installation.
 
 ## Homebrew
 
-`packaging/homebrew/kubecompass.rb` is a release template only. Do not publish
-it until a notarized KubeCompass DMG exists and its exact version, URL, and
-SHA-256 have been inserted.
+Homebrew is the preferred distribution path after a public macOS release. The
+release script requires `arm64` and `x86_64` app slices, notarizes the DMG,
+staples and validates it, and runs a Gatekeeper assessment before staging
+`build/KubeCompass-<version>.cask.rb` with the exact artifact SHA-256. The
+release receipt also records the inspected bundle identifier, universal
+slices, and bundled kubectl license. The tracked tap path is deliberately not
+populated between releases rather than committed with fake version or
+checksum values.
+
+`scripts/prepare-homebrew-cask.sh` can regenerate the cask for a final DMG and
+its required receipt must tie the exact DMG SHA-256 to successful notarization,
+stapler/Gatekeeper checks, universal app/helper slices, `dev.kubecompass.app`,
+and the Apache-2.0 kubectl license. It refuses local `SKIP_NOTARIZE=1`
+artifacts because those are not public release artifacts. The machine-readable
+release receipt is written under `build/release/` as
+`KubeCompass-<version>.release.json`; the checksum is also emitted beside the
+DMG as
+`build/KubeCompass-<version>.dmg.sha256`.
+
+Upload and tag the exact DMG as a GitHub release asset before updating a tap.
+`scripts/release.sh` always stages under `build/` and rejects
+`KUBECOMPASS_HOMEBREW_CASK_PATH`; it cannot rewrite the tracked marker. Only
+after upload/tag, invoke the standalone helper with an explicit `--output`
+tap path. An explicit output path only authorizes a local file write; it does
+not prove that the GitHub asset exists or is reachable.
