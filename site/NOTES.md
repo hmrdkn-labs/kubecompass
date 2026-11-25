@@ -108,6 +108,15 @@ Every row checked against `origin/main` 0e10edb on 2026-11-25.
 | 16 | Demo graph: 12 nodes, 18 edges, 11/4/2 Observed/Declared/Inferred, boundary Unavailable, partial, 2 unresolved | `site/data/demo-graph.json` | Run `site/scripts/demo-graph.sh` | OK |
 | 17 | Captures are the app on a synthetic fixture | `docs/interface/evidence/*.jpeg` show `topology-lab` / `fixture-cluster` / namespace `demo` | View the images | OK |
 | 18 | Signals: CI "macOS stability and topology" success 2026-08-13; last commit 0e10edb 2026-08-13; no release; MIT | `gh run list`, `gh api repos/.../commits/main`, `gh release list`, `gh api repos/...` at build | Re-run the commands | OK (snapshot dated) |
+| 19 | Correction to row 16: the demo graph has 12 Observed, 4 Declared and 2 Inferred edges (18 in all; 7 of the Observed are `containedIn`) | `jq '[.edges[].level]\|group_by(.)\|map({(.[0]):length})\|add' site/data/demo-graph.json` | Run the command | OK (row 16's "11" was a miscount) |
+| 20 | "A Hamardikan Labs project" | README.md 8 | Read the README | OK |
+| 21 | The README lists what is still unverified: accessibility, frame rate and memory use, live-cluster checks | README.md 27–29 ("accessibility, frame/RSS, and live-cluster gates remain unverified") | Read the README | OK |
+| 22 | The Linux adapter reads no kubeconfig and runs no kubectl | README.md 30–33 | Read the README | OK |
+| 23 | The seven `containedIn` relationships are drawn as the namespace boundary and listed; Node, PersistentVolume and StorageClass sit outside it | `site/data/demo-graph.json` (7 `containedIn` edges, none from those three kinds) | Run the jq count | OK |
+| 24 | Level sentences: Observed = what the API reports, `spec.nodeName`, owner references; Declared = Ingress backend, volume claim, Ingress backend "request routing is not proven"; Inferred = selector match, "does not prove traffic or endpoint readiness"; Unavailable = provider-managed control-plane internals as a blank labelled area | `TopologyGraph.swift` 5–13 doc comment; edge `sourceField` and `assumption` in demo-graph.json; README 76–78 | Read both | OK |
+| 25 | The second capture is a larger fixture: 15 nodes, 31 relationships | Visible in `topology-relationship-list.jpeg` header bar | View the image | OK |
+| 26 | The page makes no live requests; signals are a build-time snapshot | Playwright run: no request outside the origin (Verification) | Open the network panel | OK |
+| 27 | Completeness partial, 2 unresolved references | `site/data/demo-graph.json` | Read the file | OK |
 
 Left off the page (unresolved or out of bounds): notarisation and any peer's signing status;
 VoiceOver or any accessibility claim about the app; production-provider conformance; test counts;
@@ -129,3 +138,116 @@ resolves at `origin/main`).
 3. Local-only verification docs and redesign captures: publish or drop. The page uses only tracked
    captures.
 4. The README's generated "design-direction preview" image is not used: it is not a capture.
+
+## Build log
+
+Built 2026-11-25 on branch `landing-page` from HEAD 292ac58.
+
+- `scripts/build.mjs` renders `public/index.html` from `src/index.template.html`, `data/demo-graph.json`
+  and `data/github.json`. The map SVG, relationship table, legend, readout and signals are static HTML;
+  `app.js` only adds filter, node and row linking and the survey pass. Assets are content-hashed under
+  `/assets`. The survey-pass delays are generated into the stylesheet because the CSP has no
+  `style-src 'unsafe-inline'`.
+- `scripts/snapshot.sh` writes `data/github.json`; any failed `gh` call keeps the old file.
+- `scripts/og.mjs` draws `og.png` and `apple-touch-icon.png` (needs Playwright; `PW_MODULES`).
+- `scripts/verify.cjs` is the Playwright and axe run recorded below.
+- Fonts: Literata 400 and 600, Atkinson Hyperlegible Mono 400 and 600, Latin subset woff2 from
+  `@fontsource/*` (OFL, licences in `public/assets/fonts`). 62 KB for four files.
+- Deviation from NOTES "Content": the demo graph has 18 edges, not the 17 implied by row 16
+  (12 Observed). See claim 19. The Namespace is the dotted containing area, as allowed.
+- Deviation from the draft: the node boxes show `PVC` and `PV` for the two long kinds; the list and
+  the accessible names carry the full kind.
+- `containedIn` rows highlight the source node and the namespace boundary; there is no line to hover.
+
+## Verification
+
+Served with `npx wrangler dev --local` (so `_headers` and the CSP applied). Shots and reports are in
+`~/workspace/sandbox/showcase-scan/build/kubecompass/shots/` (`verify-report.json`, Lighthouse reports).
+
+| Check | Result |
+|---|---|
+| axe-core (wcag2a/aa, 2.1, 2.2 AA, best-practice) | 0 violations: desktop light, desktop dark, phone light, phone dark |
+| Horizontal scroll | none at 320, 360, 375, 820, 1440, and with JS off at 1440 and 375 |
+| Console errors, page errors, failed or non-2xx requests, requests outside the origin | none, every viewport |
+| Body size | 18 px at 375 and 1440 |
+| Smallest text, including SVG text after scaling | all at or above 14 px at 375 and 1440 |
+| Targets under 44 px (buttons, summary, `.btn`, footer links, SVG nodes) | none |
+| Keyboard pass | 45 stops on desktop, 34 on phone; every stop has a focus outline or ring (`keyboard-*` shots) |
+| First load on phone, cold cache, compressed | 80.6 KB (HTML, CSS, two JS files, four fonts; images are lazy) |
+| Lighthouse mobile, simulated throttling | performance 100, accessibility 100, best practices 100, SEO 100; LCP 1.1 s, TBT 0 ms, CLS 0.001 (an earlier run scored 94, TBT 290 ms) |
+| Survey pass | class `surveying` during the pass, gone after 2 s; no `surveying` or `pre-survey` under reduced motion |
+| Filter | "Inferred" leaves 2 rows and dims 9 drawn lines; `aria-pressed` true |
+| Recon grep on `public/` | no IP-shaped strings, no ports, no long hex ids; hosts are github.com, hamardikan.com, kubecompass.hamardikan.com and the XML namespaces; "secret" and "kubeconfig" appear only in product-claim sentences |
+| Fixture names on the page | `web`, `web-0`, `worker-a`, `pv-web`, `fast`, namespace `demo` come from the repo's own test fixture, not from any cluster |
+
+### PLAYBOOK §8 checklist
+
+Copy
+- [x] The first line says what it is, in the first screen (`desktop-light-first.png`, `phone-light-first.png`).
+- [x] Meta and og descriptions name the project in one line.
+- [x] One role list and contact order: n/a, project page; links are repo and hamardikan.com.
+- [x] Team size and denominators: n/a, no team claim; counts carry units (12 lines, 1 area, 18 relationships).
+- [x] No ⚠️, [confirm], TBD or XX (grep).
+- [x] Voice read aloud: short, plain, no marketing words, no exclamation marks.
+- [x] Every claim row is OK (rows 1–27).
+
+Claims and data
+- [x] Numbers have unit and denominator; the capture's 15 nodes and 31 relationships are stated as a different fixture.
+- [x] Live numbers carry dates (Signals; footer "checked").
+- [x] No placeholders, no empty sections.
+
+Accessibility and phone
+- [x] Skip link first; one h1; `lang="en"`.
+- [x] Contrast: day and night pairs computed (ink 16.6/14.5:1, muted 8.6/8.1:1, magenta 6.6/8.5:1, hatch lines are decoration with the word beside them); axe `color-contrast` has no violation.
+- [x] Zero console errors; no failed requests.
+- [x] No horizontal scroll at 320, 360, 375, 820.
+- [x] Touch copy: the list rows are tappable buttons; no "press" or "hover" wording on the page.
+- [x] Thumb targets before the first scroll on phone: two buttons (the skip link is off screen).
+- [x] Reduced motion shows the finished sheet; there is no loop, so no pause control.
+- [x] The page reads with JS off (`nojs-*` shots): map, list, readout, legend and levels are static.
+
+Visuals
+- [x] One signature object, from a real artifact (the core's own graph), with a static fallback.
+- [x] Nothing from the banned list: no gradients or glow (the only repeating fill is the tick pattern), no cards, chips or pills, no terminal, no banned fonts, no icon pack, no sprayed fade (one survey pass).
+- [x] Self-critique below.
+
+Privacy
+- [x] No strip-list item in the page or its source (recon grep above).
+- [x] No "ADI", no CV link.
+
+Deploy
+- [x] Root-absolute URLs; `_headers` CSP allows only `'self'` and `data:` images; `/assets/*` immutable and hashed.
+- [x] The hero does not move after load (no layout-changing JS; CLS 0.001).
+- [ ] After each deploy, check the live copy: pending, not deployed by this worker.
+
+## Self-critique
+
+Would a design-literate engineer guess this was AI-generated? The parts that give it away are not the
+visuals but the structure:
+
+- A left margin of small caps labels beside a reading column, with a numbered "Note n" on every
+  section, is a pattern that generated pages reach for. Here it is the chart's own notes convention,
+  but six notes in a row is repetitive. The notes are short; the repetition is in the layout.
+- The graduated edge is a repeating pattern, not hand-drawn ticks with numerals. A real chart has
+  latitude figures; this has none because the page has no latitude. It reads as decoration. I kept
+  it as the one piece of border texture.
+- The map layout is placed by hand (a fixed table in `build.mjs`), so it only suits this fixture. A
+  different graph needs new coordinates. That is honest for a redraw of one test fixture; it would
+  not be for the live app.
+- The relationship list is long (18 rows, 7 of them identical `containedIn` rows). On a phone it is
+  about 3,300 px. The product has the same rows; I did not group them because the brief asked for
+  every edge.
+- The magenta is used for exactly one thing (the selected relationship and its nodes). It is also the
+  only colour on the page, which makes the night theme lean on one pink. It passes AA, but it is
+  closer to a UI accent than to Admiralty magenta.
+- Node and row hover linking is built but not discoverable on touch; the first line tells a visitor
+  to choose a row.
+- The two captures are small, dark app windows on warm paper. They are real, and they are small
+  because the originals are 1220 px wide.
+
+What does not smell: the object is built from the product's own graph builder, the line language works
+without colour, the unavailable area is blank by design, the claims are all sourced, and the page
+says what is missing (no release, no download).
+
+Not measured: GUI frame time of the page on a low-end phone, VoiceOver on the SVG nodes, and any
+real-device Safari run.
