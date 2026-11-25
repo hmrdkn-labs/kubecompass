@@ -1,4 +1,4 @@
-// Draws src/og.png (1200x630, from a real capture) and src/apple-touch-icon.png.
+// Draws src/og.png (1200x630: hero illustration and wordmark) and src/apple-touch-icon.png.
 // Needs Playwright: PW_MODULES=/path/to/node_modules node scripts/og.mjs
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -9,25 +9,19 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(join(process.env.PW_MODULES ?? "/tmp/pw/node_modules", "x.js"));
 const { chromium } = require("playwright");
 const b64 = (p) => readFileSync(p).toString("base64");
-const font = (f) => `data:font/woff2;base64,${b64(join(root, "src/assets/fonts", f))}`;
-const shot = `data:image/jpeg;base64,${b64(join(root, "..", "docs/interface/evidence/topology-map-control-plane.jpeg"))}`;
+const font = `data:font/woff2;base64,${b64(join(root, "src/assets/fonts/bricolage-grotesque-latin-wght-normal.woff2"))}`;
+const body = `data:font/woff2;base64,${b64(join(root, "src/assets/fonts/atkinson-hyperlegible-next-latin-400-normal.woff2"))}`;
+const hero = `data:image/webp;base64,${b64(join(root, "src/assets/img/hero-harbour-1440.webp"))}`;
 
 const html = `<!doctype html><meta charset="utf-8"><style>
-@font-face{font-family:L;font-weight:600;src:url(${font("literata-latin-600-normal.woff2")})}
-@font-face{font-family:L;font-weight:400;src:url(${font("literata-latin-400-normal.woff2")})}
-@font-face{font-family:M;font-weight:400;src:url(${font("atkinson-hyperlegible-mono-latin-400-normal.woff2")})}
+@font-face{font-family:B;font-weight:600 800;src:url(${font})}
+@font-face{font-family:A;font-weight:400;src:url(${body})}
 *{box-sizing:border-box;margin:0}
-body{width:1200px;height:630px;background:#f6f2e7;color:#16130f;position:relative;overflow:hidden}
-.frame{position:absolute;inset:14px;border:2px solid #16130f}
-.edge{position:absolute;inset:6px;border:1px solid #16130f}
-.t{position:absolute;left:62px;top:50px;width:1076px}
-.l{font:400 20px/1 M;letter-spacing:.06em;text-transform:uppercase;color:#4b443a}
-h1{font:600 104px/1 L;letter-spacing:-.015em;margin:20px 0 14px}
-p{font:400 30px/1.3 L;max-width:900px}
-.img{position:absolute;left:62px;right:62px;bottom:50px;height:252px;border:2px solid #16130f;background:url(${shot}) -274px -325px/1403px auto no-repeat}
-</style><div class="edge"></div><div class="frame"></div>
-<div class="t"><div class="l">A Hamardikan Labs project</div><h1>KubeCompass</h1><p>A Kubernetes client for the Mac. Its topology map says how it knows each line it draws.</p></div>
-<div class="img"></div>`;
+body{width:1200px;height:630px;background:#071a24 url(${hero}) center bottom/cover no-repeat;color:#e6f0f2;position:relative;overflow:hidden}
+.t{position:absolute;left:64px;right:64px;top:70px}
+h1{font:800 168px/0.9 B;letter-spacing:-.045em}
+p{font:400 38px/1.3 A;margin-top:28px;max-width:860px}
+</style><div class="t"><h1>KubeCompass</h1><p>A cluster map that tells you how it knows.</p></div>`;
 
 const icon = readFileSync(join(root, "src/favicon.svg"), "utf8");
 const browser = await chromium.launch();

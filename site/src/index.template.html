@@ -6,57 +6,54 @@
 <title>KubeCompass: a Kubernetes client for macOS that says how it knows each line</title>
 <meta name="description" content="KubeCompass is a Kubernetes client for macOS whose topology map tags every relationship Observed, Declared, Inferred or Unavailable.">
 <link rel="canonical" href="https://kubecompass.hamardikan.com/">
-<meta name="theme-color" content="#f6f2e7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#12171b" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#071a24">
 <meta property="og:type" content="website">
 <meta property="og:title" content="KubeCompass">
-<meta property="og:description" content="A Kubernetes client for the Mac. Its topology map says how it knows each line it draws.">
+<meta property="og:description" content="A cluster map that tells you how it knows. A Kubernetes client for macOS.">
 <meta property="og:url" content="https://kubecompass.hamardikan.com/">
 <meta property="og:image" content="https://kubecompass.hamardikan.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="KubeCompass title beside a capture of its Topology Explorer map on a synthetic fixture.">
+<meta property="og:image:alt" content="KubeCompass over an aerial illustration of a container terminal at blue hour.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="preload" href="{{font:literata-latin-400-normal.woff2}}" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="{{font:atkinson-hyperlegible-mono-latin-400-normal.woff2}}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{font:bricolage-grotesque-latin-wght-normal.woff2}}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{font:atkinson-hyperlegible-next-latin-400-normal.woff2}}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{{css}}">
 <script src="{{boot}}"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the content</a>
 {{defs}}
-<div class="sheet">
-{{ticks}}
-<div class="neat">
+<header class="top" id="top">
+  <a class="brand" href="/">KubeCompass</a>
+  <nav aria-label="Sections">
+    <a href="#levels">Evidence</a>
+    <a href="#limits">Limits</a>
+    <a href="#build">Build</a>
+  </nav>
+</header>
 <main id="main">
 
-<header class="title-block">
-  <p class="label">A Hamardikan Labs project</p>
-  <div class="inner">
-    <h1>KubeCompass</h1>
-    <p class="lead">A Kubernetes client for the Mac. Its topology map says how it knows each line it draws.</p>
-    <p>Every relationship is tagged Observed, Declared, Inferred or Unavailable. When an input is missing, the map says so instead of drawing it as complete.</p>
-    <p class="status-line">No published release yet. Build it from source on macOS 26 or later.</p>
-    <div class="actions">
-      <a class="btn primary" href="https://github.com/hmrdkn-labs/kubecompass#install">Build from source</a>
-      <a class="btn" href="https://github.com/hmrdkn-labs/kubecompass">Repository on GitHub</a>
-    </div>
-  </div>
-</header>
+<section class="hero" data-hero>
+  <picture class="hero-img">
+    <source type="image/avif" srcset="{{img:hero-harbour-800.avif}} 800w, {{img:hero-harbour-1440.avif}} 1440w, {{img:hero-harbour-1672.avif}} 1672w" sizes="100vw">
+    <source type="image/webp" srcset="{{img:hero-harbour-800.webp}} 800w, {{img:hero-harbour-1440.webp}} 1440w, {{img:hero-harbour-1672.webp}} 1672w" sizes="100vw">
+    <img src="{{img:hero-harbour-1440.webp}}" width="1672" height="941" alt="" fetchpriority="high" decoding="async">
+  </picture>
+  <h1><span class="w">A</span> <span class="w">cluster</span> <span class="w">map</span> <span class="w">that</span> <span class="w">tells</span> <span class="w">you</span> <span class="w">how</span> <span class="w">it</span> <span class="w">knows.</span></h1>
+  <p class="sub">KubeCompass is a Kubernetes client for macOS. Every relationship it draws is tagged observed, declared, inferred or unavailable.</p>
+  <a class="btn" href="https://github.com/hmrdkn-labs/kubecompass#install">Build from source</a>
+</section>
 
-<section class="object" id="chart" aria-labelledby="chart-h">
+<div class="stage" id="chart" aria-labelledby="chart-h">
   <a class="skip" href="#levels">Skip the diagram</a>
-  <div class="object-head">
-    <p class="label">Source diagram</p>
-    <h2 id="chart-h">How the map knows</h2>
-  </div>
-
-  <div class="object-flow">
+  <h2 class="vh" id="chart-h">The demo graph</h2>
+  <div class="stage-flow">
     <fieldset class="legend">
-      <legend class="label">Show only</legend>
-      <div class="legend-items">
+      <legend class="vh">Show only these evidence levels</legend>
+      <div class="seg">
 {{legend}}
       </div>
     </fieldset>
@@ -70,18 +67,11 @@
 
     <div class="readout" id="readout" aria-live="polite">{{readout}}</div>
 
-    <p class="map-note fixture">Drawn from the graph KubeCompassCore builds for the demo fixture in its test suite. Not a screenshot. Completeness: {{completeness}}, with {{unresolved}} unresolved references.</p>
+    <p class="fixture">A redraw of the graph KubeCompassCore builds for the demo fixture in its test suite. Not a screenshot.</p>
 
-    <div class="explain">
-      <p>Each line carries the evidence level the app gives it, drawn so you can tell them apart without colour: solid, long dashes, dots. In this diagram Unavailable is a hatched area with no lines into it.</p>
-      <p class="js-only">Choose a level to see only those lines. Choose a node or a row to see where a line comes from.</p>
-      <p class="map-note">{{mapnote}}</p>
-      <p class="cap">Drawn from the graph KubeCompassCore builds for the demo fixture in its test suite. Not a screenshot.</p>
-    </div>
-
-    <div class="rels-wrap">
-      <h3>{{edgecount}} relationships, {{containedcount}} of them containedIn</h3>
-      <p class="map-note" id="count" hidden></p>
+    <details class="rels-wrap" id="rels" open>
+      <summary>All {{edgecount}} relationships</summary>
+      <p class="count" id="count" hidden></p>
       <table class="rels">
         <caption class="vh">Relationships in the demo graph, with evidence level, source field and join rule. The containedIn relationships share one row.</caption>
         <thead><tr><th scope="col">Line</th><th scope="col">Relationship</th><th scope="col">Evidence</th><th scope="col">Source field</th><th scope="col">Join rule</th></tr></thead>
@@ -90,83 +80,113 @@
         </tbody>
       </table>
       <p class="empty" id="rels-empty" hidden>No relationships at this level. Nothing is drawn into the control plane boundary.</p>
-    </div>
+    </details>
   </div>
   <script type="application/json" id="graph-data">{{graphjson}}</script>
-</section>
+</div>
 
-<section class="note" id="levels" aria-labelledby="levels-h">
-  <div class="note-head"><p class="label">Note 1</p><h2 id="levels-h">What a line means</h2></div>
-  <div class="note-body">
-    <ul class="levels">
+<section id="levels" aria-labelledby="levels-h">
+  <div class="wrap split wide-left">
+    <div>
+      <h2 id="levels-h">Each line says how it was found</h2>
+      <ul class="levels">
 {{levels}}
+      </ul>
+    </div>
+    <div class="aside">
+      <p>{{mapnote}}</p>
+      <p class="js-only">Choose a level above to see only those lines. Choose a node or a row to see its source field and join rule.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="captures" aria-labelledby="captures-h">
+  <div class="wrap">
+    <div class="head"><h2 id="captures-h">The same map in the app</h2></div>
+    <div class="caps">
+      <figure class="cap-fig">
+        <img src="{{img:topology-map-control-plane.webp}}" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships.">
+        <figcaption>KubeCompass on a synthetic fixture. Map view: the control plane boundary is tagged Unavailable and has no relationships.</figcaption>
+      </figure>
+      <figure class="cap-fig">
+        <img src="{{img:topology-relationship-list.webp}}" width="1220" height="724" loading="lazy" decoding="async" alt="The same window in List view. Rows read like web-a to worker-a, Scheduled on, Observed, and web to web-a, Selects, Inferred. The selected row’s inspector shows the source field spec.podSelector and an assumption that policy enforcement and reachability are not proven.">
+        <figcaption>KubeCompass on a synthetic fixture. List view: each row names its evidence level. This fixture has 15 nodes and 31 relationships, not the smaller graph drawn above.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="limits" aria-labelledby="limits-h">
+  <div class="wrap split">
+    <figure class="photo">
+      <picture>
+        <source type="image/avif" srcset="{{img:fog-channel-800.avif}} 800w, {{img:fog-channel-1200.avif}} 1200w" sizes="(min-width: 900px) 50vw, 100vw">
+        <source type="image/webp" srcset="{{img:fog-channel-800.webp}} 800w, {{img:fog-channel-1200.webp}} 1200w" sizes="(min-width: 900px) 50vw, 100vw">
+        <img src="{{img:fog-channel-800.webp}}" width="1536" height="1024" loading="lazy" decoding="async" alt="Illustration: a harbour channel at dawn. A marker buoy and the near quay edge are sharp; sea fog hides everything beyond them.">
+      </picture>
+    </figure>
+    <div class="prose">
+      <h2 id="limits-h">What the map will not guess</h2>
+      <p>Traffic is unavailable without a telemetry adapter, and the map says so instead of drawing it.</p>
+      <p>Selectors and Ingress backends are configuration, not proof of traffic. The project’s <a href="https://github.com/hmrdkn-labs/kubecompass/blob/main/docs/adr/0001-evidence-aware-topology.md">decision record</a> says the same.</p>
+      <p>The topology view is read-only. Secret and ConfigMap payloads are never listed for topology.</p>
+    </div>
+  </div>
+</section>
+
+<section id="runs" aria-labelledby="runs-h">
+  <div class="wrap">
+    <div class="runs-head"><h2 id="runs-h">Runs on the access you already have</h2></div>
+    <ul class="facts">
+      <li><h3>Your kubeconfig, your auth plugins</h3><p>KubeCompass drives a bundled <code>kubectl</code> and your kubeconfig, so the auth plugins you already use keep working.</p></li>
+      <li><h3>App Sandbox is off</h3><p>The app reads <code>~/.kube</code> and starts <code>kubectl</code>, so App Sandbox is disabled.</p></li>
+      <li><h3>No updater yet</h3><p>The updater is off until a release feed exists.</p></li>
+      <li><h3>Linux runs on fixture data only</h3><p>The Linux adapter reads no kubeconfig and runs no <code>kubectl</code>.</p></li>
     </ul>
   </div>
 </section>
 
-<section class="note" id="limits" aria-labelledby="limits-h">
-  <div class="note-head"><p class="label">Note 2</p><h2 id="limits-h">What it cannot see</h2></div>
-  <div class="note-body">
-    <p>Traffic. Without a telemetry adapter, traffic shows as unavailable.</p>
-    <p>Selectors and Ingress backends are configuration, not proof of traffic. The project’s <a href="https://github.com/hmrdkn-labs/kubecompass/blob/main/docs/adr/0001-evidence-aware-topology.md">decision record</a> says the same.</p>
-    <p>The topology view is read-only. Secret and ConfigMap payloads are never listed for topology.</p>
-  </div>
-</section>
-
-<section class="note" id="runs" aria-labelledby="runs-h">
-  <div class="note-head"><p class="label">Note 3</p><h2 id="runs-h">How it runs</h2></div>
-  <div class="note-body">
-    <p>KubeCompass drives a bundled <code>kubectl</code> and your kubeconfig, so the auth plugins you already use keep working.</p>
-    <p>App Sandbox is off, because the app reads <code>~/.kube</code> and starts <code>kubectl</code>. The updater is off until a release feed exists.</p>
-  </div>
-</section>
-
-<section class="note captures" id="captures" aria-labelledby="captures-h">
-  <div class="note-head"><p class="label">Note 4</p><h2 id="captures-h">The app</h2></div>
-  <div class="note-body">
-    <figure class="cap-fig">
-      <img src="{{img:topology-map-control-plane.webp}}" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships.">
-      <figcaption>KubeCompass on a synthetic fixture. Map view: the control plane boundary is tagged Unavailable and has no relationships.</figcaption>
+<section id="build" aria-labelledby="build-h">
+  <div class="wrap split">
+    <div class="prose">
+      <h2 id="build-h">Build it yourself</h2>
+      <p>No published release yet. Build it from source on macOS 26 or later. The documented build turns code signing off.</p>
+      <pre class="cmd" tabindex="0" aria-label="xcodebuild command from the README">xcodebuild -project k-dex.xcodeproj -scheme k-dex \
+  -configuration Release -destination 'platform=macOS' \
+  CODE_SIGNING_ALLOWED=NO build</pre>
+      <p class="build-note">The README lists what is still unverified: accessibility, frame rate and memory use, and live-cluster checks.</p>
+      <a class="btn" href="https://github.com/hmrdkn-labs/kubecompass#install">Build from source</a>
+    </div>
+    <figure class="photo">
+      <picture>
+        <source type="image/avif" srcset="{{img:drydock-800.avif}} 800w, {{img:drydock-1200.avif}} 1200w" sizes="(min-width: 900px) 50vw, 100vw">
+        <source type="image/webp" srcset="{{img:drydock-800.webp}} 800w, {{img:drydock-1200.webp}} 1200w" sizes="(min-width: 900px) 50vw, 100vw">
+        <img src="{{img:drydock-800.webp}}" width="1536" height="1024" loading="lazy" decoding="async" alt="Illustration: a ship’s steel hull in a dry dock at dusk, with scaffolding and amber work lights.">
+      </picture>
     </figure>
-    <figure class="cap-fig">
-      <img src="{{img:topology-relationship-list.webp}}" width="1220" height="724" loading="lazy" decoding="async" alt="The same window in List view. Rows read like web-a to worker-a, Scheduled on, Observed, and web to web-a, Selects, Inferred. The selected row’s inspector shows the source field spec.podSelector and an assumption that policy enforcement and reachability are not proven.">
-      <figcaption>KubeCompass on a synthetic fixture. List view: each row names its evidence level; the inspector shows the source field and the assumption. This fixture has 15 nodes and 31 relationships, not the smaller graph drawn above.</figcaption>
-    </figure>
-  </div>
-</section>
-
-<section class="note" id="status" aria-labelledby="status-h">
-  <div class="note-head"><p class="label">Note 5</p><h2 id="status-h">Status</h2></div>
-  <div class="note-body">
-    <ul class="plain-list">
-      <li>No published release yet. Build from source: the documented build turns code signing off. <a href="https://github.com/hmrdkn-labs/kubecompass#install">Install steps in the README</a>.</li>
-      <li>The Linux adapter runs on fixture data only. It reads no kubeconfig and runs no <code>kubectl</code>.</li>
-      <li>The README lists what is still unverified: accessibility, frame rate and memory use, and live-cluster checks.</li>
-      <li>Derived from <a href="https://github.com/irfancen/k-dex">K-Dex</a> by irfancen, MIT licence. Provenance is in <a href="https://github.com/hmrdkn-labs/kubecompass/blob/main/UPSTREAM.md">UPSTREAM.md</a>.</li>
-    </ul>
-  </div>
-</section>
-
-<section class="note" id="signals" aria-labelledby="signals-h">
-  <div class="note-head"><p class="label">Note 6</p><h2 id="signals-h">Signals</h2></div>
-  <div class="note-body">
-    <p>A snapshot taken at build time from GitHub, {{snapshotdate}}. The page makes no live requests.</p>
-    <dl class="signals">
-{{signals}}
-    </dl>
   </div>
 </section>
 
 </main>
 <footer class="foot">
-  <p>Maintained by Dika · checked {{checked}} · deploy <span class="mono">{{deploysha}}</span> built {{builddate}}</p>
-  <ul>
-    <li><a href="https://github.com/hmrdkn-labs/kubecompass">Repository on GitHub</a></li>
-    <li><a href="https://hamardikan.com/">hamardikan.com</a></li>
-  </ul>
+  <div class="wrap">
+    <div>
+      <p>A snapshot from GitHub taken at build time, {{snapshotdate}}. The page makes no live requests.</p>
+      <dl class="signals">
+{{signals}}
+      </dl>
+    </div>
+    <div>
+      <p>Derived from <a href="https://github.com/irfancen/k-dex">K-Dex</a> by irfancen, MIT licence. Provenance is in <a href="https://github.com/hmrdkn-labs/kubecompass/blob/main/UPSTREAM.md">UPSTREAM.md</a>.</p>
+      <p>A Hamardikan Labs project. Maintained by Dika.</p>
+      <p class="small">Deploy {{deploysha}}, built {{builddate}}.</p>
+      <ul>
+        <li><a href="https://github.com/hmrdkn-labs/kubecompass">Repository on GitHub</a></li>
+        <li><a href="https://hamardikan.com/">hamardikan.com</a></li>
+      </ul>
+    </div>
+  </div>
 </footer>
-</div>
-</div>
 <script src="{{app}}" defer></script>
 </body>
 </html>

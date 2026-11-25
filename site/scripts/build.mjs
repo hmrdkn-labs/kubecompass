@@ -71,7 +71,7 @@ const POS = {
 const LABEL = {
   "EndpointSlice>Service": { dx: -9, dy: 5, anchor: "end" },
   "ReplicaSet>Deployment": { dx: -9, dy: 5, anchor: "end" },
-  "Ingress>Service": { dx: 0, dy: -34, anchor: "middle" },
+  "Ingress>Service": { dx: 0, dy: -26, anchor: "middle" },
   "PersistentVolumeClaim>PersistentVolume": { dx: 0, dy: -9, anchor: "middle" },
   "PersistentVolume>StorageClass": { dx: -9, dy: 5, anchor: "end" },
 };
@@ -135,7 +135,7 @@ function chart() {
       `<text><tspan class="nm" x="${n.x + 8}" y="${n.y + 21}">${esc(n.name)}</tspan> <tspan class="kind" x="${n.x + 8}" y="${n.y + 40}">${esc(SHORT[n.kind] ?? n.kind)}</tspan></text>` +
       `<rect class="ring" x="${n.x - 5}" y="${n.y - 5}" width="${n.w + 10}" height="${n.h + 10}"/></g>\n`;
   }
-  out += `<line class="scan" x1="0" x2="0" y1="0" y2="${VIEW.h}" aria-hidden="true"/>\n</svg>`;
+  out += `</svg>`;
   return out;
 }
 
@@ -206,10 +206,10 @@ const graphJson = JSON.stringify({
 }).replace(/</g, "\\u003c");
 
 // ---- survey-pass timing, generated so the CSS needs no inline styles --------------------------------
-const LEVEL_DELAY = { observed: 0, declared: 0.2, inferred: 0.38 };
+const LEVEL_DELAY = { observed: 0, declared: 0.4, inferred: 0.8 };
 const delays = edges.filter((e) => e.relationship !== "containedIn").map((e) => {
   const mx = (centre(e.a)[0] + centre(e.b)[0]) / 2;
-  const d = (mx / VIEW.w) * 1.0 + LEVEL_DELAY[e.level];
+  const d = (mx / VIEW.w) * 0.4 + LEVEL_DELAY[e.level];
   return `.chart.surveying .edge[data-i="${e.i}"] { --d: ${d.toFixed(2)}s; }`;
 }).join("\n");
 
@@ -240,16 +240,8 @@ let deploySha = "No data";
 try { deploySha = execSync("git rev-parse --short HEAD", { cwd: root, encoding: "utf8" }).trim() || deploySha; } catch { /* keep No data */ }
 const buildDate = fmt(new Date().toISOString());
 
-// ---- graduated edge and shared defs -------------------------------------------------------------
-const ticks = [
-  ["tick-top", "H", 8], ["tick-bottom", "H", 8], ["tick-left", "V", 8], ["tick-right", "V", 8],
-].map(([c, dir]) =>
-  dir === "H"
-    ? `<svg class="tick ${c}" aria-hidden="true" focusable="false"><rect width="100%" height="8" fill="url(#tickH)"/><rect x="0.5" y="0.5" width="calc(100% - 1px)" height="7" fill="none" stroke="currentColor" stroke-width="1"/></svg>`
-    : `<svg class="tick ${c}" aria-hidden="true" focusable="false"><rect width="8" height="100%" fill="url(#tickV)"/><rect x="0.5" y="0.5" width="7" height="calc(100% - 1px)" fill="none" stroke="currentColor" stroke-width="1"/></svg>`).join("\n");
+// ---- shared defs ------------------------------------------------------------------------------------
 const defs = `<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>
-<pattern id="tickH" width="40" height="8" patternUnits="userSpaceOnUse"><rect width="20" height="8" fill="currentColor"/></pattern>
-<pattern id="tickV" width="8" height="40" patternUnits="userSpaceOnUse"><rect width="8" height="20" fill="currentColor"/></pattern>
 <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line class="hatch-line" x1="0" y1="0" x2="0" y2="9"/></pattern>
 </defs></svg>`;
 
@@ -265,13 +257,13 @@ const appUrl = emit("app.js", readFileSync(join(src, "app.js")));
 const mapnote = `The seven containedIn relationships are drawn as the dotted namespace boundary, not as lines. All seven are in the list. Completeness: ${graph.completeness}, with ${graph.unresolvedReferences} unresolved references.`;
 
 const vars = {
-  css: cssUrl, boot: bootUrl, app: appUrl, defs, ticks, legend, levels, rows, map: chart(), mapnote,
+  css: cssUrl, boot: bootUrl, app: appUrl, defs, legend, levels, rows, map: chart(), mapnote,
   readout: edgeText(edges[defaultIndex]), graphjson: graphJson, completeness: esc(graph.completeness), unresolved: String(graph.unresolvedReferences), edgecount: String(edges.length), containedcount: String(contained.length),
   snapshotdate: snapshotDate, signals, checked: snapshotDate, deploysha: esc(deploySha), builddate: buildDate,
 };
 let html = read(join(src, "index.template.html"));
 html = html.replace(/\{\{font:([^}]+)\}\}/g, (_, f) => urls.get(`fonts/${f}`));
-html = html.replace(/\{\{img:([^}]+)\}\}/g, (_, f) => urls.get(`img/${f}`));
+html = html.replace(/\{\{img:([^}]+)\}\}/g, (_, f) => { if (!urls.has(`img/${f}`)) throw new Error(`missing image ${f}`); return urls.get(`img/${f}`); });
 html = html.replace(/\{\{(\w+)\}\}/g, (m, k) => { if (!(k in vars)) throw new Error(`unfilled ${m}`); return vars[k]; });
 writeFileSync(join(pub, "index.html"), html);
 
