@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kubecompass-site",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  "routes": [{ "pattern": "kubecompass.hamardikan.com", "custom_domain": true }],
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  }
+}
