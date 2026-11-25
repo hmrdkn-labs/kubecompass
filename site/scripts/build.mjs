@@ -102,7 +102,7 @@ function chart() {
   let out = `<svg class="chart" viewBox="0 0 ${VIEW.w} ${VIEW.h}" role="group" aria-label="Map of the ${nodes.length - 1} resources in the demo graph. The relationship list below carries every line as text.">\n`;
   out += `<rect class="ns-area" x="${AREA.x}" y="${AREA.y}" width="${AREA.w}" height="${AREA.h}"/>\n`;
   const ns = nodes.find((n) => n.kind === "Namespace");
-  out += `<text class="ns-label" x="${AREA.x + 12}" y="${AREA.y + 20}">NAMESPACE ${esc(ns.name)} (the seven containedIn lines are this boundary)</text>\n`;
+  out += `<text class="ns-label" x="${AREA.x + 12}" y="${AREA.y + 20}">Namespace ${esc(ns.name)}: the seven containedIn lines are drawn as this border</text>\n`;
   for (const e of drawn) {
     const A = centre(e.a), B = centre(e.b);
     const p1 = clip(e.a, B, 2), p2 = clip(e.b, A, 5);
@@ -151,7 +151,7 @@ const COUNT_WORD = (l) => (l === "unavailable" ? `${counts[l]} area` : `${counts
 
 const legend = LEVELS.map((l) =>
   `        <button type="button" class="lg" data-level="${l}" aria-pressed="false" disabled>${swatch(l, 44, 14)}` +
-  `<span><strong>${LEVEL_NAME[l]}</strong> · ${COUNT_WORD(l)}<span class="how">${HOW[l]}</span></span></button>`).join("\n");
+  `<span><strong>${LEVEL_NAME[l]}</strong><span class="dot"> · </span><span class="n">${COUNT_WORD(l)}</span><span class="how">${HOW[l]}</span></span></button>`).join("\n");
 
 const LEVEL_TEXT = {
   observed: "What the API reports. A Pod’s <code>spec.nodeName</code> names its Node; an owner reference names its owner.",
@@ -164,13 +164,32 @@ const levels = LEVELS.map((l) =>
 
 // ---- the relationship list ------------------------------------------------------------------------
 const pair = (n) => (n.virtual ? `<span class="nw">${esc(n.name)}</span>` : `<span class="nw"><span class="k">${esc(n.kind)}</span> ${esc(n.name)}</span>`);
-const rows = edges.map((e) =>
-  `          <tr data-i="${e.i}"${e.i === defaultIndex ? ' class="is-on"' : ""}>` +
-  `<td class="pair" data-label="Line">${pair(e.a)}<span class="arrow-t" aria-hidden="true">→</span><span class="vh"> to </span>${pair(e.b)}</td>` +
+const contained = edges.filter((e) => e.relationship === "containedIn");
+const nsNode = nodes.find((n) => n.kind === "Namespace");
+if (contained.length && new Set(contained.map((e) => `${e.level}|${e.sourceField}|${e.joinRule}|${e.b.key}`)).size !== 1) {
+  throw new Error("containedIn edges differ; cannot fold them into one row");
+}
+const cell = (e, rowIds, first) =>
+  `          <tr data-i="${rowIds.join(" ")}"${rowIds.includes(defaultIndex) ? ' class="is-on"' : ""}>` + first +
   `<td class="mono" data-label="Relationship">${esc(e.relationship)}</td>` +
   `<td data-label="Evidence"><span class="lvl">${swatch(e.level, 30, 10)}${LEVEL_NAME[e.level]}</span></td>` +
   `<td class="mono" data-label="Source field">${esc(e.sourceField)}</td>` +
-  `<td data-label="Join rule">${esc(e.joinRule)}${e.assumption ? `<span class="assume"><b>Assumption</b> ${esc(e.assumption)}</span>` : ""}</td></tr>`).join("\n");
+  `<td data-label="Join rule">${esc(e.joinRule)}${e.assumption ? `<span class="assume"><b>Assumption</b> ${esc(e.assumption)}</span>` : ""}</td></tr>`;
+const rowParts = [];
+let groupDone = false;
+for (const e of edges) {
+  if (e.relationship === "containedIn") {
+    if (groupDone) continue;
+    groupDone = true;
+    const names = contained.map((c) => `<span class="nw">${esc(nodeLabel(c.a))}</span>`).join(", ");
+    rowParts.push(cell(e, contained.map((c) => c.i),
+      `<td class="pair" data-label="Line"><span class="nw">${contained.length} resources in namespace ${esc(nsNode.name)}</span><span class="names">${names}</span></td>`));
+  } else {
+    rowParts.push(cell(e, [e.i],
+      `<td class="pair" data-label="Line">${pair(e.a)}<span class="arrow-t" aria-hidden="true">→</span><span class="vh"> to </span>${pair(e.b)}</td>`));
+  }
+}
+const rows = rowParts.join("\n");
 
 const edgeText = (e) => {
   let h = `<b>${esc(nodeLabel(e.a))} → ${esc(nodeLabel(e.b))}</b> · ${esc(e.relationship)} · <span class="sel">${LEVEL_NAME[e.level]}</span>`;
@@ -181,6 +200,7 @@ const edgeText = (e) => {
 
 const graphJson = JSON.stringify({
   defaultSelected: defaultIndex,
+  contained: contained.map((c) => c.i),
   nodes: nodes.map((n) => ({ id: n.key, kind: n.kind, name: n.name, virtual: n.virtual })),
   edges: edges.map((e) => ({ from: e.a.key, to: e.b.key, rel: e.relationship, level: e.level, field: e.sourceField, join: e.joinRule, assume: e.assumption ?? "" })),
 }).replace(/</g, "\\u003c");
@@ -246,7 +266,7 @@ const mapnote = `The seven containedIn relationships are drawn as the dotted nam
 
 const vars = {
   css: cssUrl, boot: bootUrl, app: appUrl, defs, ticks, legend, levels, rows, map: chart(), mapnote,
-  readout: edgeText(edges[defaultIndex]), graphjson: graphJson, edgecount: String(edges.length),
+  readout: edgeText(edges[defaultIndex]), graphjson: graphJson, edgecount: String(edges.length), containedcount: String(contained.length),
   snapshotdate: snapshotDate, signals, checked: snapshotDate, deploysha: esc(deploySha), builddate: buildDate,
 };
 let html = read(join(src, "index.template.html"));

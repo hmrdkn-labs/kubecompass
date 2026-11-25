@@ -73,7 +73,7 @@ code, .mono { font-family: var(--mono); font-size: 0.86em; }
 
 .label { font: 400 14px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; }
 h1, h2, h3 { font-family: var(--serif); font-weight: 600; margin: 0; line-height: 1.15; }
-h1 { font-size: clamp(2.25rem, 1rem + 5.5vw, 4.75rem); letter-spacing: -0.015em; margin-bottom: 0.35em; }
+h1 { font-size: clamp(2rem, 0.8rem + 4.5vw, 4rem); letter-spacing: -0.015em; margin-bottom: 0.25em; }
 h2 { font-size: 1.3rem; }
 h3 { font-size: 1.05rem; }
 
@@ -89,11 +89,11 @@ h3 { font-size: 1.05rem; }
 }
 
 /* Title block */
-.title-block { padding: 2.5rem 1.25rem 2rem; }
+.title-block { padding: 1.5rem 1.25rem 1.5rem; }
 .title-block .inner { max-width: var(--measure); }
-@media (min-width: 1000px) { .title-block { padding: 4rem 3rem 3rem 3rem; display: grid; grid-template-columns: 13rem minmax(0, 1fr); column-gap: 3rem; } }
-.lead { font-size: 1.35rem; line-height: 1.45; margin-bottom: 0.9em; }
-.status-line { font-family: var(--mono); font-size: 15.5px; line-height: 1.5; margin: 1.25rem 0 1.25rem; padding-left: 0.9rem; border-left: 3px solid var(--ink); }
+@media (min-width: 1000px) { .title-block { padding: 2.25rem 3rem 1.75rem 3rem; display: grid; grid-template-columns: 13rem minmax(0, 1fr); column-gap: 3rem; } }
+.lead { font-size: 1.2rem; line-height: 1.45; margin-bottom: 0.6em; }
+.status-line { font-family: var(--mono); font-size: 15.5px; line-height: 1.5; margin: 0.9rem 0 1rem; padding-left: 0.9rem; border-left: 3px solid var(--ink); }
 .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 .btn {
   display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.25rem; font: 600 15.5px/1.2 var(--mono);
@@ -103,12 +103,14 @@ h3 { font-size: 1.05rem; }
 .btn:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.25em; }
 
 /* The object */
-.object { border-top: 1px solid var(--rule); padding: 2rem 1.25rem 2.5rem; }
-@media (min-width: 1000px) { .object { padding: 2.75rem 1rem 3rem; } .object .object-head, .object .rels-wrap, .object .legend, .object .readout { margin-left: 2rem; margin-right: 2rem; } .object .legend, .object .readout, .object .object-head { margin-bottom: 1.25rem; } }
-.object-head { display: grid; gap: 0.75rem 3rem; margin-bottom: 1.5rem; }
-@media (min-width: 1000px) { .object-head { grid-template-columns: 13rem minmax(0, 1fr); } }
-.object-head p { max-width: var(--measure); }
-.object-head p:last-child { margin-bottom: 0; }
+.object { border-top: 1px solid var(--rule); padding: 1.5rem 1.25rem 2.5rem; }
+@media (min-width: 1000px) {
+  .object { padding: 1.5rem 1rem 3rem; }
+  .object .object-head, .object .rels-wrap, .object .legend, .object .readout, .object .explain { margin-left: 2rem; margin-right: 2rem; }
+}
+.object-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 1rem; margin-bottom: 0.75rem; }
+.explain { max-width: var(--measure); margin: 1.25rem 0 2rem; }
+@media (min-width: 1000px) { .object .explain { margin-bottom: 2rem; } }
 
 .legend { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; margin: 0 0 1rem; padding: 0; border: 0; min-width: 0; }
 .legend legend { padding: 0; margin-bottom: 0.5rem; }
@@ -125,11 +127,11 @@ h3 { font-size: 1.05rem; }
 .lg .how { display: block; font-size: 14px; opacity: 1; }
 .lg:disabled { cursor: default; }
 
-.readout { margin: 0 0 1rem; padding: 0.75rem 1rem; border: 1px solid var(--rule); font: 400 15.5px/1.5 var(--mono); min-height: 5.5em; overflow-wrap: anywhere; }
+.readout { margin: 1rem 0 0; padding: 0.75rem 1rem; border: 1px solid var(--rule); font: 400 15.5px/1.5 var(--mono); min-height: 5.5em; overflow-wrap: anywhere; }
 .readout b { font-weight: 600; }
 .readout .sel { color: var(--magenta); font-weight: 600; }
 
-.mapwrap { margin: 0 0 2rem; }
+.mapwrap { margin: 0; }
 .mapwrap summary { display: none; }
 .mapscroll { overflow-x: auto; border: 1px solid var(--rule); background: var(--paper); }
 .mapscroll:focus-visible { outline-offset: -2px; }
@@ -192,6 +194,7 @@ h3 { font-size: 1.05rem; }
 .rels th { font: 400 14px/1.4 var(--mono); letter-spacing: 0.05em; text-transform: uppercase; text-align: left; color: var(--muted); padding: 0.5rem 0.75rem 0.5rem 0; border-bottom: 1.5px solid var(--ink); }
 .rels td { padding: 0.55rem 0.75rem 0.55rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; overflow-wrap: anywhere; }
 .rels .mono { font-size: 14.5px; }
+@media (min-width: 700px) { .rels th:nth-child(1) { width: 27%; } .rels th:nth-child(4) { width: 23%; } }
 .rels tr[hidden] { display: none; }
 .rels td:nth-child(2) { white-space: nowrap; }
 .rels tr.is-on td { background: transparent; }
@@ -199,6 +202,8 @@ h3 { font-size: 1.05rem; }
 .rels .pair { font-family: var(--mono); font-size: 14.5px; }
 .rels .pair .k { color: var(--muted); }
 .nw { white-space: nowrap; }
+.rels .names { display: block; margin-top: 0.3rem; font-size: 14.5px; color: var(--muted); }
+.rowbtn .names { font-weight: 400; }
 .rels .arrow-t { padding: 0 0.3em; }
 .rowbtn { all: unset; box-sizing: border-box; display: block; cursor: pointer; min-height: 44px; padding: 0.35rem 0; font-family: var(--mono); font-size: 14.5px; line-height: 1.45; }
 .rowbtn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
@@ -225,7 +230,8 @@ h3 { font-size: 1.05rem; }
   .rels td:nth-child(2)::before, .rels td:nth-child(3)::before { display: none; }
   .rels tr.is-on td:first-child { box-shadow: none; padding-left: 0; }
   .rels tr.is-on { box-shadow: inset 4px 0 0 var(--magenta); padding-left: 0.75rem; }
-  .lg .how { display: none; }
+  .lg .how, .lg .dot { display: none; }
+  .lg .n { display: block; }
   .readout { min-height: 0; font-size: 14.5px; }
   .rels tr { padding: 0.25rem 0 0.5rem; }
   .mapwrap { margin-top: 1.5rem; }
@@ -239,7 +245,11 @@ h3 { font-size: 1.05rem; }
   .mapwrap[open] summary::after { content: "–"; }
   .object-flow { display: flex; flex-direction: column; }
   .object-flow .legend { order: 1; } .object-flow .readout { order: 2; }
-  .object-flow .rels-wrap { order: 3; } .object-flow .mapwrap { order: 4; }
+  .object-flow .rels-wrap { order: 3; } .object-flow .mapwrap { order: 4; } .object-flow .explain { order: 5; }
+  .legend-items { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .lg { grid-template-columns: 1fr; row-gap: 0.35rem; align-content: center; min-height: 64px; }
+  .readout { margin: 0 0 1rem; }
+  .mapwrap { margin-bottom: 0; }
 }
 
 /* Definitions of the four levels */
@@ -256,10 +266,8 @@ h3 { font-size: 1.05rem; }
 .cap-fig { margin: 0 0 2rem; }
 .cap-fig img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); background: var(--paper); }
 .cap-fig figcaption { font-size: 15.5px; line-height: 1.5; color: var(--muted); margin-top: 0.6rem; }
-.captures { max-width: 900px; }
 .captures .note-body { max-width: none; }
 .captures .cap-fig { max-width: 880px; }
-@media (min-width: 1000px) { .captures .note-body { max-width: 880px; } }
 
 .plain-list { margin: 0 0 1em; padding-left: 1.2em; }
 .plain-list li { margin-bottom: 0.6em; }

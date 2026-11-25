@@ -49,14 +49,8 @@
 <section class="object" id="chart" aria-labelledby="chart-h">
   <a class="skip" href="#levels">Skip the diagram</a>
   <div class="object-head">
-    <div>
-      <p class="label">Source diagram</p>
-      <h2 id="chart-h">How the map knows</h2>
-    </div>
-    <div>
-      <p>Each line carries the evidence level the app gives it, drawn so you can tell them apart without colour: solid, long dashes, dots. Unavailable is a hatched area with no lines into it.</p>
-      <p class="js-only">Choose a level to see only those lines. Choose a node or a row to see where a line comes from.</p>
-    </div>
+    <p class="label">Source diagram</p>
+    <h2 id="chart-h">How the map knows</h2>
   </div>
 
   <div class="object-flow">
@@ -67,22 +61,27 @@
       </div>
     </fieldset>
 
-    <div class="readout" id="readout" aria-live="polite">{{readout}}</div>
-
     <details class="mapwrap" open>
       <summary>Show the map</summary>
       <div class="mapscroll" tabindex="0" role="region" aria-label="Map of the demo graph. Scroll sideways if it does not fit.">
 {{map}}
       </div>
-      <p class="map-note">{{mapnote}}</p>
-      <p class="cap">Drawn from the graph KubeCompassCore builds for the demo fixture in its test suite. Not a screenshot.</p>
     </details>
 
+    <div class="readout" id="readout" aria-live="polite">{{readout}}</div>
+
+    <div class="explain">
+      <p>Each line carries the evidence level the app gives it, drawn so you can tell them apart without colour: solid, long dashes, dots. Unavailable is a hatched area with no lines into it.</p>
+      <p class="js-only">Choose a level to see only those lines. Choose a node or a row to see where a line comes from.</p>
+      <p class="map-note">{{mapnote}}</p>
+      <p class="cap">Drawn from the graph KubeCompassCore builds for the demo fixture in its test suite. Not a screenshot.</p>
+    </div>
+
     <div class="rels-wrap">
-      <h3>All {{edgecount}} relationships, as text</h3>
-      <p class="map-note" id="count">All {{edgecount}} relationships.</p>
+      <h3>{{edgecount}} relationships, {{containedcount}} of them containedIn</h3>
+      <p class="map-note" id="count" hidden></p>
       <table class="rels">
-        <caption class="vh">Relationships in the demo graph, with evidence level, source field and join rule</caption>
+        <caption class="vh">Relationships in the demo graph, with evidence level, source field and join rule. The containedIn relationships share one row.</caption>
         <thead><tr><th scope="col">Line</th><th scope="col">Relationship</th><th scope="col">Evidence</th><th scope="col">Source field</th><th scope="col">Join rule</th></tr></thead>
         <tbody>
 {{rows}}

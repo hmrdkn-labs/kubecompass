@@ -156,7 +156,10 @@ Built 2026-11-25 on branch `landing-page` from HEAD 292ac58.
   (12 Observed). See claim 19. The Namespace is the dotted containing area, as allowed.
 - Deviation from the draft: the node boxes show `PVC` and `PV` for the two long kinds; the list and
   the accessible names carry the full kind.
-- `containedIn` rows highlight the source node and the namespace boundary; there is no line to hover.
+- Review round 1: the seven `containedIn` edges are one grouped row (sources named, field and join once); the
+  list heading says "18 relationships, 7 of them containedIn". On desktop 1440x900 the legend and the map's first
+  row of nodes are in the first screen (map top at 604 px); the explanation sits below the map. Phone legend is a
+  2x2 grid; section rules are all full width. Selecting the group row lights the seven source nodes and the border.
 
 ## Verification
 
@@ -171,9 +174,9 @@ Served with `npx wrangler dev --local` (so `_headers` and the CSP applied). Shot
 | Body size | 18 px at 375 and 1440 |
 | Smallest text, including SVG text after scaling | all at or above 14 px at 375 and 1440 |
 | Targets under 44 px (buttons, summary, `.btn`, footer links, SVG nodes) | none |
-| Keyboard pass | 45 stops on desktop, 34 on phone; every stop has a focus outline or ring (`keyboard-*` shots) |
-| First load on phone, cold cache, compressed | 80.6 KB (HTML, CSS, two JS files, four fonts; images are lazy) |
-| Lighthouse mobile, simulated throttling | performance 100, accessibility 100, best practices 100, SEO 100; LCP 1.1 s, TBT 0 ms, CLS 0.001 (an earlier run scored 94, TBT 290 ms) |
+| Keyboard pass | 39 stops on desktop, 28 on phone; every stop has a focus outline or ring (`keyboard-*` shots) |
+| First load on phone, cold cache, compressed | 81 KB (HTML, CSS, two JS files, four fonts; images are lazy) |
+| Lighthouse mobile, simulated throttling | performance 100, accessibility 100, best practices 100, SEO 100; LCP 1.0 s, TBT 0 ms, CLS 0.001 |
 | Survey pass | class `surveying` during the pass, gone after 2 s; no `surveying` or `pre-survey` under reduced motion |
 | Filter | "Inferred" leaves 2 rows and dims 9 drawn lines; `aria-pressed` true |
 | Recon grep on `public/` | no IP-shaped strings, no ports, no long hex ids; hosts are github.com, hamardikan.com, kubecompass.hamardikan.com and the XML namespaces; "secret" and "kubeconfig" appear only in product-claim sentences |
@@ -233,9 +236,8 @@ visuals but the structure:
 - The map layout is placed by hand (a fixed table in `build.mjs`), so it only suits this fixture. A
   different graph needs new coordinates. That is honest for a redraw of one test fixture; it would
   not be for the live app.
-- The relationship list is long (18 rows, 7 of them identical `containedIn` rows). On a phone it is
-  about 3,300 px. The product has the same rows; I did not group them because the brief asked for
-  every edge.
+- The relationship list is still long on a phone (about 2,450 px) even with the seven `containedIn` edges
+  folded into one row; every edge stays listed.
 - The magenta is used for exactly one thing (the selected relationship and its nodes). It is also the
   only colour on the page, which makes the night theme lean on one pink. It passes AA, but it is
   closer to a UI accent than to Admiralty magenta.
