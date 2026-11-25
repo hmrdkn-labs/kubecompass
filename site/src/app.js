@@ -131,14 +131,20 @@
   });
   render();
 
-  // On a phone the list is the object and the map sits behind a disclosure.
+  // On a phone the list is the object and the map sits behind a disclosure; on a wide screen the list is the disclosure.
   const wrap = document.querySelector(".mapwrap");
   const phone = matchMedia("(max-width: 699.98px)");
   const place = () => { wrap.open = !phone.matches; };
   place();
   phone.addEventListener("change", place);
 
-  // The survey pass: once, left to right, no loop. Motion preference decides; reduced motion keeps the finished sheet.
+  // Header: borderless over the hero, a surface and rule once scrolled.
+  const top = document.getElementById("top");
+  const onScroll = () => top.classList.toggle("scrolled", scrollY > 8);
+  addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  // The survey: once, by evidence level, no loop. Reduced motion keeps the finished map.
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window) {
     svg.classList.add("pre-survey");
     const io = new IntersectionObserver((entries) => {

@@ -1,12 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <style>
-    .p{fill:#f6f2e7}.i{fill:#16130f}.s{stroke:#16130f}.m{fill:#a8005f}
-    @media (prefers-color-scheme:dark){.p{fill:#12171b}.i{fill:#ece6d6}.s{stroke:#ece6d6}.m{fill:#ff8cc8}}
-  </style>
-  <rect class="p" x="1" y="1" width="62" height="62"/>
-  <rect class="s" x="1.5" y="1.5" width="61" height="61" fill="none" stroke-width="3"/>
-  <circle class="s" cx="32" cy="33" r="20" fill="none" stroke-width="2"/>
-  <path class="s" d="M32 9v6M32 51v6M8 33h6M50 33h6" stroke-width="2" fill="none"/>
-  <path class="i" d="M32 55l-5-22h10zM54 33l-22-5v10zM10 33l22 5V28z"/>
-  <path class="m" d="M32 11l5 22H27z"/>
+  <rect width="64" height="64" rx="12" fill="#071a24"/>
+  <circle cx="32" cy="32" r="21" fill="none" stroke="#e6f0f2" stroke-width="2.5"/>
+  <path d="M32 9l7 23H25z" fill="#f2b33d"/>
+  <path d="M32 55l-7-23h14z" fill="#e6f0f2"/>
 </svg>
