@@ -188,6 +188,28 @@ Served with `npx wrangler dev --local` (so `_headers` and the CSP applied). Shot
 | Recon grep on `public/` | no IP-shaped strings, no ports, no long hex ids; hosts are github.com, hamardikan.com, kubecompass.hamardikan.com and the XML namespaces; "secret" and "kubeconfig" appear only in product-claim sentences |
 | Fixture names on the page | `web`, `web-0`, `worker-a`, `pv-web`, `fast`, namespace `demo` come from the repo's own test fixture, not from any cluster |
 
+### Live verification (https://kubecompass.hamardikan.com/, version bdf30873, commit 8e8e70f, 2026-11-25)
+
+Run with the resolver pinned for Chromium and curl (the address is not stored here). Shots `shots/live-*.png`, report `shots/live-verify-report.json`.
+
+| Check | Result |
+|---|---|
+| HTTPS, `/` | 200, h2; served `index.html` matches `public/index.html` apart from the footer line |
+| Headers | CSP as committed (`default-src 'self'`, no inline), HSTS 1 year, nosniff, X-Frame-Options DENY, referrer policy, permissions policy, COOP |
+| `/assets/*` | 200, `cache-control: public, max-age=31536000, immutable` (CSS and font checked) |
+| 404 | `/nope` returns 404 with the "No such sheet" page; robots.txt, sitemap.xml, favicon.svg, og.png, apple-touch-icon.png all 200 |
+| axe light, dark, phone, desktop | 0 violations in each |
+| Horizontal scroll | none at 320, 360, 375, 820, 1440; none with JS off; text-spacing at 320 and 375 clean |
+| Keyboard, filter, survey pass, reduced motion | 39 and 28 stops all visible; Inferred leaves 2 rows; survey ends; no survey class under reduced motion |
+| First load on phone | 81.2 KB |
+| Lighthouse mobile (live) | performance 99, accessibility 100, best practices 92, SEO 100; LCP 1.6 s, TBT 0 ms, CLS 0.001 |
+| Console and requests | **fail**: every browser load gets `https://static.cloudflareinsights.com/beacon.min.js` injected into the HTML at the edge (a module script with `data-cf-beacon`, only for browser requests). The CSP blocks it: one console error and one failed external request per load, and best practices drops to 92 |
+
+Cause: the hamardikan.com zone has Web Analytics auto-injection on. The zone setting is outside this brief. Fix committed:
+`Cache-Control: ... no-transform` on `/`, `/index.html` and `/404.html` in `_headers`, which Cloudflare honours by not
+injecting. Unverified until redeployed; if the beacon still appears the zone's Web Analytics setting has to be turned off
+for this hostname. Do not loosen the CSP to allow it: the page promises no analytics.
+
 ### PLAYBOOK §8 checklist
 
 Copy
@@ -226,7 +248,7 @@ Privacy
 Deploy
 - [x] Root-absolute URLs; `_headers` CSP allows only `'self'` and `data:` images; `/assets/*` immutable and hashed.
 - [x] The hero does not move after load (no layout-changing JS; CLS 0.001).
-- [ ] After each deploy, check the live copy: pending, not deployed by this worker.
+- [ ] After each deploy, check the live copy: done for version bdf30873 (see Live verification); open on one finding, the edge-injected analytics beacon, fix committed and awaiting redeploy.
 
 ## Self-critique
 

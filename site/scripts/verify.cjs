@@ -25,7 +25,7 @@ async function open(browser, opts) {
 }
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: (process.env.CHROME_ARGS || "").split("||").filter(Boolean) });
 
   console.log("step 1 Shots: viewport x scheme, first screen and full page.");
   const matrix = [
