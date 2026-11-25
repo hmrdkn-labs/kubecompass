@@ -1,6 +1,6 @@
 # KubeCompass landing page: notes
 
-Live: https://kubecompass.hamardikan.com/ · Worker `kubecompass-site` (static assets only). v2 deployed 2026-11-25, version `8e99441b-e789-472f-9287-487727c82325` (footer sha d9342ea).
+Live: https://kubecompass.hamardikan.com/ · Worker `kubecompass-site` (static assets only). v3 (search) deployed 2026-11-25, version `6b6b6de7-e9ef-4796-a6f2-c701f6c94bbf` (footer sha 3ec7055); v2 was `8e99441b-e789-472f-9287-487727c82325`.
 Planned 2026-11-25 from `~/workspace/sandbox/showcase-scan/research/kubecompass.md`, the card, and
 the public repo at `origin/main` 0e10edb. The local checkout `~/workspace/labs/kubecompass` and its
 48 uncommitted paths are not a source for anything on this page.
@@ -86,7 +86,7 @@ resolves at `origin/main`).
 | 31 | The cluster map tags relationships; hero says "draws a cluster map" | README 18–22; claim 2 | Read the README | OK |
 | 32 | JSON-LD operatingSystem "macOS 26 or later", author and publisher Azzam Muhammadi Rizqun Karima, codeRepository | claim 9; hamardikan.com owner; repo URL | Read the page source | OK |
 | 33 | No softwareVersion, downloadUrl, rating, review or offers in JSON-LD | claim 12 (no release) | Read the page source | OK |
-| 34 | Sibling pages named in the footer exist at their hamardikan.com subdomains | v3 STANDARD.md, Links | Open each | OK (unchecked live until deploy) |
+| 34 | Sibling pages named in the footer exist at their hamardikan.com subdomains | v3 STANDARD.md, Links | Open each | OK: all four returned 200 on 2026-11-25 after deploy |
 
 ## Search (v3, 2026-11-25)
 
