@@ -126,7 +126,7 @@ h1 .w { display: inline-block; }
 
 .mapwrap { margin: 0; }
 .mapwrap summary { display: none; }
-.mapscroll { overflow-x: auto; background: var(--bg); border-radius: 6px; }
+.mapscroll { overflow-x: auto; }
 .mapscroll:focus-visible { outline-offset: -3px; }
 .chart { display: block; width: 100%; min-width: 1248px; height: auto; font-family: var(--body); }
 @media (min-width: 1340px) { .chart { min-width: 0; } }
@@ -150,7 +150,7 @@ h1 .w { display: inline-block; }
 .chart .edge .head { fill: var(--text); }
 .chart .edge[data-level="declared"] .head { fill: var(--declared); }
 .chart .edge[data-level="inferred"] .head { fill: var(--accent); }
-.chart .edge .tag { fill: var(--muted); paint-order: stroke; stroke: var(--bg); stroke-width: 6px; stroke-linejoin: round; }
+.chart .edge .tag { fill: var(--muted); paint-order: stroke; stroke: var(--surface); stroke-width: 6px; stroke-linejoin: round; }
 .chart .edge .tag.off { stroke: none; }
 .chart .edge.is-on .line { stroke-width: 3.6; }
 .chart .edge.is-on[data-level="inferred"] .line { stroke-width: 4.4; }
@@ -161,8 +161,8 @@ h1 .w { display: inline-block; }
 .chart .edge.is-off .tag, .chart .ns-label.is-off { visibility: hidden; }
 .chart .ns-area.is-off { stroke-opacity: 0.15; }
 .hatch-line { stroke: var(--hatch); stroke-width: 1.4; }
-.chart .boundary .area { fill: var(--bg); stroke: var(--hatch); stroke-width: 1.5; }
-.chart .boundary .plate { fill: var(--bg); }
+.chart .boundary .area { fill: none; stroke: var(--hatch); stroke-width: 1.5; }
+.chart .boundary .plate { fill: var(--surface); }
 .chart .boundary.is-on .area { stroke: var(--accent); stroke-width: 2.6; }
 
 .readout { margin: 1rem 0 0; padding: 0.75rem 0 0; border-top: 1px solid var(--rule); font-size: var(--text-sm); line-height: 1.5; min-height: 5.5em; overflow-wrap: anywhere; }
@@ -281,7 +281,7 @@ section { padding: clamp(4rem, 9vw, 7.5rem) var(--pad) 0; }
 .cap-fig img { display: block; width: 100%; max-width: 1220px; height: auto; border-radius: 8px; background: var(--bg); }
 .cap-fig figcaption { color: var(--muted); font-size: var(--text-sm); line-height: 1.5; margin-top: 0.75rem; max-width: 60ch; }
 @media (min-width: 1000px) {
-  .cap-fig.side { display: grid; grid-template-columns: 2fr 1fr; gap: 2.5rem; align-items: end; }
+  .cap-fig.side { display: grid; grid-template-columns: 2fr 1fr; gap: 2.5rem; align-items: start; }
   .cap-fig.side figcaption { margin: 0; }
 }
 
