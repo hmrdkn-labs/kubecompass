@@ -59,8 +59,8 @@ const defaultIndex = edges.findIndex((e) => e.relationship === "routesTo");
 const litDefault = new Set([edges[defaultIndex].a.key, edges[defaultIndex].b.key]);
 
 // ---- the chart -----------------------------------------------------------------------------------
-const W = 132, H = 50;
-const CX = [14, 232, 442, 652, 862, 1078];
+const W = 140, H = 50;
+const CX = [14, 230, 446, 662, 878, 1094];
 const POS = {
   Ingress: [CX[0], 74], Service: [CX[1], 74], EndpointSlice: [CX[1], 234],
   ReplicaSet: [CX[2], 312], Deployment: [CX[2], 408], Pod: [CX[3], 234],
@@ -71,11 +71,11 @@ const POS = {
 const LABEL = {
   "EndpointSlice>Service": { dx: -9, dy: 5, anchor: "end" },
   "ReplicaSet>Deployment": { dx: -9, dy: 5, anchor: "end" },
-  "Ingress>Service": { dx: 0, dy: -9, anchor: "middle" },
+  "Ingress>Service": { dx: 0, dy: -34, anchor: "middle" },
   "PersistentVolumeClaim>PersistentVolume": { dx: 0, dy: -9, anchor: "middle" },
   "PersistentVolume>StorageClass": { dx: -9, dy: 5, anchor: "end" },
 };
-const VIEW = { w: 1224, h: 566 };
+const VIEW = { w: 1248, h: 566 };
 const AREA = { x: 4, y: 30, w: CX[4] + W + 10 - 4, h: 440 };
 const BOUNDARY = { x: 4, y: 506, w: VIEW.w - 8, h: 54 };
 
@@ -157,7 +157,7 @@ const LEVEL_TEXT = {
   observed: "What the API reports. A Pod’s <code>spec.nodeName</code> names its Node; an owner reference names its owner.",
   declared: "A reference written into one resource that names another, such as an Ingress backend or a volume claim. An Ingress backend is a declaration only: request routing is not proven.",
   inferred: "A client-side match, such as a selector matching Pod labels. Label selection does not prove traffic or endpoint readiness.",
-  unavailable: "An input the app does not have, such as provider-managed control-plane internals. It is drawn as a blank, labelled area, with no lines into it.",
+  unavailable: "An input the app does not have, such as provider-managed control-plane internals. In the diagram above it is a hatched, labelled area with no lines into it.",
 };
 const levels = LEVELS.map((l) =>
   `      <li><div class="row">${swatch(l, 56, 16)}<span class="mono">${LEVEL_NAME[l]}</span></div><p>${LEVEL_TEXT[l]}</p></li>`).join("\n");
@@ -266,7 +266,7 @@ const mapnote = `The seven containedIn relationships are drawn as the dotted nam
 
 const vars = {
   css: cssUrl, boot: bootUrl, app: appUrl, defs, ticks, legend, levels, rows, map: chart(), mapnote,
-  readout: edgeText(edges[defaultIndex]), graphjson: graphJson, edgecount: String(edges.length), containedcount: String(contained.length),
+  readout: edgeText(edges[defaultIndex]), graphjson: graphJson, completeness: esc(graph.completeness), unresolved: String(graph.unresolvedReferences), edgecount: String(edges.length), containedcount: String(contained.length),
   snapshotdate: snapshotDate, signals, checked: snapshotDate, deploysha: esc(deploySha), builddate: buildDate,
 };
 let html = read(join(src, "index.template.html"));

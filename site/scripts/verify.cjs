@@ -219,8 +219,81 @@ async function open(browser, opts) {
     await ctx.close();
   }
 
+
+  // 9. WCAG 1.4.12 text spacing at 320 and 375: no horizontal overflow, nothing pushed past the viewport.
+  console.log("step 9 text spacing");
+  for (const w of [320, 375]) {
+    const ctx = await browser.newContext({ viewport: { width: w, height: 800 }, bypassCSP: true, reducedMotion: "reduce" });
+    const page = await ctx.newPage();
+    await page.goto(base);
+    await page.addStyleTag({ content: "*{line-height:1.5 !important;letter-spacing:.12em !important;word-spacing:.16em !important} p{margin-bottom:2em !important}" });
+    await page.waitForTimeout(300);
+    const r = await page.evaluate(() => {
+      const out = { scroll: [document.documentElement.scrollWidth, document.documentElement.clientWidth], past: [] };
+      for (const el of document.querySelectorAll("main *, footer *")) {
+        if (el.closest(".mapscroll, .vh, [hidden], thead")) continue;
+        const b = el.getBoundingClientRect();
+        if (b.width && b.right > innerWidth + 1) out.past.push(`${el.tagName.toLowerCase()}.${el.className?.baseVal ?? el.className} ${Math.round(b.right)}`);
+      }
+      return out;
+    });
+    report.textSpacing = report.textSpacing || {};
+    report.textSpacing[w] = r;
+    await page.screenshot({ path: path.join(shots, `textspacing-${w}-full.png`), fullPage: true });
+    if (r.scroll[0] > r.scroll[1]) bad(`text spacing overflow at ${w}: ${r.scroll}`);
+    if (r.past.length) bad(`text spacing, elements past viewport at ${w}: ${r.past.slice(0, 5).join(" | ")}`);
+    await ctx.close();
+  }
+
+  // 10. Contrast of every SVG label in resting, focused, hovered and filtered states, both themes.
+  console.log("step 10 map label contrast");
+  for (const scheme of ["light", "dark"]) {
+    const { ctx, page } = await open(browser, { viewport: { width: 1440, height: 900 }, colorScheme: scheme, reducedMotion: "reduce" });
+    await page.goto(base);
+    await page.waitForLoadState("networkidle");
+    const states = {
+      rest: async () => {},
+      "focus-node": async () => { await page.focus('.node[data-id="n4"]'); },
+      "hover-edge": async () => { await page.hover('.edge[data-i="9"] .hit', { force: true }); },
+      "filter-inferred": async () => { await page.click('.lg[data-level="inferred"]'); },
+      "filter-unavailable": async () => { await page.click('.lg[data-level="unavailable"]'); },
+      "filter-observed": async () => { await page.click('.lg[data-level="observed"]'); },
+    };
+    for (const [name, fn] of Object.entries(states)) {
+      await page.reload(); await page.waitForLoadState("networkidle");
+      await fn();
+      await page.waitForTimeout(150);
+      const low = await page.evaluate(() => {
+        const rgb = (c) => { const m = c.match(/[\d.]+/g).map(Number); return { r: m[0], g: m[1], b: m[2], a: m[3] ?? 1 }; };
+        const lum = ({ r, g, b }) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+        const mix = (fg, bg, a) => ({ r: fg.r * a + bg.r * (1 - a), g: fg.g * a + bg.g * (1 - a), b: fg.b * a + bg.b * (1 - a) });
+        const paper = rgb(getComputedStyle(document.querySelector(".mapscroll")).backgroundColor);
+        const bad = []; let n = 0;
+        for (const t of document.querySelectorAll(".chart text")) {
+          let op = 1, vis = true;
+          for (let e = t; e && e.tagName !== "BODY"; e = e.parentElement) { op *= parseFloat(getComputedStyle(e).opacity); if (getComputedStyle(e).visibility === "hidden") vis = false; }
+          if (!vis || !t.getBoundingClientRect().width) continue;
+          n++;
+          const cs = getComputedStyle(t);
+          const fg = rgb(cs.fill);
+          const plate = t.closest(".boundary") ? rgb(getComputedStyle(t.closest(".boundary").querySelector(".plate")).fill) : paper;
+          const f = mix(fg, plate, op * fg.a);
+          const L1 = lum(f), L2 = lum(plate);
+          const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+          if (ratio < 4.5) bad.push(`${t.textContent.trim().slice(0, 20)} ${ratio.toFixed(2)} op=${op.toFixed(2)}`);
+        }
+        return { bad, n };
+      });
+      report.contrast = report.contrast || {};
+      report.contrast[`${scheme}/${name}`] = `${low.bad.length} low of ${low.n} labels`;
+      if (low.bad.length) bad(`label contrast ${scheme}/${name}: ${low.bad.slice(0, 4).join(" | ")}`);
+      if (name === "focus-node" || name === "filter-inferred") await page.locator(".mapscroll").screenshot({ path: path.join(shots, `state-${scheme}-${name}.png`) });
+    }
+    await ctx.close();
+  }
+
   await browser.close();
   fs.writeFileSync(path.join(shots, "verify-report.json"), JSON.stringify(report, null, 2));
-  console.log(JSON.stringify({ axe: Object.fromEntries(Object.entries(report.axe).map(([k, v]) => [k, v.violations.length])), scroll: report.scroll, transfer: report.transfer.kb, keyboard: report.keyboard, filter: report.filter, survey: report.survey, problems: report.problems.length }, null, 1));
+  console.log(JSON.stringify({ axe: Object.fromEntries(Object.entries(report.axe).map(([k, v]) => [k, v.violations.length])), scroll: report.scroll, transfer: report.transfer.kb, keyboard: report.keyboard, filter: report.filter, survey: report.survey, problems: report.problems.length, textSpacing: Object.fromEntries(Object.entries(report.textSpacing || {}).map(([k, v]) => [k, v.scroll])), contrast: report.contrast }, null, 1));
   process.exit(report.problems.length ? 1 : 0);
 })();

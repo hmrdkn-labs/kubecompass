@@ -135,10 +135,10 @@ h3 { font-size: 1.05rem; }
 .mapwrap summary { display: none; }
 .mapscroll { overflow-x: auto; border: 1px solid var(--rule); background: var(--paper); }
 .mapscroll:focus-visible { outline-offset: -2px; }
-.chart { display: block; width: 100%; min-width: 1224px; height: auto; font-family: var(--mono); }
+.chart { display: block; width: 100%; min-width: 1248px; height: auto; font-family: var(--mono); }
 @media (min-width: 1240px) { .chart { min-width: 0; } }
 .chart text { fill: var(--ink); font-size: 15px; }
-.chart .kind { fill: var(--muted); font-size: 14.8px; }
+.chart .kind { fill: var(--muted); font-size: 15px; }
 .chart .nm { font-weight: 600; font-size: 16px; }
 .chart .ns-area { fill: none; stroke: var(--ink); stroke-width: 1; stroke-dasharray: 2 4; }
 .chart .ns-label { font-size: 15px; fill: var(--muted); letter-spacing: 0.06em; }
@@ -163,8 +163,12 @@ h3 { font-size: 1.05rem; }
 .chart .edge.is-on .tag { fill: var(--magenta); font-weight: 600; }
 .chart .edge.is-on .head { fill: var(--magenta); }
 .chart .edge .head { fill: var(--ink); }
-.chart.has-active .edge:not(.is-on), .chart.has-active .node:not(.is-on) { opacity: 0.42; }
-.chart .is-off { opacity: 0.12 !important; }
+.chart.has-active .edge:not(.is-on) .line, .chart.has-active .edge:not(.is-on) .head { opacity: 0.3; }
+.chart.has-active .node:not(.is-on) .box, .chart.has-active .node:not(.is-on) .area { stroke-opacity: 0.35; }
+/* Filtered out: the line fades and its name goes; text is never left half-visible. */
+.chart .edge.is-off .line, .chart .edge.is-off .head { opacity: 0.15; }
+.chart .edge.is-off .tag, .chart .ns-label.is-off { visibility: hidden; }
+.chart .ns-area.is-off { stroke-opacity: 0.15; }
 .hatch-line { stroke: var(--hatch); stroke-width: 1.4; }
 .chart .boundary .area { fill: var(--buff); stroke: var(--hatch); stroke-width: 1.5; }
 .chart .boundary .plate { fill: var(--buff); }
@@ -172,6 +176,7 @@ h3 { font-size: 1.05rem; }
 .chart .boundary text { fill: var(--ink); }
 .chart .scan { display: none; stroke: var(--magenta); stroke-width: 1.5; }
 
+.fixture { display: none; }
 .map-note { font: 400 15px/1.5 var(--mono); color: var(--muted); margin: 0.6rem 0 0; }
 .cap { font-size: 15.5px; line-height: 1.5; color: var(--muted); max-width: var(--measure); margin: 0.75rem 0 0; }
 
@@ -183,7 +188,7 @@ h3 { font-size: 1.05rem; }
   .chart.surveying .boundary { animation: ink 0.4s ease-out 1.25s both; }
   .chart.surveying .node { animation: ink 0.2s ease-out 0s both; }
 }
-@keyframes sweep { from { transform: translateX(0); } to { transform: translateX(1224px); } }
+@keyframes sweep { from { transform: translateX(0); } to { transform: translateX(1248px); } }
 @keyframes ink { from { opacity: 0; } to { opacity: 1; } }
 
 /* Relationship list */
@@ -196,19 +201,18 @@ h3 { font-size: 1.05rem; }
 .rels .mono { font-size: 14.5px; }
 @media (min-width: 700px) { .rels th:nth-child(1) { width: 27%; } .rels th:nth-child(4) { width: 23%; } }
 .rels tr[hidden] { display: none; }
-.rels td:nth-child(2) { white-space: nowrap; }
+@media (min-width: 700px) { .rels td:nth-child(2) { white-space: nowrap; } }
 .rels tr.is-on td { background: transparent; }
 .rels tr.is-on td:first-child { box-shadow: inset 4px 0 0 var(--magenta); padding-left: 0.75rem; }
 .rels .pair { font-family: var(--mono); font-size: 14.5px; }
 .rels .pair .k { color: var(--muted); }
-.nw { white-space: nowrap; }
 .rels .names { display: block; margin-top: 0.3rem; font-size: 14.5px; color: var(--muted); }
 .rowbtn .names { font-weight: 400; }
 .rels .arrow-t { padding: 0 0.3em; }
-.rowbtn { all: unset; box-sizing: border-box; display: block; cursor: pointer; min-height: 44px; padding: 0.35rem 0; font-family: var(--mono); font-size: 14.5px; line-height: 1.45; }
+.rowbtn { all: unset; box-sizing: border-box; display: block; min-width: 0; max-width: 100%; overflow-wrap: anywhere; cursor: pointer; min-height: 44px; padding: 0.35rem 0; font-family: var(--mono); font-size: 14.5px; line-height: 1.45; }
 .rowbtn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .rowbtn[aria-pressed="true"] { font-weight: 600; }
-.lvl { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--mono); font-size: 14.5px; white-space: nowrap; }
+.lvl { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--mono); font-size: 14.5px; }
 .lvl svg { width: 30px; height: 10px; flex: none; }
 .lvl-line { stroke: var(--ink); fill: none; stroke-width: 1.8; }
 .lvl-declared { stroke-dasharray: 8 5; }
@@ -245,7 +249,9 @@ h3 { font-size: 1.05rem; }
   .mapwrap[open] summary::after { content: "–"; }
   .object-flow { display: flex; flex-direction: column; }
   .object-flow .legend { order: 1; } .object-flow .readout { order: 2; }
-  .object-flow .rels-wrap { order: 3; } .object-flow .mapwrap { order: 4; } .object-flow .explain { order: 5; }
+  .object-flow .fixture { order: 3; } .object-flow .rels-wrap { order: 4; } .object-flow .mapwrap { order: 5; } .object-flow .explain { order: 6; }
+  .explain .cap { display: none; }
+  .object-flow .fixture { display: block; margin: 0 0 1.25rem; }
   .legend-items { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
   .lg { grid-template-columns: 1fr; row-gap: 0.35rem; align-content: center; min-height: 64px; }
   .readout { margin: 0 0 1rem; }

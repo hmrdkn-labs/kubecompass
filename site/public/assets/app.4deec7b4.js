@@ -9,6 +9,7 @@
   const nodeEls = new Map([...svg.querySelectorAll(".node")].map((n) => [n.dataset.id, n]));
   const rows = [...document.querySelectorAll(".rels tbody tr")].map((r) => ({ el: r, ids: r.dataset.i.split(" ").map(Number) }));
   const area = svg.querySelector(".ns-area");
+  const nsLabel = svg.querySelector(".ns-label");
   const boundary = svg.querySelector(".boundary");
   const readout = document.getElementById("readout");
   const count = document.getElementById("count");
@@ -80,6 +81,9 @@
       el.classList.toggle("is-on", litNodes.has(id) || (el === boundary && levels.has("unavailable")));
       el.setAttribute("aria-pressed", String(!!selected && selected.type === "node" && selected.id === id));
     });
+    const nsOff = filtering && !levels.has("observed"); // the border stands for seven Observed lines
+    area.classList.toggle("is-off", nsOff);
+    nsLabel.classList.toggle("is-off", nsOff);
     area.classList.toggle("is-on", inArea || (act && act.type === "node" && nodeById.get(act.id).kind === "Namespace"));
     svg.classList.toggle("has-active", !!hover || (!!selected && selected.type === "node") || levels.has("unavailable"));
     count.hidden = !filtering;

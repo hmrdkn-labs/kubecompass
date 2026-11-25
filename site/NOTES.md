@@ -112,7 +112,7 @@ Every row checked against `origin/main` 0e10edb on 2026-11-25.
 | 21 | The README lists what is still unverified: accessibility, frame rate and memory use, live-cluster checks | README.md 27–29 ("accessibility, frame/RSS, and live-cluster gates remain unverified") | Read the README | OK |
 | 22 | The Linux adapter reads no kubeconfig and runs no kubectl | README.md 30–33 | Read the README | OK |
 | 23 | The seven `containedIn` relationships are drawn as the namespace boundary and listed; Node, PersistentVolume and StorageClass sit outside it | `site/data/demo-graph.json` (7 `containedIn` edges, none from those three kinds) | Run the jq count | OK |
-| 24 | Level sentences: Observed = what the API reports, `spec.nodeName`, owner references; Declared = Ingress backend, volume claim, Ingress backend "request routing is not proven"; Inferred = selector match, "does not prove traffic or endpoint readiness"; Unavailable = provider-managed control-plane internals as a blank labelled area | `TopologyGraph.swift` 5–13 doc comment; edge `sourceField` and `assumption` in demo-graph.json; README 76–78 | Read both | OK |
+| 24 | Level sentences: Observed = what the API reports, `spec.nodeName`, owner references; Declared = Ingress backend, volume claim, Ingress backend "request routing is not proven"; Inferred = selector match, "does not prove traffic or endpoint readiness"; Unavailable = provider-managed control-plane internals; the hatched, labelled area is the diagram's own convention and the page says "In the diagram above" | `TopologyGraph.swift` 5–13 doc comment; edge `sourceField` and `assumption` in demo-graph.json; README 76–78 | Read both | OK |
 | 25 | The second capture is a larger fixture: 15 nodes, 31 relationships | Visible in `topology-relationship-list.jpeg` header bar | View the image | OK |
 | 26 | The page makes no live requests; signals are a build-time snapshot | Playwright run: no request outside the origin (Verification) | Open the network panel | OK |
 | 27 | Completeness partial, 2 unresolved references | `site/data/demo-graph.json` | Read the file | OK |
@@ -156,7 +156,11 @@ Built 2026-11-25 on branch `landing-page` from HEAD 292ac58.
   (12 Observed). See claim 19. The Namespace is the dotted containing area, as allowed.
 - Deviation from the draft: the node boxes show `PVC` and `PV` for the two long kinds; the list and
   the accessible names carry the full kind.
-- Review round 1: the seven `containedIn` edges are one grouped row (sources named, field and join once); the
+- Review round 1 (reviewer): row buttons and resource names wrap (no `nowrap`); unrelated nodes dim by border and
+  edge opacity, never text; filtered-out lines lose their names; the namespace border follows the Observed filter;
+  phone shows the fixture and partial-state caption before the list; the Unavailable sentence is scoped to the
+  diagram; node boxes 140 px wide, `routesTo` sits above the boxes.
+- Review round 1 (orchestrator): the seven `containedIn` edges are one grouped row (sources named, field and join once); the
   list heading says "18 relationships, 7 of them containedIn". On desktop 1440x900 the legend and the map's first
   row of nodes are in the first screen (map top at 604 px); the explanation sits below the map. Phone legend is a
   2x2 grid; section rules are all full width. Selecting the group row lights the seven source nodes and the border.
@@ -170,6 +174,8 @@ Served with `npx wrangler dev --local` (so `_headers` and the CSP applied). Shot
 |---|---|
 | axe-core (wcag2a/aa, 2.1, 2.2 AA, best-practice) | 0 violations: desktop light, desktop dark, phone light, phone dark |
 | Horizontal scroll | none at 320, 360, 375, 820, 1440, and with JS off at 1440 and 375 |
+| Text spacing (line-height 1.5, letter 0.12em, word 0.16em, paragraphs 2em) at 320 and 375 | no horizontal scroll, no element past the viewport (`textspacing-*-full.png`) |
+| Map label contrast in rest, focus, hover and three filter states, light and dark | every visible SVG label at least 4.5:1 (23 labels at rest); dimming now touches lines and borders only |
 | Console errors, page errors, failed or non-2xx requests, requests outside the origin | none, every viewport |
 | Body size | 18 px at 375 and 1440 |
 | Smallest text, including SVG text after scaling | all at or above 14 px at 375 and 1440 |
