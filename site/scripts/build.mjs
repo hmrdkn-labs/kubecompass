@@ -160,7 +160,7 @@ const LEVEL_TEXT = {
   unavailable: "An input the app does not have, such as provider-managed control-plane internals. In the diagram above it is a hatched, labelled area with no lines into it.",
 };
 const levels = LEVELS.map((l) =>
-  `      <li><div class="row">${swatch(l, 56, 16)}<span class="mono">${LEVEL_NAME[l]}</span></div><p>${LEVEL_TEXT[l]}</p></li>`).join("\n");
+  `      <li><div class="row">${swatch(l, 56, 16)}<span class="name">${LEVEL_NAME[l]}</span></div><p>${LEVEL_TEXT[l]}</p></li>`).join("\n");
 
 // ---- the relationship list ------------------------------------------------------------------------
 const pair = (n) => (n.virtual ? `<span class="nw">${esc(n.name)}</span>` : `<span class="nw"><span class="k">${esc(n.kind)}</span> ${esc(n.name)}</span>`);

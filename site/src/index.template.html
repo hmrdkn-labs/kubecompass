@@ -69,7 +69,7 @@
 
     <p class="fixture">A redraw of the graph KubeCompassCore builds for the demo fixture in its test suite. Not a screenshot.</p>
 
-    <details class="rels-wrap" id="rels" open>
+    <details class="rels-wrap" id="rels">
       <summary>All {{edgecount}} relationships</summary>
       <p class="count" id="count" hidden></p>
       <table class="rels">
@@ -86,13 +86,11 @@
 </div>
 
 <section id="levels" aria-labelledby="levels-h">
-  <div class="wrap split wide-left">
-    <div>
-      <h2 id="levels-h">Each line says how it was found</h2>
-      <ul class="levels">
+  <div class="wrap">
+    <h2 id="levels-h">Each line says how it was found</h2>
+    <ul class="levels">
 {{levels}}
-      </ul>
-    </div>
+    </ul>
     <div class="aside">
       <p>{{mapnote}}</p>
       <p class="js-only">Choose a level above to see only those lines. Choose a node or a row to see its source field and join rule.</p>
@@ -102,14 +100,14 @@
 
 <section class="band" id="captures" aria-labelledby="captures-h">
   <div class="wrap">
-    <div class="head"><h2 id="captures-h">The same map in the app</h2></div>
+    <div class="head"><h2 id="captures-h">The map in the app</h2></div>
     <div class="caps">
       <figure class="cap-fig">
-        <img src="{{img:topology-map-control-plane.webp}}" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships.">
+        <img src="{{img:topology-map-control-plane.webp}}" srcset="{{img:topology-map-control-plane-800.webp}} 800w, {{img:topology-map-control-plane.webp}} 1220w" sizes="(min-width: 1300px) 1220px, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships.">
         <figcaption>KubeCompass on a synthetic fixture. Map view: the control plane boundary is tagged Unavailable and has no relationships.</figcaption>
       </figure>
-      <figure class="cap-fig">
-        <img src="{{img:topology-relationship-list.webp}}" width="1220" height="724" loading="lazy" decoding="async" alt="The same window in List view. Rows read like web-a to worker-a, Scheduled on, Observed, and web to web-a, Selects, Inferred. The selected row’s inspector shows the source field spec.podSelector and an assumption that policy enforcement and reachability are not proven.">
+      <figure class="cap-fig side">
+        <img src="{{img:topology-relationship-list.webp}}" srcset="{{img:topology-relationship-list-800.webp}} 800w, {{img:topology-relationship-list.webp}} 1220w" sizes="(min-width: 1300px) 800px, (min-width: 1000px) 60vw, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The same window in List view. Rows read like web-a to worker-a, Scheduled on, Observed, and web to web-a, Selects, Inferred. The selected row’s inspector shows the source field spec.podSelector and an assumption that policy enforcement and reachability are not proven.">
         <figcaption>KubeCompass on a synthetic fixture. List view: each row names its evidence level. This fixture has 15 nodes and 31 relationships, not the smaller graph drawn above.</figcaption>
       </figure>
     </div>
@@ -151,7 +149,7 @@
     <div class="prose">
       <h2 id="build-h">Build it yourself</h2>
       <p>No published release yet. Build it from source on macOS 26 or later. The documented build turns code signing off.</p>
-      <pre class="cmd" tabindex="0" aria-label="xcodebuild command from the README">xcodebuild -project k-dex.xcodeproj -scheme k-dex \
+      <pre class="cmd">xcodebuild -project k-dex.xcodeproj -scheme k-dex \
   -configuration Release -destination 'platform=macOS' \
   CODE_SIGNING_ALLOWED=NO build</pre>
       <p class="build-note">The README lists what is still unverified: accessibility, frame rate and memory use, and live-cluster checks.</p>
