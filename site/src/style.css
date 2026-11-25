@@ -104,7 +104,8 @@ h1 .w { display: inline-block; }
   box-shadow: 0 24px 60px rgb(0 0 0 / 0.35);
 }
 .stage-flow { display: flex; flex-direction: column; }
-.legend { margin: 0 0 1rem; padding: 0; border: 0; min-width: 0; }
+.legend { margin: 0 0 0.75rem; padding: 0; border: 0; min-width: 0; }
+.hint { margin: 0 0 1rem; font-size: var(--text-sm); line-height: 1.5; color: var(--muted); }
 .seg { display: inline-flex; gap: 1px; padding: 1px; background: var(--hatch); border-radius: 8px; overflow: hidden; max-width: 100%; }
 .lg {
   display: inline-grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 0.7rem; min-height: 52px; padding: 0.4rem 1.1rem;
@@ -268,8 +269,7 @@ section { padding: clamp(4rem, 9vw, 7.5rem) var(--pad) 0; }
   .levels li:last-child { border-bottom: 0; padding-right: 0; }
 }
 .aside { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); }
-.aside p { max-width: 80ch; }
-.aside p { color: var(--muted); }
+.aside p { max-width: 65ch; color: var(--muted); }
 .aside p:first-child { color: var(--text); }
 .aside p:last-child { margin-bottom: 0; }
 
@@ -277,6 +277,7 @@ section { padding: clamp(4rem, 9vw, 7.5rem) var(--pad) 0; }
 .band .head { max-width: 62ch; margin-bottom: 2.5rem; }
 .caps { display: grid; gap: 2.5rem; }
 .cap-fig { margin: 0; }
+.cap-fig .zoom { display: block; max-width: 1220px; border-radius: 8px; }
 .cap-fig img { display: block; width: 100%; max-width: 1220px; height: auto; border-radius: 8px; background: var(--bg); }
 .cap-fig figcaption { color: var(--muted); font-size: var(--text-sm); line-height: 1.5; margin-top: 0.75rem; max-width: 60ch; }
 @media (min-width: 1000px) {
@@ -287,7 +288,7 @@ section { padding: clamp(4rem, 9vw, 7.5rem) var(--pad) 0; }
 .facts { margin: 0; padding: 0; list-style: none; }
 .facts li { display: grid; gap: 0.25rem 2rem; padding: 1.25rem 0; border-top: 1px solid var(--rule); }
 .facts li:last-child { border-bottom: 1px solid var(--rule); }
-.facts p { margin: 0; }
+.facts p { margin: 0; max-width: 65ch; }
 @media (min-width: 800px) { .facts li { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
 .runs-head { max-width: 62ch; margin-bottom: 2rem; }
 

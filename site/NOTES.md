@@ -112,7 +112,7 @@ Built 2026-11-25 on branch `landing-v2` from `origin/main`.
   (hero 1672, 1440, 800 w; others 1200, 800 w). The model returned 1672 px for 16:9, so the hero's top width is 1672, not 2400.
 - Deviations from DIRECTION: (1) the readout sits under the map in the stage, not in section 2, so a click on the map has
   visible feedback; section 2's right column carries the containedIn and completeness facts instead. (2) The "All 18
-  relationships" disclosure is in the stage (open on phone, closed on wide screens), not in section 2. (3) Hero image width 1672.
+  relationships" disclosure is in the stage and closed by default on every width (the legend, readout and both disclosures sit above the fold on phone; with JS off the disclosure still opens), not in section 2. (3) Hero image width 1672.
   (4) Hero sub line is 20 px (the hero is exempt from the three-size rule). (5) The stage caption is shown on every width.
 - Local server: wrangler 4.82 does not know `compatibility_date 2026-11-01`, so `wrangler dev --local` needs
   `--compatibility-date 2026-04-01` on the command line; `wrangler.jsonc` is untouched.
