@@ -42,7 +42,7 @@ The graph KubeCompassCore builds for its own demo fixture, redrawn as a chart.
   `testOwnerChainPlacementServiceEndpointIngressStorageAndConfigEdges` (lines 19–30). No product
   code changed. The page says it is a redraw of that test fixture, not a capture of the app.
 - **Content:** 12 nodes (11 resources in namespace `demo` plus the virtual control-plane boundary),
-  18 edges: 11 Observed, 4 Declared, 2 Inferred (`selects`), and the control-plane boundary node
+  18 edges: 12 Observed, 4 Declared, 2 Inferred (`selects`), and the control-plane boundary node
   tagged Unavailable with no edges drawn to it. Completeness `partial`, 2 unresolved references
   (counted, not named).
 - **Line language (redundant with text, never colour alone):** Observed = solid ink line; Declared
@@ -105,10 +105,9 @@ Every row checked against `origin/main` 0e10edb on 2026-11-25.
 | 13 | The documented build turns code signing off | README 104–106 (`CODE_SIGNING_ALLOWED=NO`) | Read the README | OK |
 | 14 | Linux adapter runs on fixture data only | README 30–33 | Read the README | OK |
 | 15 | Derived from K-Dex, MIT, provenance kept | README 8–9, 151–154; UPSTREAM.md; LICENSE | Read UPSTREAM.md | OK |
-| 16 | Demo graph: 12 nodes, 18 edges, 11/4/2 Observed/Declared/Inferred, boundary Unavailable, partial, 2 unresolved | `site/data/demo-graph.json` | Run `site/scripts/demo-graph.sh` | OK |
+| 16 | Demo graph: 12 nodes, 18 edges, 12/4/2 Observed/Declared/Inferred (7 Observed are `containedIn`), boundary Unavailable, partial, 2 unresolved | `site/data/demo-graph.json`; `jq '[.edges[].level]\|group_by(.)\|map({(.[0]):length})\|add'` | Run `site/scripts/demo-graph.sh` | OK |
 | 17 | Captures are the app on a synthetic fixture | `docs/interface/evidence/*.jpeg` show `topology-lab` / `fixture-cluster` / namespace `demo` | View the images | OK |
 | 18 | Signals: CI "macOS stability and topology" success 2026-08-13; last commit 0e10edb 2026-08-13; no release; MIT | `gh run list`, `gh api repos/.../commits/main`, `gh release list`, `gh api repos/...` at build | Re-run the commands | OK (snapshot dated) |
-| 19 | Correction to row 16: the demo graph has 12 Observed, 4 Declared and 2 Inferred edges (18 in all; 7 of the Observed are `containedIn`) | `jq '[.edges[].level]\|group_by(.)\|map({(.[0]):length})\|add' site/data/demo-graph.json` | Run the command | OK (row 16's "11" was a miscount) |
 | 20 | "A Hamardikan Labs project" | README.md 8 | Read the README | OK |
 | 21 | The README lists what is still unverified: accessibility, frame rate and memory use, live-cluster checks | README.md 27–29 ("accessibility, frame/RSS, and live-cluster gates remain unverified") | Read the README | OK |
 | 22 | The Linux adapter reads no kubeconfig and runs no kubectl | README.md 30–33 | Read the README | OK |
