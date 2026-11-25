@@ -1,0 +1,240 @@
+{
+  "completeness" : "partial",
+  "edges" : [
+    {
+      "from" : "dev|v1|EndpointSlice|uid:slice-1",
+      "joinRule" : "EndpointSlice service label equals Service.metadata.name",
+      "level" : "observed",
+      "relationship" : "publishesEndpoints",
+      "sourceField" : "metadata.labels[kubernetes.io\/service-name]",
+      "to" : "dev|v1|Service|uid:svc-1"
+    },
+    {
+      "from" : "dev|v1|Pod|uid:pod-1",
+      "joinRule" : "ownerReference.uid or name identifies target",
+      "level" : "observed",
+      "relationship" : "ownedBy",
+      "sourceField" : "metadata.ownerReferences",
+      "to" : "dev|v1|ReplicaSet|uid:rs-1"
+    },
+    {
+      "assumption" : "label selection does not prove traffic or endpoint readiness",
+      "from" : "dev|v1|Service|uid:svc-1",
+      "joinRule" : "selector matches Pod.metadata.labels",
+      "level" : "inferred",
+      "relationship" : "selects",
+      "sourceField" : "spec.selector",
+      "to" : "dev|v1|Pod|uid:pod-1"
+    },
+    {
+      "from" : "dev|v1|PersistentVolume|uid:pv-1",
+      "joinRule" : "storage reference name\/UID identifies target",
+      "level" : "declared",
+      "relationship" : "usesStorageClass",
+      "sourceField" : "spec.storageClassName",
+      "to" : "dev|v1|StorageClass|uid:sc-1"
+    },
+    {
+      "from" : "dev|v1|PersistentVolumeClaim|uid:pvc-1",
+      "joinRule" : "namespace name equals Namespace.metadata.name",
+      "level" : "observed",
+      "relationship" : "containedIn",
+      "sourceField" : "metadata.namespace",
+      "to" : "dev|v1|Namespace|uid:ns-1"
+    },
+    {
+      "from" : "dev|v1|ReplicaSet|uid:rs-1",
+      "joinRule" : "ownerReference.uid or name identifies target",
+      "level" : "observed",
+      "relationship" : "ownedBy",
+      "sourceField" : "metadata.ownerReferences",
+      "to" : "dev|apps\/v1|Deployment|uid:deploy-1"
+    },
+    {
+      "from" : "dev|v1|EndpointSlice|uid:slice-1",
+      "joinRule" : "EndpointSlice targetRef identifies Pod",
+      "level" : "observed",
+      "relationship" : "endpointTarget",
+      "sourceField" : "endpoints[].targetRef",
+      "to" : "dev|v1|Pod|uid:pod-1"
+    },
+    {
+      "from" : "dev|v1|Pod|uid:pod-1",
+      "joinRule" : "Pod.spec.nodeName equals Node.metadata.name",
+      "level" : "observed",
+      "relationship" : "scheduledOn",
+      "sourceField" : "spec.nodeName",
+      "to" : "dev|v1|Node|uid:node-1"
+    },
+    {
+      "from" : "dev|v1|Pod|uid:pod-1",
+      "joinRule" : "storage reference name\/UID identifies target",
+      "level" : "declared",
+      "relationship" : "backedBy",
+      "sourceField" : "spec.volumes[].persistentVolumeClaim",
+      "to" : "dev|v1|PersistentVolumeClaim|uid:pvc-1"
+    },
+    {
+      "from" : "dev|v1|EndpointSlice|uid:slice-1",
+      "joinRule" : "namespace name equals Namespace.metadata.name",
+      "level" : "observed",
+      "relationship" : "containedIn",
+      "sourceField" : "metadata.namespace",
+      "to" : "dev|v1|Namespace|uid:ns-1"
+    },
+    {
+      "assumption" : "label selection does not prove controller reconciliation",
+      "from" : "dev|apps\/v1|Deployment|uid:deploy-1",
+      "joinRule" : "selector matches Pod.metadata.labels",
+      "level" : "inferred",
+      "relationship" : "selects",
+      "sourceField" : "spec.selector",
+      "to" : "dev|v1|Pod|uid:pod-1"
+    },
+    {
+      "from" : "dev|v1|Service|uid:svc-1",
+      "joinRule" : "namespace name equals Namespace.metadata.name",
+      "level" : "observed",
+      "relationship" : "containedIn",
+      "sourceField" : "metadata.namespace",
+      "to" : "dev|v1|Namespace|uid:ns-1"
+    },
+    {
+      "from" : "dev|v1|ReplicaSet|uid:rs-1",
+      "joinRule" : "namespace name equals Namespace.metadata.name",
+      "level" : "observed",
+      "relationship" : "containedIn",
+      "sourceField" : "metadata.namespace",
+      "to" : "dev|v1|Namespace|uid:ns-1"
+    },
+    {
+      "from" : "dev|v1|Ingress|uid:ing-1",
+      "joinRule" : "namespace name equals Namespace.metadata.name",
+      "level" : "observed",
+      "relationship" : "containedIn",
+      "sourceField" : "metadata.namespace",
+      "to" : "dev|v1|Namespace|uid:ns-1"
+    },
+    {
+      "from" : "dev|v1|Pod|uid:pod-1",
+      "joinRule" : "namespace name equals Namespace.metadata.name",
+      "level" : "observed",
+      "relationship" : "containedIn",
+      "sourceField" : "metadata.namespace",
+      "to" : "dev|v1|Namespace|uid:ns-1"
+    },
+    {
+      "from" : "dev|v1|PersistentVolumeClaim|uid:pvc-1",
+      "joinRule" : "storage reference name\/UID identifies target",
+      "level" : "declared",
+      "relationship" : "backedBy",
+      "sourceField" : "spec.volumes[].persistentVolumeClaim",
+      "to" : "dev|v1|PersistentVolume|uid:pv-1"
+    },
+    {
+      "from" : "dev|apps\/v1|Deployment|uid:deploy-1",
+      "joinRule" : "namespace name equals Namespace.metadata.name",
+      "level" : "observed",
+      "relationship" : "containedIn",
+      "sourceField" : "metadata.namespace",
+      "to" : "dev|v1|Namespace|uid:ns-1"
+    },
+    {
+      "assumption" : "backend declaration only; request routing is not proven",
+      "from" : "dev|v1|Ingress|uid:ing-1",
+      "joinRule" : "backend service name\/namespace identifies Service; numeric or named port is descriptive",
+      "level" : "declared",
+      "relationship" : "routesTo",
+      "sourceField" : "spec.rules[].http.paths[].backend.service.port",
+      "to" : "dev|v1|Service|uid:svc-1"
+    }
+  ],
+  "nodes" : [
+    {
+      "id" : "dev|apps\/v1|Deployment|uid:deploy-1",
+      "kind" : "Deployment",
+      "level" : "observed",
+      "name" : "web",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|EndpointSlice|uid:slice-1",
+      "kind" : "EndpointSlice",
+      "level" : "observed",
+      "name" : "web-1",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|Ingress|uid:ing-1",
+      "kind" : "Ingress",
+      "level" : "observed",
+      "name" : "web",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|Namespace|uid:ns-1",
+      "kind" : "Namespace",
+      "level" : "observed",
+      "name" : "demo",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|Node|uid:node-1",
+      "kind" : "Node",
+      "level" : "observed",
+      "name" : "worker-a",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|PersistentVolumeClaim|uid:pvc-1",
+      "kind" : "PersistentVolumeClaim",
+      "level" : "observed",
+      "name" : "web-data",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|PersistentVolume|uid:pv-1",
+      "kind" : "PersistentVolume",
+      "level" : "observed",
+      "name" : "pv-web",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|Pod|uid:pod-1",
+      "kind" : "Pod",
+      "level" : "observed",
+      "name" : "web-0",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|ReplicaSet|uid:rs-1",
+      "kind" : "ReplicaSet",
+      "level" : "observed",
+      "name" : "web-abc",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|Service|uid:svc-1",
+      "kind" : "Service",
+      "level" : "observed",
+      "name" : "web",
+      "virtual" : false
+    },
+    {
+      "id" : "dev|v1|StorageClass|uid:sc-1",
+      "kind" : "StorageClass",
+      "level" : "observed",
+      "name" : "fast",
+      "virtual" : false
+    },
+    {
+      "id" : "virtual|dev|control-plane-boundary",
+      "kind" : "ControlPlaneBoundary",
+      "level" : "unavailable",
+      "name" : "Control plane boundary",
+      "virtual" : true
+    }
+  ],
+  "source" : "Tests\/KubeCompassCoreTests\/TopologyGraphTests.swift testOwnerChainPlacementServiceEndpointIngressStorageAndConfigEdges, built by TopologyGraphBuilder",
+  "unresolvedReferences" : 2
+}
