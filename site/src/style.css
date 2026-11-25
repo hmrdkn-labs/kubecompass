@@ -236,7 +236,7 @@ h1 .w { display: inline-block; }
   .mapwrap summary::after { content: "+"; margin-left: auto; color: var(--accent); }
   .mapwrap[open] summary::after { content: "\2212"; }
   .mapwrap[open] summary { margin-bottom: 0.75rem; }
-  .stage-flow .legend { order: 1; } .stage-flow .readout { order: 2; }
+  .stage-flow .legend, .stage-flow .hint { order: 1; } .stage-flow .readout { order: 2; }
   .stage-flow .fixture { order: 3; margin: 0 0 1.25rem; } .stage-flow .rels-wrap { order: 4; margin-top: 0; }
   .stage-flow .mapwrap { order: 5; }
 }
