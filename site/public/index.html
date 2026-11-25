@@ -20,7 +20,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin-wght-normal.43d198c0.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/atkinson-hyperlegible-next-latin-400-normal.bdf3fa81.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/style.809c1dfa.css">
+<link rel="stylesheet" href="/assets/style.4f1e5b98.css">
 <script src="/assets/boot.07e9e867.js"></script>
 </head>
 <body>
@@ -62,6 +62,7 @@
         <button type="button" class="lg" data-level="unavailable" aria-pressed="false" disabled><svg class="" viewBox="0 0 44 14" aria-hidden="true"><rect class="hatch-swatch" fill="url(#hatch)" x="1" y="1" width="42" height="12"/></svg><span><strong>Unavailable</strong><span class="dot"> · </span><span class="n">1 area</span><span class="how">hatched area</span></span></button>
       </div>
     </fieldset>
+    <p class="hint js-only">Choose a level to see only those lines. Choose a node or a row to see its source field and join rule.</p>
 
     <details class="mapwrap" open>
       <summary>Show the map</summary>
@@ -137,7 +138,6 @@
     </ul>
     <div class="aside">
       <p>The seven containedIn relationships are drawn as the dotted namespace boundary, not as lines. All seven are in the list. Completeness: partial, with 2 unresolved references.</p>
-      <p class="js-only">Choose a level above to see only those lines. Choose a node or a row to see its source field and join rule.</p>
     </div>
   </div>
 </section>
@@ -147,11 +147,11 @@
     <div class="head"><h2 id="captures-h">The map in the app</h2></div>
     <div class="caps">
       <figure class="cap-fig">
-        <img src="/assets/img/topology-map-control-plane.04e9f7b5.webp" srcset="/assets/img/topology-map-control-plane-800.228e9c53.webp 800w, /assets/img/topology-map-control-plane.04e9f7b5.webp 1220w" sizes="(min-width: 1300px) 1220px, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships.">
+        <a class="zoom" href="/assets/img/topology-map-control-plane.04e9f7b5.webp" aria-label="Open the map capture at full size"><img src="/assets/img/topology-map-control-plane.04e9f7b5.webp" srcset="/assets/img/topology-map-control-plane-800.228e9c53.webp 800w, /assets/img/topology-map-control-plane.04e9f7b5.webp 1220w" sizes="(min-width: 1300px) 1220px, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships."></a>
         <figcaption>KubeCompass on a synthetic fixture. Map view: the control plane boundary is tagged Unavailable and has no relationships.</figcaption>
       </figure>
       <figure class="cap-fig side">
-        <img src="/assets/img/topology-relationship-list.c2284075.webp" srcset="/assets/img/topology-relationship-list-800.7214574b.webp 800w, /assets/img/topology-relationship-list.c2284075.webp 1220w" sizes="(min-width: 1300px) 800px, (min-width: 1000px) 60vw, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The same window in List view. Rows read like web-a to worker-a, Scheduled on, Observed, and web to web-a, Selects, Inferred. The selected row’s inspector shows the source field spec.podSelector and an assumption that policy enforcement and reachability are not proven.">
+        <a class="zoom" href="/assets/img/topology-relationship-list.c2284075.webp" aria-label="Open the list capture at full size"><img src="/assets/img/topology-relationship-list.c2284075.webp" srcset="/assets/img/topology-relationship-list-800.7214574b.webp 800w, /assets/img/topology-relationship-list.c2284075.webp 1220w" sizes="(min-width: 1300px) 800px, (min-width: 1000px) 60vw, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The same window in List view. Rows read like web-a to worker-a, Scheduled on, Observed, and web to web-a, Selects, Inferred. The selected row’s inspector shows the source field spec.podSelector and an assumption that policy enforcement and reachability are not proven."></a>
         <figcaption>KubeCompass on a synthetic fixture. List view: each row names its evidence level. This fixture has 15 nodes and 31 relationships, not the smaller graph drawn above.</figcaption>
       </figure>
     </div>
@@ -223,8 +223,8 @@
     </div>
     <div>
       <p>Derived from <a href="https://github.com/irfancen/k-dex">K-Dex</a> by irfancen, MIT licence. Provenance is in <a href="https://github.com/hmrdkn-labs/kubecompass/blob/main/UPSTREAM.md">UPSTREAM.md</a>.</p>
-      <p>A Hamardikan Labs project. Maintained by Dika.</p>
-      <p class="small">Deploy ee5ef4d, built 25 Nov 2026.</p>
+      <p>A Hamardikan Labs project.</p>
+      <p class="small">Deploy eac32a3, built 25 Nov 2026.</p>
       <ul>
         <li><a href="https://github.com/hmrdkn-labs/kubecompass">Repository on GitHub</a></li>
         <li><a href="https://hamardikan.com/">hamardikan.com</a></li>
