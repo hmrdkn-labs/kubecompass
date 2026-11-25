@@ -82,6 +82,16 @@ VoiceOver or any accessibility claim about the app; production-provider conforma
 kubectl version pins; command limits; metrics lag; the README's verification receipt links that
 404 in the local tree (the public README at 0e10edb has none of them; every README link used here
 resolves at `origin/main`).
+| 30 | Page is a Kubernetes GUI/client for macOS ("GUI" = desktop app, same as claim 1) | README 5–6 | Read the README | OK |
+| 31 | The cluster map tags relationships; hero says "draws a cluster map" | README 18–22; claim 2 | Read the README | OK |
+| 32 | JSON-LD operatingSystem "macOS 26 or later", author and publisher Azzam Muhammadi Rizqun Karima, codeRepository | claim 9; hamardikan.com owner; repo URL | Read the page source | OK |
+| 33 | No softwareVersion, downloadUrl, rating, review or offers in JSON-LD | claim 12 (no release) | Read the page source | OK |
+| 34 | Sibling pages named in the footer exist at their hamardikan.com subdomains | v3 STANDARD.md, Links | Open each | OK (unchecked live until deploy) |
+
+## Search (v3, 2026-11-25)
+
+Title, description, h1, OG, JSON-LD, IndexNow key and sibling links: `~/workspace/sandbox/showcase-scan/build/v3/kubecompass/SEO.md`. `og.png` is a 256-colour PNG (240 KB).
+`src/<32 hex>.txt` is the IndexNow key file; `build.mjs` copies it to the site root.
 
 ## Real vs missing
 

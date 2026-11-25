@@ -310,6 +310,7 @@ pre.cmd {
 @media (max-width: 480px) { .signals > div { grid-template-columns: 1fr; } }
 .foot p { margin: 0 0 0.5rem; }
 .foot .small { color: var(--muted); }
+.foot .more { margin-top: 1rem; font-weight: 600; }
 .foot ul { list-style: none; margin: 0.75rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; }
 .foot ul a { display: inline-flex; align-items: center; min-height: 44px; }
 

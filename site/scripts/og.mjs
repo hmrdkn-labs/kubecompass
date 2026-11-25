@@ -1,6 +1,7 @@
 // Draws src/og.png (1200x630: hero illustration and wordmark) and src/apple-touch-icon.png.
 // Needs Playwright: PW_MODULES=/path/to/node_modules node scripts/og.mjs
 import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -29,6 +30,8 @@ const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
 await page.setContent(html);
 await page.waitForTimeout(300);
 await page.screenshot({ path: join(root, "src/og.png") });
+// The raw capture is ~526 KB; 256-colour PNG keeps it under 300 KB (needs ImageMagick).
+execFileSync("magick", [join(root, "src/og.png"), "-dither", "FloydSteinberg", "-colors", "256", "-strip", "-define", "png:compression-level=9", `PNG8:${join(root, "src/og.png")}`]);
 const ip = await browser.newPage({ viewport: { width: 180, height: 180 } });
 await ip.setContent(`<body style="margin:0">${icon.replace("<svg ", '<svg width="180" height="180" ')}</body>`);
 await ip.screenshot({ path: join(root, "src/apple-touch-icon.png") });
