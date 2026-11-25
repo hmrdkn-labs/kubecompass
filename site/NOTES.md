@@ -188,27 +188,32 @@ Served with `npx wrangler dev --local` (so `_headers` and the CSP applied). Shot
 | Recon grep on `public/` | no IP-shaped strings, no ports, no long hex ids; hosts are github.com, hamardikan.com, kubecompass.hamardikan.com and the XML namespaces; "secret" and "kubeconfig" appear only in product-claim sentences |
 | Fixture names on the page | `web`, `web-0`, `worker-a`, `pv-web`, `fast`, namespace `demo` come from the repo's own test fixture, not from any cluster |
 
-### Live verification (https://kubecompass.hamardikan.com/, version bdf30873, commit 8e8e70f, 2026-11-25)
+### Live verification (https://kubecompass.hamardikan.com/)
 
-Run with the resolver pinned for Chromium and curl (the address is not stored here). Shots `shots/live-*.png`, report `shots/live-verify-report.json`.
+Two runs, resolver pinned for Chromium and curl (the address is not stored here). Shots `shots/live-*.png`, report `shots/live-verify-report.json`.
+
+Run 1, version bdf30873 (commit 8e8e70f): everything passed except one finding. Cloudflare Web Analytics
+auto-injection added `static.cloudflareinsights.com/beacon.min.js` to browser responses; the CSP blocked it, giving a
+console error and a failed external request per load and best practices 92. Fixed by `Cache-Control: ... no-transform`
+on the HTML routes (`8c3d62f`). The zone setting itself is outside this brief.
+
+Run 2, version 6fe91146-dd0e-49b6-89cd-d40cc1b6c1a4 (commit 9c730df, footer 8c3d62f):
 
 | Check | Result |
 |---|---|
-| HTTPS, `/` | 200, h2; served `index.html` matches `public/index.html` apart from the footer line |
-| Headers | CSP as committed (`default-src 'self'`, no inline), HSTS 1 year, nosniff, X-Frame-Options DENY, referrer policy, permissions policy, COOP |
-| `/assets/*` | 200, `cache-control: public, max-age=31536000, immutable` (CSS and font checked) |
-| 404 | `/nope` returns 404 with the "No such sheet" page; robots.txt, sitemap.xml, favicon.svg, og.png, apple-touch-icon.png all 200 |
-| axe light, dark, phone, desktop | 0 violations in each |
-| Horizontal scroll | none at 320, 360, 375, 820, 1440; none with JS off; text-spacing at 320 and 375 clean |
-| Keyboard, filter, survey pass, reduced motion | 39 and 28 stops all visible; Inferred leaves 2 rows; survey ends; no survey class under reduced motion |
-| First load on phone | 81.2 KB |
-| Lighthouse mobile (live) | performance 99, accessibility 100, best practices 92, SEO 100; LCP 1.6 s, TBT 0 ms, CLS 0.001 |
-| Console and requests | **fail**: every browser load gets `https://static.cloudflareinsights.com/beacon.min.js` injected into the HTML at the edge (a module script with `data-cf-beacon`, only for browser requests). The CSP blocks it: one console error and one failed external request per load, and best practices drops to 92 |
+| Beacon | gone; 0 problems across every viewport (no console error, no failed or external request) |
+| HTTPS `/` | 200, h2; CSP as committed, HSTS 1 year, `cache-control: public, max-age=0, must-revalidate, no-transform` |
+| axe light, dark, phone, desktop | 0 violations each |
+| Horizontal scroll | none at 320, 360, 375, 820, 1440; none with JS off; text spacing at 320 and 375 clean |
+| Keyboard, filter, survey pass, reduced motion | 39 and 28 stops visible; Inferred leaves 2 rows; survey ends; none under reduced motion |
+| Map label contrast, 6 states, both themes | 0 below 4.5:1 |
+| Lighthouse mobile (live) | performance 100, accessibility 100, best practices 100, SEO 100; LCP 1.0 s, TBT 0 ms, CLS 0.001 |
+| First load on phone | 108 KB (run 1: 81 KB) |
 
-Cause: the hamardikan.com zone has Web Analytics auto-injection on. The zone setting is outside this brief. Fix committed:
-`Cache-Control: ... no-transform` on `/`, `/index.html` and `/404.html` in `_headers`, which Cloudflare honours by not
-injecting. Unverified until redeployed; if the beacon still appears the zone's Web Analytics setting has to be turned off
-for this hostname. Do not loosen the CSP to allow it: the page promises no analytics.
+Cost of the fix: `no-transform` also stops Cloudflare compressing the HTML, so `/` is 35,374 bytes on the wire instead of
+about 8 KB. Still far under 300 KB and Lighthouse is 100; the alternative is turning Web Analytics off for this hostname
+in the zone, after which `no-transform` can be dropped. `/nope` still returns 404 with the "No such sheet" page; its
+only console message is the document's own 404 status.
 
 ### PLAYBOOK §8 checklist
 
@@ -248,7 +253,7 @@ Privacy
 Deploy
 - [x] Root-absolute URLs; `_headers` CSP allows only `'self'` and `data:` images; `/assets/*` immutable and hashed.
 - [x] The hero does not move after load (no layout-changing JS; CLS 0.001).
-- [ ] After each deploy, check the live copy: done for version bdf30873 (see Live verification); open on one finding, the edge-injected analytics beacon, fix committed and awaiting redeploy.
+- [x] After each deploy, check the live copy: done for version 6fe91146 (see Live verification), no open findings.
 
 ## Self-critique
 
