@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-11-25T14:40:08Z",
+  "repo": "hmrdkn-labs/kubecompass",
+  "ci": {
+    "name": "macOS stability and topology",
+    "conclusion": "success",
+    "status": "completed",
+    "created_at": "2026-08-13T03:14:52Z",
+    "url": "https://github.com/hmrdkn-labs/kubecompass/actions/runs/31663331585"
+  },
+  "commit": {
+    "sha": "0e10edb",
+    "date": "2026-08-13T03:14:35Z"
+  },
+  "release": {
+    "tag": null,
+    "published_at": null
+  },
+  "license": "MIT"
+}
