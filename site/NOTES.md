@@ -1,6 +1,6 @@
 # KubeCompass landing page: notes
 
-Live: https://kubecompass.hamardikan.com/ · Worker `kubecompass-site` (static assets only). v2 redesign on branch `landing-v2`, not deployed.
+Live: https://kubecompass.hamardikan.com/ · Worker `kubecompass-site` (static assets only). v2 deployed 2026-11-25, version `8e99441b-e789-472f-9287-487727c82325` (footer sha d9342ea).
 Planned 2026-11-25 from `~/workspace/sandbox/showcase-scan/research/kubecompass.md`, the card, and
 the public repo at `origin/main` 0e10edb. The local checkout `~/workspace/labs/kubecompass` and its
 48 uncommitted paths are not a source for anything on this page.
@@ -138,7 +138,24 @@ are in `~/workspace/sandbox/showcase-scan/build/v2/kubecompass/shots/`.
 | Lighthouse mobile | performance 100 (one earlier run 93), accessibility 100 |
 | Recon grep on `public/index.html` | no IP-shaped strings, ports or long hex ids |
 
-Not measured: GUI frame time on a low-end phone, VoiceOver on the SVG nodes, real-device Safari, the live site (not deployed).
+Not measured: GUI frame time on a low-end phone, VoiceOver on the SVG nodes, real-device Safari.
+
+### Live verification (https://kubecompass.hamardikan.com/)
+
+Resolver pinned for curl and Chromium (the address is not stored here). Shots in `shots/live/`.
+
+| Check | Result |
+|---|---|
+| HTTPS `/` | 200, h2; CSP as committed; `cache-control: public, max-age=0, must-revalidate, no-transform` |
+| Served footer | Deploy d9342ea, matches the build |
+| Font families, sizes below hero, smallest text | 2 families; 3 sizes (15, 18, 52 px); 15 px |
+| Uppercase with letter-spacing, `transition: all`, em or en dashes | none |
+| h1 | one, width 1440 px |
+| Horizontal overflow at 320, 390, 1440, JS on and off | none |
+| axe at 1440 and 390 | 0 violations |
+| Console errors, failed or non-2xx requests, requests off origin | none |
+| Phone first load, cold, compressed | 153 KB over 11 responses (HTML 36.2 KB, no analytics beacon) |
+| Lighthouse mobile | performance 100, accessibility 100 |
 
 ## Self-critique
 
