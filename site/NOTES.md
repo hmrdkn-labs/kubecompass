@@ -149,7 +149,7 @@ Built 2026-11-25 on branch `landing-page` from HEAD 292ac58.
   `style-src 'unsafe-inline'`.
 - `scripts/snapshot.sh` writes `data/github.json`; any failed `gh` call keeps the old file.
 - `scripts/og.mjs` draws `og.png` and `apple-touch-icon.png` (needs Playwright; `PW_MODULES`).
-- `scripts/verify.cjs` is the Playwright and axe run recorded below.
+- `scripts/audit.cjs` is the v2 Playwright, axe and Lighthouse audit (replaces the v1 `verify.cjs`).
 - Fonts: Literata 400 and 600, Atkinson Hyperlegible Mono 400 and 600, Latin subset woff2 from
   `@fontsource/*` (OFL, licences in `public/assets/fonts`). 62 KB for four files.
 - Deviation from NOTES "Content": the demo graph has 18 edges, not the 17 implied by row 16
