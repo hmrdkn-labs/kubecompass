@@ -228,8 +228,8 @@ const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 const sig = (name, value) => `      <div><dt>${name}</dt><dd>${value}</dd></div>`;
 const signals = [
-  sig("Latest commit on main", gh?.commit?.sha ? `<span class="mono">${esc(gh.commit.sha)}</span> · ${time(gh.commit.date)}` : nodata),
-  sig("CI on main", gh?.ci?.conclusion
+  sig("Latest app commit", gh?.commit?.sha ? `<a class="mono" href="https://github.com/hmrdkn-labs/kubecompass/commit/${esc(gh.commit.sha)}">${esc(gh.commit.sha)}</a> · ${time(gh.commit.date)}` : nodata),
+  sig("CI for that commit", gh?.ci?.conclusion
     ? `${esc(cap(gh.ci.conclusion))}, <a href="${esc(gh.ci.url)}">${esc(gh.ci.name)}</a> · ${time(gh.ci.created_at)}`
     : nodata),
   sig("Release", gh?.release ? (gh.release.tag ? `${esc(gh.release.tag)} · ${time(gh.release.published_at)}` : `No release yet · checked ${time(snapshotIso)}`) : nodata),

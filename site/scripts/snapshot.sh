@@ -9,8 +9,13 @@ out="$(cd "$(dirname "$0")/.." && pwd)/data/github.json"
 tmp="$(mktemp)"
 trap 'rm -f "$tmp"' EXIT
 
-run="$(gh run list --repo "$repo" --branch main --event push --limit 1 --json name,conclusion,status,createdAt,url)"
-commit="$(gh api "repos/$repo/commits/main")"
+# "App commit" = newest commit on origin/main touching anything outside site/, so the snapshot
+# does not go stale on every site merge.
+git fetch -q origin main
+sha="$(git log -1 --format=%H origin/main -- . ':(exclude)site')"
+[ -n "$sha" ]
+run="$(gh run list --repo "$repo" --commit "$sha" --event push --limit 1 --json name,conclusion,status,createdAt,url)"
+commit="$(gh api "repos/$repo/commits/$sha")"
 rel="$(gh release list --repo "$repo" --limit 1 --json tagName,publishedAt)"
 meta="$(gh api "repos/$repo")"
 
