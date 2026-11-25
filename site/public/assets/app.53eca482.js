@@ -133,9 +133,8 @@
 
   // On a phone the list is the object and the map sits behind a disclosure; on a wide screen the list is the disclosure.
   const wrap = document.querySelector(".mapwrap");
-  const relsWrap = document.getElementById("rels");
   const phone = matchMedia("(max-width: 699.98px)");
-  const place = () => { wrap.open = !phone.matches; relsWrap.open = phone.matches; };
+  const place = () => { wrap.open = !phone.matches; };
   place();
   phone.addEventListener("change", place);
 

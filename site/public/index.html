@@ -20,7 +20,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin-wght-normal.43d198c0.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/atkinson-hyperlegible-next-latin-400-normal.bdf3fa81.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/style.7a326a99.css">
+<link rel="stylesheet" href="/assets/style.809c1dfa.css">
 <script src="/assets/boot.07e9e867.js"></script>
 </head>
 <body>
@@ -99,7 +99,7 @@
 
     <p class="fixture">A redraw of the graph KubeCompassCore builds for the demo fixture in its test suite. Not a screenshot.</p>
 
-    <details class="rels-wrap" id="rels" open>
+    <details class="rels-wrap" id="rels">
       <summary>All 18 relationships</summary>
       <p class="count" id="count" hidden></p>
       <table class="rels">
@@ -127,16 +127,14 @@
 </div>
 
 <section id="levels" aria-labelledby="levels-h">
-  <div class="wrap split wide-left">
-    <div>
-      <h2 id="levels-h">Each line says how it was found</h2>
-      <ul class="levels">
-      <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><line class="lvl-line lvl-observed" x1="1" x2="55" y1="8" y2="8"/></svg><span class="mono">Observed</span></div><p>What the API reports. A Pod’s <code>spec.nodeName</code> names its Node; an owner reference names its owner.</p></li>
-      <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><line class="lvl-line lvl-declared" x1="1" x2="55" y1="8" y2="8"/></svg><span class="mono">Declared</span></div><p>A reference written into one resource that names another, such as an Ingress backend or a volume claim. An Ingress backend is a declaration only: request routing is not proven.</p></li>
-      <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><line class="lvl-line lvl-inferred" x1="1" x2="55" y1="8" y2="8"/></svg><span class="mono">Inferred</span></div><p>A client-side match, such as a selector matching Pod labels. Label selection does not prove traffic or endpoint readiness.</p></li>
-      <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><rect class="hatch-swatch" fill="url(#hatch)" x="1" y="1" width="54" height="14"/></svg><span class="mono">Unavailable</span></div><p>An input the app does not have, such as provider-managed control-plane internals. In the diagram above it is a hatched, labelled area with no lines into it.</p></li>
-      </ul>
-    </div>
+  <div class="wrap">
+    <h2 id="levels-h">Each line says how it was found</h2>
+    <ul class="levels">
+      <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><line class="lvl-line lvl-observed" x1="1" x2="55" y1="8" y2="8"/></svg><span class="name">Observed</span></div><p>What the API reports. A Pod’s <code>spec.nodeName</code> names its Node; an owner reference names its owner.</p></li>
+      <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><line class="lvl-line lvl-declared" x1="1" x2="55" y1="8" y2="8"/></svg><span class="name">Declared</span></div><p>A reference written into one resource that names another, such as an Ingress backend or a volume claim. An Ingress backend is a declaration only: request routing is not proven.</p></li>
+      <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><line class="lvl-line lvl-inferred" x1="1" x2="55" y1="8" y2="8"/></svg><span class="name">Inferred</span></div><p>A client-side match, such as a selector matching Pod labels. Label selection does not prove traffic or endpoint readiness.</p></li>
+      <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><rect class="hatch-swatch" fill="url(#hatch)" x="1" y="1" width="54" height="14"/></svg><span class="name">Unavailable</span></div><p>An input the app does not have, such as provider-managed control-plane internals. In the diagram above it is a hatched, labelled area with no lines into it.</p></li>
+    </ul>
     <div class="aside">
       <p>The seven containedIn relationships are drawn as the dotted namespace boundary, not as lines. All seven are in the list. Completeness: partial, with 2 unresolved references.</p>
       <p class="js-only">Choose a level above to see only those lines. Choose a node or a row to see its source field and join rule.</p>
@@ -146,14 +144,14 @@
 
 <section class="band" id="captures" aria-labelledby="captures-h">
   <div class="wrap">
-    <div class="head"><h2 id="captures-h">The same map in the app</h2></div>
+    <div class="head"><h2 id="captures-h">The map in the app</h2></div>
     <div class="caps">
       <figure class="cap-fig">
-        <img src="/assets/img/topology-map-control-plane.04e9f7b5.webp" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships.">
+        <img src="/assets/img/topology-map-control-plane.04e9f7b5.webp" srcset="/assets/img/topology-map-control-plane-800.228e9c53.webp 800w, /assets/img/topology-map-control-plane.04e9f7b5.webp 1220w" sizes="(min-width: 1300px) 1220px, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships.">
         <figcaption>KubeCompass on a synthetic fixture. Map view: the control plane boundary is tagged Unavailable and has no relationships.</figcaption>
       </figure>
-      <figure class="cap-fig">
-        <img src="/assets/img/topology-relationship-list.c2284075.webp" width="1220" height="724" loading="lazy" decoding="async" alt="The same window in List view. Rows read like web-a to worker-a, Scheduled on, Observed, and web to web-a, Selects, Inferred. The selected row’s inspector shows the source field spec.podSelector and an assumption that policy enforcement and reachability are not proven.">
+      <figure class="cap-fig side">
+        <img src="/assets/img/topology-relationship-list.c2284075.webp" srcset="/assets/img/topology-relationship-list-800.7214574b.webp 800w, /assets/img/topology-relationship-list.c2284075.webp 1220w" sizes="(min-width: 1300px) 800px, (min-width: 1000px) 60vw, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The same window in List view. Rows read like web-a to worker-a, Scheduled on, Observed, and web to web-a, Selects, Inferred. The selected row’s inspector shows the source field spec.podSelector and an assumption that policy enforcement and reachability are not proven.">
         <figcaption>KubeCompass on a synthetic fixture. List view: each row names its evidence level. This fixture has 15 nodes and 31 relationships, not the smaller graph drawn above.</figcaption>
       </figure>
     </div>
@@ -195,7 +193,7 @@
     <div class="prose">
       <h2 id="build-h">Build it yourself</h2>
       <p>No published release yet. Build it from source on macOS 26 or later. The documented build turns code signing off.</p>
-      <pre class="cmd" tabindex="0" aria-label="xcodebuild command from the README">xcodebuild -project k-dex.xcodeproj -scheme k-dex \
+      <pre class="cmd">xcodebuild -project k-dex.xcodeproj -scheme k-dex \
   -configuration Release -destination 'platform=macOS' \
   CODE_SIGNING_ALLOWED=NO build</pre>
       <p class="build-note">The README lists what is still unverified: accessibility, frame rate and memory use, and live-cluster checks.</p>
@@ -226,7 +224,7 @@
     <div>
       <p>Derived from <a href="https://github.com/irfancen/k-dex">K-Dex</a> by irfancen, MIT licence. Provenance is in <a href="https://github.com/hmrdkn-labs/kubecompass/blob/main/UPSTREAM.md">UPSTREAM.md</a>.</p>
       <p>A Hamardikan Labs project. Maintained by Dika.</p>
-      <p class="small">Deploy 6a9b6c7, built 25 Nov 2026.</p>
+      <p class="small">Deploy ee5ef4d, built 25 Nov 2026.</p>
       <ul>
         <li><a href="https://github.com/hmrdkn-labs/kubecompass">Repository on GitHub</a></li>
         <li><a href="https://hamardikan.com/">hamardikan.com</a></li>
@@ -234,6 +232,6 @@
     </div>
   </div>
 </footer>
-<script src="/assets/app.b3353a69.js" defer></script>
+<script src="/assets/app.53eca482.js" defer></script>
 </body>
 </html>
