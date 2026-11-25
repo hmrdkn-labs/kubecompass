@@ -228,8 +228,8 @@ const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 const sig = (name, value) => `      <div><dt>${name}</dt><dd>${value}</dd></div>`;
 const signals = [
-  sig("Latest commit on main", gh?.commit?.sha ? `<span class="mono">${esc(gh.commit.sha)}</span> · ${time(gh.commit.date)}` : nodata),
-  sig("CI on main", gh?.ci?.conclusion
+  sig("Latest app commit", gh?.commit?.sha ? `<a class="mono" href="https://github.com/hmrdkn-labs/kubecompass/commit/${esc(gh.commit.sha)}">${esc(gh.commit.sha)}</a> · ${time(gh.commit.date)}` : nodata),
+  sig("CI for that commit", gh?.ci?.conclusion
     ? `${esc(cap(gh.ci.conclusion))}, <a href="${esc(gh.ci.url)}">${esc(gh.ci.name)}</a> · ${time(gh.ci.created_at)}`
     : nodata),
   sig("Release", gh?.release ? (gh.release.tag ? `${esc(gh.release.tag)} · ${time(gh.release.published_at)}` : `No release yet · checked ${time(snapshotIso)}`) : nodata),
@@ -256,7 +256,22 @@ const appUrl = emit("app.js", readFileSync(join(src, "app.js")));
 
 const mapnote = `The seven containedIn relationships are drawn as the dotted namespace boundary, not as lines. All seven are in the list. Completeness: ${graph.completeness}, with ${graph.unresolvedReferences} unresolved references.`;
 
+const SITE = "https://kubecompass.hamardikan.com/";
+const REPO = "https://github.com/hmrdkn-labs/kubecompass";
+const DESC = "KubeCompass is a Kubernetes GUI for macOS. Its topology map tags each relationship Observed, Declared, Inferred or Unavailable. Build it from source.";
+const person = { "@type": "Person", name: "Azzam Muhammadi Rizqun Karima", url: "https://hamardikan.com/" };
+const jsonld = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "WebSite", "@id": `${SITE}#website`, name: "KubeCompass", url: SITE, inLanguage: "en", publisher: person },
+    { "@type": "SoftwareApplication", "@id": `${SITE}#app`, name: "KubeCompass", description: DESC, url: SITE,
+      applicationCategory: "DeveloperApplication", operatingSystem: "macOS 26 or later", codeRepository: REPO,
+      sameAs: [REPO], author: person, publisher: person, isPartOf: { "@id": `${SITE}#website` } },
+  ],
+}).replace(/</g, "\\u003c");
+
 const vars = {
+  jsonld, desc: DESC,
   css: cssUrl, boot: bootUrl, app: appUrl, defs, legend, levels, rows, map: chart(), mapnote,
   readout: edgeText(edges[defaultIndex]), graphjson: graphJson, completeness: esc(graph.completeness), unresolved: String(graph.unresolvedReferences), edgecount: String(edges.length), containedcount: String(contained.length),
   snapshotdate: snapshotDate, signals, checked: snapshotDate, deploysha: esc(deploySha), builddate: buildDate,
@@ -272,6 +287,8 @@ for (const f of ["404.html", "favicon.svg", "robots.txt", "_headers"]) copyFileS
 const iso = new Date().toISOString().slice(0, 10);
 writeFileSync(join(pub, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://kubecompass.hamardikan.com/</loc><lastmod>${iso}</lastmod></url>\n</urlset>\n`);
+// IndexNow key file: src/<32 hex>.txt is copied to the site root unchanged.
+for (const f of readdirSync(src)) if (/^[0-9a-f]{32}\.txt$/.test(f)) copyFileSync(join(src, f), join(pub, f));
 for (const f of ["og.png", "apple-touch-icon.png"]) if (existsSync(join(src, f))) copyFileSync(join(src, f), join(pub, f));
 // 404 page uses the same stylesheet.
 writeFileSync(join(pub, "404.html"), read(join(pub, "404.html")).replace("{{css}}", cssUrl));

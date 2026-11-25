@@ -3,24 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KubeCompass: a Kubernetes client for macOS that says how it knows each line</title>
-<meta name="description" content="KubeCompass is a Kubernetes client for macOS whose topology map tags every relationship Observed, Declared, Inferred or Unavailable.">
+<title>Kubernetes GUI for macOS with a topology map | KubeCompass</title>
+<meta name="description" content="{{desc}}">
 <link rel="canonical" href="https://kubecompass.hamardikan.com/">
 <meta name="theme-color" content="#071a24">
 <meta property="og:type" content="website">
-<meta property="og:title" content="KubeCompass">
-<meta property="og:description" content="A cluster map that tells you how it knows. A Kubernetes client for macOS.">
+<meta property="og:site_name" content="KubeCompass">
+<meta property="og:title" content="Kubernetes GUI for macOS with a topology map | KubeCompass">
+<meta property="og:description" content="{{desc}}">
 <meta property="og:url" content="https://kubecompass.hamardikan.com/">
 <meta property="og:image" content="https://kubecompass.hamardikan.com/og.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="KubeCompass over an aerial illustration of a container terminal at blue hour.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Kubernetes GUI for macOS with a topology map | KubeCompass">
+<meta name="twitter:description" content="{{desc}}">
+<meta name="twitter:image" content="https://kubecompass.hamardikan.com/og.png">
+<meta name="twitter:image:alt" content="KubeCompass over an aerial illustration of a container terminal at blue hour.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="{{font:bricolage-grotesque-latin-wght-normal.woff2}}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{{font:atkinson-hyperlegible-next-latin-400-normal.woff2}}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{{css}}">
+<script type="application/ld+json">{{jsonld}}</script>
 <script src="{{boot}}"></script>
 </head>
 <body>
@@ -42,8 +49,8 @@
     <source type="image/webp" srcset="{{img:hero-harbour-800.webp}} 800w, {{img:hero-harbour-1440.webp}} 1440w, {{img:hero-harbour-1672.webp}} 1672w" sizes="100vw">
     <img src="{{img:hero-harbour-1440.webp}}" width="1672" height="941" alt="" fetchpriority="high" decoding="async">
   </picture>
-  <h1><span class="w">A</span> <span class="w">cluster</span> <span class="w">map</span> <span class="w">that</span> <span class="w">tells</span> <span class="w">you</span> <span class="w">how</span> <span class="w">it</span> <span class="w">knows.</span></h1>
-  <p class="sub">KubeCompass is a Kubernetes client for macOS. Every relationship it draws is tagged observed, declared, inferred or unavailable.</p>
+  <h1><span class="w">A</span> <span class="w">Kubernetes</span> <span class="w">client</span> <span class="w">for</span> <span class="w">macOS</span> <span class="w">that</span> <span class="w">tells</span> <span class="w">you</span> <span class="w">how</span> <span class="w">it</span> <span class="w">knows.</span></h1>
+  <p class="sub">KubeCompass draws a cluster map and tags every relationship observed, declared, inferred or unavailable.</p>
   <a class="btn" href="https://github.com/hmrdkn-labs/kubecompass#install">Build from source</a>
 </section>
 
@@ -88,7 +95,7 @@
 
 <section id="levels" aria-labelledby="levels-h">
   <div class="wrap">
-    <h2 id="levels-h">Each line says how it was found</h2>
+    <h2 id="levels-h">Each topology line says how it was found</h2>
     <ul class="levels">
 {{levels}}
     </ul>
@@ -100,7 +107,7 @@
 
 <section class="band" id="captures" aria-labelledby="captures-h">
   <div class="wrap">
-    <div class="head"><h2 id="captures-h">The map in the app</h2></div>
+    <div class="head"><h2 id="captures-h">The topology map in the app</h2></div>
     <div class="caps">
       <figure class="cap-fig">
         <a class="zoom" href="{{img:topology-map-control-plane.webp}}" aria-label="Open the map capture at full size"><img src="{{img:topology-map-control-plane.webp}}" srcset="{{img:topology-map-control-plane-800.webp}} 800w, {{img:topology-map-control-plane.webp}} 1220w" sizes="(min-width: 1300px) 1220px, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships."></a>
@@ -169,7 +176,7 @@
 <footer class="foot">
   <div class="wrap">
     <div>
-      <p>A snapshot from GitHub taken at build time, {{snapshotdate}}. The page makes no live requests.</p>
+      <p>A snapshot from GitHub taken at build time, {{snapshotdate}}. App commits are those outside the site folder. The page makes no live requests.</p>
       <dl class="signals">
 {{signals}}
       </dl>
@@ -181,6 +188,13 @@
       <ul>
         <li><a href="https://github.com/hmrdkn-labs/kubecompass">Repository on GitHub</a></li>
         <li><a href="https://hamardikan.com/">hamardikan.com</a></li>
+      </ul>
+      <p class="more" id="more-h">More from hmrdkn-labs</p>
+      <ul aria-labelledby="more-h">
+        <li><a href="https://agentawake.hamardikan.com/">Agent Awake</a></li>
+        <li><a href="https://whiteboard.hamardikan.com/">Whiteboard</a></li>
+        <li><a href="https://lazyss.hamardikan.com/">lazyss</a></li>
+        <li><a href="https://open-pajak.hamardikan.com/">Open Pajak</a></li>
       </ul>
     </div>
   </div>

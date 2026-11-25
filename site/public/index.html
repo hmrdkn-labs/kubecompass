@@ -3,24 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KubeCompass: a Kubernetes client for macOS that says how it knows each line</title>
-<meta name="description" content="KubeCompass is a Kubernetes client for macOS whose topology map tags every relationship Observed, Declared, Inferred or Unavailable.">
+<title>Kubernetes GUI for macOS with a topology map | KubeCompass</title>
+<meta name="description" content="KubeCompass is a Kubernetes GUI for macOS. Its topology map tags each relationship Observed, Declared, Inferred or Unavailable. Build it from source.">
 <link rel="canonical" href="https://kubecompass.hamardikan.com/">
 <meta name="theme-color" content="#071a24">
 <meta property="og:type" content="website">
-<meta property="og:title" content="KubeCompass">
-<meta property="og:description" content="A cluster map that tells you how it knows. A Kubernetes client for macOS.">
+<meta property="og:site_name" content="KubeCompass">
+<meta property="og:title" content="Kubernetes GUI for macOS with a topology map | KubeCompass">
+<meta property="og:description" content="KubeCompass is a Kubernetes GUI for macOS. Its topology map tags each relationship Observed, Declared, Inferred or Unavailable. Build it from source.">
 <meta property="og:url" content="https://kubecompass.hamardikan.com/">
 <meta property="og:image" content="https://kubecompass.hamardikan.com/og.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="KubeCompass over an aerial illustration of a container terminal at blue hour.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Kubernetes GUI for macOS with a topology map | KubeCompass">
+<meta name="twitter:description" content="KubeCompass is a Kubernetes GUI for macOS. Its topology map tags each relationship Observed, Declared, Inferred or Unavailable. Build it from source.">
+<meta name="twitter:image" content="https://kubecompass.hamardikan.com/og.png">
+<meta name="twitter:image:alt" content="KubeCompass over an aerial illustration of a container terminal at blue hour.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin-wght-normal.43d198c0.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/atkinson-hyperlegible-next-latin-400-normal.bdf3fa81.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/style.1c50430e.css">
+<link rel="stylesheet" href="/assets/style.16679d99.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://kubecompass.hamardikan.com/#website","name":"KubeCompass","url":"https://kubecompass.hamardikan.com/","inLanguage":"en","publisher":{"@type":"Person","name":"Azzam Muhammadi Rizqun Karima","url":"https://hamardikan.com/"}},{"@type":"SoftwareApplication","@id":"https://kubecompass.hamardikan.com/#app","name":"KubeCompass","description":"KubeCompass is a Kubernetes GUI for macOS. Its topology map tags each relationship Observed, Declared, Inferred or Unavailable. Build it from source.","url":"https://kubecompass.hamardikan.com/","applicationCategory":"DeveloperApplication","operatingSystem":"macOS 26 or later","codeRepository":"https://github.com/hmrdkn-labs/kubecompass","sameAs":["https://github.com/hmrdkn-labs/kubecompass"],"author":{"@type":"Person","name":"Azzam Muhammadi Rizqun Karima","url":"https://hamardikan.com/"},"publisher":{"@type":"Person","name":"Azzam Muhammadi Rizqun Karima","url":"https://hamardikan.com/"},"isPartOf":{"@id":"https://kubecompass.hamardikan.com/#website"}}]}</script>
 <script src="/assets/boot.07e9e867.js"></script>
 </head>
 <body>
@@ -44,8 +51,8 @@
     <source type="image/webp" srcset="/assets/img/hero-harbour-800.958286ba.webp 800w, /assets/img/hero-harbour-1440.815a7dbf.webp 1440w, /assets/img/hero-harbour-1672.7bfd1aca.webp 1672w" sizes="100vw">
     <img src="/assets/img/hero-harbour-1440.815a7dbf.webp" width="1672" height="941" alt="" fetchpriority="high" decoding="async">
   </picture>
-  <h1><span class="w">A</span> <span class="w">cluster</span> <span class="w">map</span> <span class="w">that</span> <span class="w">tells</span> <span class="w">you</span> <span class="w">how</span> <span class="w">it</span> <span class="w">knows.</span></h1>
-  <p class="sub">KubeCompass is a Kubernetes client for macOS. Every relationship it draws is tagged observed, declared, inferred or unavailable.</p>
+  <h1><span class="w">A</span> <span class="w">Kubernetes</span> <span class="w">client</span> <span class="w">for</span> <span class="w">macOS</span> <span class="w">that</span> <span class="w">tells</span> <span class="w">you</span> <span class="w">how</span> <span class="w">it</span> <span class="w">knows.</span></h1>
+  <p class="sub">KubeCompass draws a cluster map and tags every relationship observed, declared, inferred or unavailable.</p>
   <a class="btn" href="https://github.com/hmrdkn-labs/kubecompass#install">Build from source</a>
 </section>
 
@@ -129,7 +136,7 @@
 
 <section id="levels" aria-labelledby="levels-h">
   <div class="wrap">
-    <h2 id="levels-h">Each line says how it was found</h2>
+    <h2 id="levels-h">Each topology line says how it was found</h2>
     <ul class="levels">
       <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><line class="lvl-line lvl-observed" x1="1" x2="55" y1="8" y2="8"/></svg><span class="name">Observed</span></div><p>What the API reports. A Pod’s <code>spec.nodeName</code> names its Node; an owner reference names its owner.</p></li>
       <li><div class="row"><svg class="" viewBox="0 0 56 16" aria-hidden="true"><line class="lvl-line lvl-declared" x1="1" x2="55" y1="8" y2="8"/></svg><span class="name">Declared</span></div><p>A reference written into one resource that names another, such as an Ingress backend or a volume claim. An Ingress backend is a declaration only: request routing is not proven.</p></li>
@@ -144,7 +151,7 @@
 
 <section class="band" id="captures" aria-labelledby="captures-h">
   <div class="wrap">
-    <div class="head"><h2 id="captures-h">The map in the app</h2></div>
+    <div class="head"><h2 id="captures-h">The topology map in the app</h2></div>
     <div class="caps">
       <figure class="cap-fig">
         <a class="zoom" href="/assets/img/topology-map-control-plane.04e9f7b5.webp" aria-label="Open the map capture at full size"><img src="/assets/img/topology-map-control-plane.04e9f7b5.webp" srcset="/assets/img/topology-map-control-plane-800.228e9c53.webp 800w, /assets/img/topology-map-control-plane.04e9f7b5.webp 1220w" sizes="(min-width: 1300px) 1220px, 100vw" width="1220" height="724" loading="lazy" decoding="async" alt="The KubeCompass Topology Explorer in Map view, in a dark window. A bar above the map shows the evidence tags Observed, Declared, Inferred and Unavailable. Boxes for a Deployment, ReplicaSet, Pods and Nodes are joined by green and dashed lines. The inspector on the right names a Control plane boundary, tagged Unavailable, with no adjacent relationships."></a>
@@ -213,21 +220,28 @@
 <footer class="foot">
   <div class="wrap">
     <div>
-      <p>A snapshot from GitHub taken at build time, 25 Nov 2026. The page makes no live requests.</p>
+      <p>A snapshot from GitHub taken at build time, 25 Nov 2026. App commits are those outside the site folder. The page makes no live requests.</p>
       <dl class="signals">
-      <div><dt>Latest commit on main</dt><dd><span class="mono">0e10edb</span> · <time datetime="2026-08-13T03:14:35Z">13 Aug 2026</time></dd></div>
-      <div><dt>CI on main</dt><dd>Success, <a href="https://github.com/hmrdkn-labs/kubecompass/actions/runs/31663331585">macOS stability and topology</a> · <time datetime="2026-08-13T03:14:52Z">13 Aug 2026</time></dd></div>
-      <div><dt>Release</dt><dd>No release yet · checked <time datetime="2026-11-25T14:40:08Z">25 Nov 2026</time></dd></div>
-      <div><dt>Licence</dt><dd>MIT · checked <time datetime="2026-11-25T14:40:08Z">25 Nov 2026</time></dd></div>
+      <div><dt>Latest app commit</dt><dd><a class="mono" href="https://github.com/hmrdkn-labs/kubecompass/commit/0e10edb">0e10edb</a> · <time datetime="2026-08-13T03:14:35Z">13 Aug 2026</time></dd></div>
+      <div><dt>CI for that commit</dt><dd>Success, <a href="https://github.com/hmrdkn-labs/kubecompass/actions/runs/31663331585">macOS stability and topology</a> · <time datetime="2026-08-13T03:14:52Z">13 Aug 2026</time></dd></div>
+      <div><dt>Release</dt><dd>No release yet · checked <time datetime="2026-11-25T17:00:41Z">25 Nov 2026</time></dd></div>
+      <div><dt>Licence</dt><dd>MIT · checked <time datetime="2026-11-25T17:00:41Z">25 Nov 2026</time></dd></div>
       </dl>
     </div>
     <div>
       <p>Derived from <a href="https://github.com/irfancen/k-dex">K-Dex</a> by irfancen, MIT licence. Provenance is in <a href="https://github.com/hmrdkn-labs/kubecompass/blob/main/UPSTREAM.md">UPSTREAM.md</a>.</p>
       <p>A Hamardikan Labs project.</p>
-      <p class="small">Deploy d9342ea, built 25 Nov 2026.</p>
+      <p class="small">Deploy 3ec7055, built 25 Nov 2026.</p>
       <ul>
         <li><a href="https://github.com/hmrdkn-labs/kubecompass">Repository on GitHub</a></li>
         <li><a href="https://hamardikan.com/">hamardikan.com</a></li>
+      </ul>
+      <p class="more" id="more-h">More from hmrdkn-labs</p>
+      <ul aria-labelledby="more-h">
+        <li><a href="https://agentawake.hamardikan.com/">Agent Awake</a></li>
+        <li><a href="https://whiteboard.hamardikan.com/">Whiteboard</a></li>
+        <li><a href="https://lazyss.hamardikan.com/">lazyss</a></li>
+        <li><a href="https://open-pajak.hamardikan.com/">Open Pajak</a></li>
       </ul>
     </div>
   </div>

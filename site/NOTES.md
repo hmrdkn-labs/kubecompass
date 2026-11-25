@@ -1,6 +1,6 @@
 # KubeCompass landing page: notes
 
-Live: https://kubecompass.hamardikan.com/ · Worker `kubecompass-site` (static assets only). v2 deployed 2026-11-25, version `8e99441b-e789-472f-9287-487727c82325` (footer sha d9342ea).
+Live: https://kubecompass.hamardikan.com/ · Worker `kubecompass-site` (static assets only). v3 (search) deployed 2026-11-25, version `6b6b6de7-e9ef-4796-a6f2-c701f6c94bbf` (footer sha 3ec7055); v2 was `8e99441b-e789-472f-9287-487727c82325`.
 Planned 2026-11-25 from `~/workspace/sandbox/showcase-scan/research/kubecompass.md`, the card, and
 the public repo at `origin/main` 0e10edb. The local checkout `~/workspace/labs/kubecompass` and its
 48 uncommitted paths are not a source for anything on this page.
@@ -65,7 +65,7 @@ Every row checked against `origin/main` 0e10edb on 2026-11-25.
 | 15 | Derived from K-Dex, MIT, provenance kept | README 8–9, 151–154; UPSTREAM.md; LICENSE | Read UPSTREAM.md | OK |
 | 16 | Demo graph: 12 nodes, 18 edges, 12/4/2 Observed/Declared/Inferred (7 Observed are `containedIn`), boundary Unavailable, partial, 2 unresolved | `site/data/demo-graph.json`; `jq '[.edges[].level]\|group_by(.)\|map({(.[0]):length})\|add'` | Run `site/scripts/demo-graph.sh` | OK |
 | 17 | Captures are the app on a synthetic fixture | `docs/interface/evidence/*.jpeg` show `topology-lab` / `fixture-cluster` / namespace `demo` | View the images | OK |
-| 18 | Signals: CI "macOS stability and topology" success 2026-08-13; last commit 0e10edb 2026-08-13; no release; MIT | `gh run list`, `gh api repos/.../commits/main`, `gh release list`, `gh api repos/...` at build | Re-run the commands | OK (snapshot dated) |
+| 18 | Signals: CI "macOS stability and topology" success 2026-08-13; latest app commit 0e10edb 2026-08-13 (newest on origin/main outside `site/`); no release; MIT | `git log -1 origin/main -- . ':(exclude)site'`, `gh run list --commit <sha>`, `gh api repos/.../commits/<sha>`, `gh release list`, `gh api repos/...` at build | Re-run the commands | OK (snapshot dated) |
 | 20 | "A Hamardikan Labs project" | README.md 8 | Read the README | OK |
 | 21 | The README lists what is still unverified: accessibility, frame rate and memory use, live-cluster checks | README.md 27–29 ("accessibility, frame/RSS, and live-cluster gates remain unverified") | Read the README | OK |
 | 22 | The Linux adapter reads no kubeconfig and runs no kubectl | README.md 30–33 | Read the README | OK |
@@ -82,6 +82,16 @@ VoiceOver or any accessibility claim about the app; production-provider conforma
 kubectl version pins; command limits; metrics lag; the README's verification receipt links that
 404 in the local tree (the public README at 0e10edb has none of them; every README link used here
 resolves at `origin/main`).
+| 30 | Page is a Kubernetes GUI/client for macOS ("GUI" = desktop app, same as claim 1) | README 5–6 | Read the README | OK |
+| 31 | The cluster map tags relationships; hero says "draws a cluster map" | README 18–22; claim 2 | Read the README | OK |
+| 32 | JSON-LD operatingSystem "macOS 26 or later", author and publisher Azzam Muhammadi Rizqun Karima, codeRepository | claim 9; hamardikan.com owner; repo URL | Read the page source | OK |
+| 33 | No softwareVersion, downloadUrl, rating, review or offers in JSON-LD | claim 12 (no release) | Read the page source | OK |
+| 34 | Sibling pages named in the footer exist at their hamardikan.com subdomains | v3 STANDARD.md, Links | Open each | OK: all four returned 200 on 2026-11-25 after deploy |
+
+## Search (v3, 2026-11-25)
+
+Title, description, h1, OG, JSON-LD, IndexNow key and sibling links: `~/workspace/sandbox/showcase-scan/build/v3/kubecompass/SEO.md`. `og.png` is a 256-colour PNG (240 KB).
+`src/<32 hex>.txt` is the IndexNow key file; `build.mjs` copies it to the site root.
 
 ## Real vs missing
 

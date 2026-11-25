@@ -294,14 +294,15 @@ function groupBy(rows, key) {
       record(12, "lighthouse mobile", "WARN", `not found; run: ${bin} <url> --only-categories=performance,accessibility --output=json --output-path=lh.json --chrome-flags="--headless=new" (install: npm i lighthouse in ~/.cache/kubecompass-pw)`);
     } else {
       const out = path.join(shots, "lighthouse.json");
-      const r = spawnSync(bin, [base, "--form-factor=mobile", "--only-categories=performance,accessibility", "--output=json", `--output-path=${out}`, "--quiet", "--chrome-flags=--headless=new --no-sandbox"],
+      const r = spawnSync(bin, [base, "--form-factor=mobile", "--only-categories=performance,accessibility,best-practices,seo", "--output=json", `--output-path=${out}`, "--quiet", "--chrome-flags=--headless=new --no-sandbox"],
         { env: { ...process.env, CHROME_PATH: chromium.executablePath() }, encoding: "utf8", timeout: 240000 });
       if (r.status !== 0 || !fs.existsSync(out)) {
         record(12, "lighthouse mobile", "FAIL", `lighthouse failed (exit ${r.status}): ${(r.stderr || r.error && r.error.message || "").toString().slice(-200)}`);
       } else {
         const j = JSON.parse(fs.readFileSync(out, "utf8"));
         const perf = Math.round(j.categories.performance.score * 100), a11y = Math.round(j.categories.accessibility.score * 100);
-        record(12, "lighthouse mobile", perf >= 90 && a11y === 100 ? "PASS" : "FAIL", `performance ${perf} (need 90), accessibility ${a11y} (need 100)`, { perf, a11y });
+        const bp = Math.round(j.categories["best-practices"].score * 100), seo = Math.round(j.categories.seo.score * 100);
+        record(12, "lighthouse mobile", perf >= 95 && a11y === 100 && bp === 100 && seo === 100 ? "PASS" : "FAIL", `performance ${perf} (need 95), accessibility ${a11y}, best practices ${bp}, SEO ${seo} (need 100)`, { perf, a11y, bp, seo });
       }
     }
   }
